@@ -38,6 +38,8 @@ struct Args {
 
 pub async fn run() -> Result<()> {
     let args = Args::parse();
+    // Keep direct execution to the public synchronous composition/planning
+    // allowlist; media generation and arbitrary server functions are excluded.
     if !DIRECT_TOOLS.contains(&args.tool.as_str()) {
         bail!(
             "unsupported direct tool {:?}; use --help for the list",

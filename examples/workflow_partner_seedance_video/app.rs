@@ -23,6 +23,8 @@ pub async fn run() -> Result<()> {
         );
     }
     let execute = execution_requested(args.execute, args.dry_run)?;
+    // Request inspection is deliberately side-effect free, including for local
+    // media names; upload and authentication start only after --execute.
     if !execute {
         let media = resolve(None, &args).await?;
         let tools = tool_arguments(&args, &media);
@@ -45,6 +47,8 @@ pub async fn run() -> Result<()> {
 async fn watch(client: &sogni_client::SogniClient, value: &Value) -> Result<Value> {
     let id = workflow_id(value).ok_or_else(|| anyhow::anyhow!("workflow response omitted id"))?;
     let mut stream = client.workflows.stream_events(id, None, None).await?;
+    // SSE ends at a terminal workflow state; fetch the durable final snapshot so
+    // result discovery does not depend on the last event's payload shape.
     while let Some(event) = stream.next().await {
         let event = event?;
         println!("[{}] {}", event.id.as_deref().unwrap_or("-"), event.event);

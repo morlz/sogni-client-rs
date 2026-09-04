@@ -59,6 +59,8 @@ async fn stream_required_tool(
     show_thinking: bool,
 ) -> Result<Map<String, Value>> {
     let mut options = settings.clone();
+    // Composition needs schema-conformant arguments, not prose or a reasoning
+    // transcript. Required tool calling remains the structured output channel.
     options.think = false;
     options.task_profile = "reasoning".into();
     for attempt in 1..=3 {

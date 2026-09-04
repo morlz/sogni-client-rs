@@ -1,4 +1,20 @@
-//! Rust port of `sogni-client-python/examples/stream_chat.py`.
+//! Stream an LLM completion from Sogni's socket-native chat API.
+//!
+//! The example sends one user message through `chat.completions`, prints content
+//! chunks as they arrive, and requires a terminal result before reporting
+//! success. The default model is the shared chat example default; callers can
+//! override it, but should rely on the live catalog for availability and limits.
+//!
+//! `--help` and the default request preview are credential-free. A live chat is
+//! billable and therefore requires Sogni credentials plus `--execute`. This
+//! example writes streamed text to stdout and does not create output files.
+//!
+//! ```text
+//! cargo run --example chat_stream -- --help
+//! cargo run --example chat_stream -- "Pitch three surreal album covers" --dry-run
+//! cargo run --example chat_stream -- "Explain chiaroscuro in one paragraph" --execute
+//! cargo run --example chat_stream -- "Describe this composition" --model qwen3.6-35b-a3b-gguf-iq4xs --execute
+//! ```
 
 mod common;
 #[path = "workflow_text_chat/shared/mod.rs"]

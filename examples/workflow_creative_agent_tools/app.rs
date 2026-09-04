@@ -52,6 +52,8 @@ pub async fn run() -> Result<()> {
     } else {
         args.prompt.join(" ")
     };
+    // These controls select server-owned tool injection/execution. No returned
+    // hosted tool name is dispatched as local code by this example.
     let request = json!({
         "model": args.model,
         "messages": [
@@ -72,6 +74,7 @@ pub async fn run() -> Result<()> {
     if missing_prompt {
         bail!("a prompt is required when --submit is used");
     }
+    // Hosted tool injection is API-key-only and does not need a socket session.
     let credentials = common::auth::load_credentials()?;
     let client = common::auth::connect_api_key_rest_only(
         common::auth::unique_app_id("sogni-creative-tools"),

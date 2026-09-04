@@ -87,6 +87,8 @@ fn build(args: &Args) -> Result<ProjectRequest> {
         }
         _ => DEFAULT_LYRICS.to_owned(),
     };
+    // `None` is meaningful for Turbo: never serialize CFG just because the
+    // caller supplied a value that this model cannot consume.
     let guidance = spec
         .guidance
         .map(|default| args.guidance.unwrap_or(default));
@@ -137,6 +139,8 @@ pub async fn run() -> Result<()> {
     let client = connect(unique_app_id("sogni-rust-text-music"), Network::Fast).await?;
     let result = async {
         require_model(&client.projects, &args.model).await?;
+        // Estimate the resolved model duration, steps, and quantity before
+        // creating a paid project.
         let estimate = client.projects.estimate_audio_cost(&json!({
             "tokenType": args.token_type.as_str(), "model": args.model,
             "duration": args.duration, "steps": request.params()["steps"], "numberOfMedia": args.number

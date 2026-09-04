@@ -62,12 +62,16 @@ async fn resolve_one(
     role: &str,
     index: usize,
 ) -> Result<String> {
+    // Durable workflow media must remain retrievable after this process exits.
+    // Reuse HTTPS inputs; local files receive signed upload/download URLs live.
     if value.starts_with("https://") {
         return Ok(value.into());
     }
     if value.starts_with("http://") || value.starts_with("data:") {
         bail!("{kind} references must be local files or HTTPS URLs");
     }
+    // Dry runs retain media cardinality and ordering without reading or uploading
+    // the named local files.
     let Some(projects) = projects else {
         return Ok(format!("https://dry-run.invalid/{kind}/{}", index + 1));
     };

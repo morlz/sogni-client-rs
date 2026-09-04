@@ -27,6 +27,7 @@ pub fn build_direct_params(args: &Args, urls: &MediaUrls) -> Value {
         .expect("validated model")
         .supports_task_type
     {
+        // Only Seedance 2.5 understands this direct Projects API discriminator.
         params["seedanceTaskType"] = json!(args.task_type.as_str());
     }
     params
@@ -40,6 +41,8 @@ pub fn build_creative_agent_request(args: &Args, urls: &MediaUrls) -> Value {
     let common = json!({
         "prompt": args.prompt(), "videoModel": selector, "generateAudio": args.generate_audio
     });
+    // Creative Agent uses semantic tool names instead of the direct
+    // `seedanceTaskType` field.
     let (tool, arguments) = match args.task_type {
         TaskType::Reference => {
             let mut values = object(common);
@@ -95,6 +98,8 @@ fn resolution_number(value: &str) -> u32 {
 }
 fn add_indices(target: &mut Map<String, Value>, name: &str, count: usize) {
     if count > 0 {
+        // Negative indices address request-scoped media references rather than
+        // outputs from earlier workflow steps; ordering is modality-local.
         target.insert(
             name.into(),
             json!((1..=count).map(|n| -(n as i64)).collect::<Vec<_>>()),

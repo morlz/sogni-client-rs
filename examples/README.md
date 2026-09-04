@@ -63,6 +63,10 @@ cargo run --example workflow_upscale_image -- \
 ```
 
 Use `cargo run --example NAME -- --help` for every example's authoritative options.
+Each runnable root also starts with module documentation that explains its SDK
+surface, prerequisites, dry-run boundary, output behavior, model/workflow caveats,
+and representative commands. Read it in the source or build local documentation
+with `cargo doc --examples --no-deps`.
 
 ## Example catalog
 

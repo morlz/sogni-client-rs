@@ -121,6 +121,7 @@ async fn phase(
 }
 
 fn summarize(steps: u32, runs: Vec<RunRecord>) -> PhaseResult {
+    // Only successful measured runs describe steady-state inference performance.
     let mut measured = runs
         .iter()
         .filter(|run| !run.is_warmup && run.success)
@@ -202,6 +203,7 @@ fn derive_cost_model(
     default: &PhaseResult,
     max: &PhaseResult,
 ) -> CostModel {
+    // The endpoints define a simple explanatory fit; the default tier validates it.
     let Some((minimum, maximum)) = min.avg_ms.zip(max.avg_ms) else {
         return CostModel {
             base_ms: None,

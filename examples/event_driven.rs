@@ -1,3 +1,22 @@
+//! Generate an image while observing Sogni's event-driven project lifecycle.
+//!
+//! This is the Rust counterpart of the SDK event example: it discovers a live
+//! image model, estimates the request, then reports API-wide and project-local
+//! job, progress, completion, and failure events. The project completion result
+//! remains authoritative; event streams provide incremental observability.
+//!
+//! `--help` and dry-run request rendering are credential-free. A paid run needs
+//! Sogni credentials plus `--execute`, and asks for confirmation after the cost
+//! estimate unless `--yes` is present. The example prints result URLs rather
+//! than downloading them.
+//!
+//! ```text
+//! cargo run --example event_driven -- --help
+//! cargo run --example event_driven -- --prompt "A fox in a glass forest" --dry-run
+//! cargo run --example event_driven -- --prompt "A fox in a glass forest" --execute
+//! cargo run --example event_driven -- --execute --yes
+//! ```
+
 mod common;
 
 use std::time::Duration;
@@ -75,9 +94,11 @@ async fn main() -> Result<()> {
         let request = request(model_id, &args.prompt);
         let estimate = estimate_image(&client.projects, &request).await?;
         confirm_estimate(&estimate, args.yes)?;
+        // Subscribe globally before submission so even an immediate first state is visible.
         let api_reporter = spawn_api_reporter(client.projects.clone());
         let project = client.projects.create(request).await?;
         let project_reporter = spawn_project_reporter(project.clone());
+        // Events are observational; the project future supplies the terminal result.
         let urls = project.wait_for_completion(None).await?;
         project_reporter.abort();
         api_reporter.abort();

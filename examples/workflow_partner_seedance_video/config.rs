@@ -121,6 +121,8 @@ pub struct Args {
 
 impl Args {
     pub fn mode(&self) -> Mode {
+        // Infer from the strongest media signal: a source video determines V2V,
+        // then audio determines IA2V, then image/end-frame determines I2V.
         self.mode.unwrap_or_else(|| {
             if !self.videos.is_empty() {
                 Mode::V2v
@@ -134,6 +136,8 @@ impl Args {
         })
     }
     pub fn target(&self) -> Target {
+        // Hosted chat is reserved for media-free T2V. Any asset-bearing request
+        // is represented as a durable workflow so references remain retrievable.
         self.target.unwrap_or_else(|| {
             if self.mode() == Mode::T2v && !self.has_media() {
                 Target::Chat

@@ -139,6 +139,8 @@ pub async fn run() -> Result<()> {
     common::cli::require_confirmation("Submit paid intent-routing LLM request?", args.yes)?;
     let mut request = shared::runtime::request(&settings, &messages, true);
     request["tools"] = Value::Array(schemas::intent_tools());
+    // Routing is optional: ordinary conversation can finish without a tool call.
+    // The specialized composition stage uses `required` instead.
     request["tool_choice"] = json!("auto");
     let reporter = shared::spawn_chat_reporter(&client);
     let outcome = run_pipeline(&client, &settings, messages, request, &config).await;
@@ -173,6 +175,8 @@ async fn run_pipeline(
         tool_messages.push(handle_call(client, settings, call, config).await);
     }
     let mut follow_up = messages;
+    // Preserve protocol ordering: the assistant call declaration comes before
+    // the tool results carrying its ids, then the model receives the full history.
     follow_up.push(json!({
         "role": "assistant",
         "content": if content.is_empty() { Value::Null } else { json!(content) },

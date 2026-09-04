@@ -28,6 +28,8 @@ pub async fn run() -> Result<()> {
         Some(resolve_media(None, &args).await?)
     };
 
+    // Dry-run rendering is intentionally credential-free and performs no media
+    // upload. The printed request still preserves every modality slot.
     if !execute {
         print_request(&args, media.as_ref().expect("dry-run media"))?;
         explain_dry_run();
@@ -44,6 +46,8 @@ pub async fn run() -> Result<()> {
         match args.layer {
             Layer::Direct => {
                 let request = ProjectRequest::from_value(build_direct_params(&args, &media))?;
+                // Estimate after upload has resolved the exact direct request;
+                // the returned price is server-authoritative.
                 let estimate = client
                     .projects
                     .estimate_video_cost(&estimate_params(&request.params()))
@@ -117,6 +121,8 @@ async fn watch_workflow(client: &sogni_client::SogniClient, workflow: &Value) ->
         .and_then(Value::as_str)
         .ok_or_else(|| anyhow::anyhow!("workflow response omitted workflowId"))?;
     let mut events = client.workflows.stream_events(id, None, None).await?;
+    // Stop on the public terminal status rather than assuming an event name is
+    // terminal; callers can reconnect to the durable stream if interrupted.
     while let Some(event) = events.next().await {
         let event = event?;
         println!(

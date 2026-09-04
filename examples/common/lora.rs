@@ -8,6 +8,10 @@ pub struct LoraSetting {
     pub strength: f64,
 }
 
+/// Parse an ordered `id:strength` list while preserving positional stack semantics.
+///
+/// Duplicate ids, non-finite strengths, empty stacks, and stacks over eight are
+/// rejected before a paid request can be submitted.
 pub fn parse_stack(specification: &str, normalize_krea_prefix: bool) -> Result<Vec<LoraSetting>> {
     let mut seen = HashSet::new();
     let mut settings = Vec::new();
@@ -55,6 +59,7 @@ pub fn describe(settings: &[LoraSetting]) -> String {
         .join(" -> ")
 }
 
+/// Return every ordering of a small stack; intended for controlled LoRA comparisons.
 pub fn permutations<T: Clone>(items: &[T]) -> Vec<Vec<T>> {
     if items.len() <= 1 {
         return vec![items.to_vec()];

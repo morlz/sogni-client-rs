@@ -26,6 +26,8 @@ fn build(args: &Args, probed: &Probed) -> Result<(ProjectRequest, i64)> {
     } else {
         prompt
     };
+    // Send the snapped duration, not a raw frames override; the SDK resolves it
+    // back onto the same H3 grid while the local frame count drives estimation.
     let mut request = ProjectRequest::video(spec.id, prompt)
         .network(Network::Fast)
         .dimensions(width, height)
@@ -63,6 +65,8 @@ fn build(args: &Args, probed: &Probed) -> Result<(ProjectRequest, i64)> {
             }
         }
         Mode::R2v => {
+            // The first still occupies the primary image slot. Additional stills
+            // become ordered context slots; video/audio references stay one-based.
             for (index, path) in args.ref_images.iter().enumerate() {
                 request = request.asset(
                     if index == 0 {
@@ -110,6 +114,8 @@ pub async fn run() -> Result<()> {
     validate_shape(&args)?;
     let mode = resolved_mode(&args)?;
     let execute = execution_requested(args.execute, args.dry_run)?;
+    // Dry runs preserve request shape without opening media. Live R2V probes
+    // duration, frame rate, and soundtrack presence before upload or estimation.
     let probed = if execute {
         validate_live_mode(&args)?;
         probe(&args)?
@@ -142,6 +148,8 @@ pub async fn run() -> Result<()> {
             .expect("model")
             .to_owned();
         require_model(&client.projects, &id).await?;
+        // Reference counts and measured video duration materially affect cost,
+        // so estimate only after live probing has resolved them.
         let quote = client
             .projects
             .estimate_video_cost(&estimate(&request.params(), frames, &args, &probed))

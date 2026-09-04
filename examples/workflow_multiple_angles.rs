@@ -1,6 +1,26 @@
-mod common;
+//! Generate a controlled camera view with the Multiple Angles LoRA.
+//!
+//! Eight azimuths, four elevations, and three distances form 96 camera-pose
+//! combinations. The required `<sks>` activation token is placed first, followed
+//! by the selected camera terms and an optional subject anchor. One context image
+//! occupies slot 1; the LoRA id and strength remain a positional pair. Both the
+//! fast and quality Qwen edit profiles retain their own steps/guidance defaults.
+//!
+//! `--help` is credential-free. Dry runs still validate/read the reference image
+//! but do not connect. A paid render requires credentials, `--execute`, and cost
+//! confirmation unless `--yes` is passed; the generated prompt is printed and
+//! JPEG results are downloaded to `examples/output` by default.
+//!
+//! ```text
+//! cargo run --example workflow_multiple_angles -- --help
+//! cargo run --example workflow_multiple_angles -- --context subject.jpg --azimuth back --elevation eye-level --distance medium --dry-run
+//! cargo run --example workflow_multiple_angles -- "woman in a red coat" --context subject.jpg --model qwen-lightning --execute
+//! cargo run --example workflow_multiple_angles -- --context subject.jpg --azimuth front-right --elevation low-angle --distance close-up --execute --yes
+//! ```
 
-use std::path::PathBuf;
+mod common;
+#[path = "workflow_multiple_angles/config.rs"]
+mod config;
 
 use anyhow::{Result, bail};
 use clap::{Parser, ValueEnum};
@@ -17,142 +37,9 @@ use common::{
     models::{edit_model, validate_image_options},
     workflow::{estimate_and_confirm, print_request, require_model, run_image_project},
 };
+use config::{Args, Azimuth, Distance, Elevation, camera_prompt};
 
 const LORA_ID: &str = "multiple_angles";
-
-#[derive(Clone, Copy, Debug, Default, ValueEnum)]
-enum Azimuth {
-    #[default]
-    Front,
-    FrontRight,
-    Right,
-    BackRight,
-    Back,
-    BackLeft,
-    Left,
-    FrontLeft,
-}
-
-#[derive(Clone, Copy, Debug, Default, ValueEnum)]
-enum Elevation {
-    LowAngle,
-    #[default]
-    EyeLevel,
-    Elevated,
-    HighAngle,
-}
-
-#[derive(Clone, Copy, Debug, Default, ValueEnum)]
-enum Distance {
-    CloseUp,
-    #[default]
-    Medium,
-    Wide,
-}
-
-impl Azimuth {
-    const fn prompt(self) -> &'static str {
-        match self {
-            Self::Front => "front view",
-            Self::FrontRight => "front-right quarter view",
-            Self::Right => "right side view",
-            Self::BackRight => "back-right quarter view",
-            Self::Back => "back view",
-            Self::BackLeft => "back-left quarter view",
-            Self::Left => "left side view",
-            Self::FrontLeft => "front-left quarter view",
-        }
-    }
-}
-
-impl Elevation {
-    const fn prompt(self) -> &'static str {
-        match self {
-            Self::LowAngle => "low-angle shot",
-            Self::EyeLevel => "eye-level shot",
-            Self::Elevated => "elevated shot",
-            Self::HighAngle => "high-angle shot",
-        }
-    }
-}
-
-impl Distance {
-    const fn prompt(self) -> &'static str {
-        match self {
-            Self::CloseUp => "close-up",
-            Self::Medium => "medium shot",
-            Self::Wide => "wide shot",
-        }
-    }
-}
-
-#[derive(Debug, Parser)]
-#[command(about = "Generate one of 96 camera poses with the Multiple Angles LoRA")]
-struct Args {
-    #[arg(value_name = "DESCRIPTION")]
-    description: Option<String>,
-    #[arg(long, alias = "image")]
-    context: Option<PathBuf>,
-    #[arg(long)]
-    model: Option<String>,
-    #[arg(long, value_enum)]
-    azimuth: Option<Azimuth>,
-    #[arg(long, value_enum)]
-    elevation: Option<Elevation>,
-    #[arg(long, value_enum)]
-    distance: Option<Distance>,
-    #[arg(long, default_value_t = 0.9)]
-    strength: f64,
-    #[arg(long, alias = "anchor")]
-    anchor: Option<String>,
-    #[arg(long)]
-    guidance: Option<f64>,
-    #[arg(long, default_value_t = 1024)]
-    width: u32,
-    #[arg(long, default_value_t = 1024)]
-    height: u32,
-    #[arg(long, default_value_t = 1)]
-    batch: u32,
-    #[arg(long)]
-    seed: Option<i64>,
-    #[arg(long)]
-    steps: Option<u32>,
-    #[arg(long, default_value = "examples/output")]
-    output: PathBuf,
-    #[arg(long)]
-    disable_safe_content_filter: bool,
-    #[arg(long)]
-    no_interactive: bool,
-    #[arg(long, alias = "billing", value_enum)]
-    billing_mode: Option<BillingMode>,
-    #[arg(long, value_enum)]
-    token_type: Option<TokenType>,
-    #[arg(long)]
-    execute: bool,
-    #[arg(long)]
-    dry_run: bool,
-    #[arg(long)]
-    yes: bool,
-}
-
-fn camera_prompt(
-    azimuth: Azimuth,
-    elevation: Elevation,
-    distance: Distance,
-    anchor: Option<&str>,
-) -> String {
-    let mut prompt = format!(
-        "<sks> {} {} {}",
-        azimuth.prompt(),
-        elevation.prompt(),
-        distance.prompt()
-    );
-    if let Some(anchor) = anchor.filter(|value| !value.trim().is_empty()) {
-        prompt.push(' ');
-        prompt.push_str(anchor.trim());
-    }
-    prompt
-}
 
 struct Render<'a> {
     model_id: &'a str,
@@ -183,6 +70,7 @@ fn request(args: &Args, render: &Render<'_>) -> ProjectRequest {
         .param("outputFormat", "jpg")
         .param("sampler", "euler")
         .param("scheduler", "simple")
+        // LoRA ids and strengths form one positional pair; reordering either changes meaning.
         .param("loras", json!([LORA_ID]))
         .param("loraStrengths", json!([args.strength]))
         .param("disableNSFWFilter", args.disable_safe_content_filter)
@@ -322,22 +210,4 @@ async fn main() -> Result<()> {
     .await;
     let close_result = close(&client).await;
     result.and(close_result)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn prompt_places_activation_keyword_first() {
-        assert_eq!(
-            camera_prompt(
-                Azimuth::Back,
-                Elevation::HighAngle,
-                Distance::CloseUp,
-                Some("red coat")
-            ),
-            "<sks> back view high-angle shot close-up red coat"
-        );
-    }
 }

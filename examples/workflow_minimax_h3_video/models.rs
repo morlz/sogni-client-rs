@@ -13,6 +13,8 @@ pub struct Spec {
 }
 
 pub fn resolved_mode(args: &Args) -> Result<Mode> {
+    // A model selector carries a workflow mode. Infer it when --mode is absent,
+    // but reject a contradictory explicit mode before any media is touched.
     let model_mode = args.model.as_deref().map(infer_mode).transpose()?;
     match (args.mode, model_mode) {
         (Some(requested), Some(actual)) if requested != actual => bail!(
@@ -33,6 +35,8 @@ pub fn spec(args: &Args) -> Result<Spec> {
         .model
         .clone()
         .unwrap_or_else(|| format!("minimax-h3-{}-balanced", model_mode.as_str()));
+    // Friendly selectors are expanded to canonical FL2VA, Ref2VA, or FastVideo
+    // ids; already-canonical ids pass through after their mode is checked.
     let direct = key.contains("-fl2va-") || key.contains("-ref2va-") || key.contains("-fastvideo-");
     let fast_h3 = key.contains("-fasth3-") || key.contains("-fastvideo-");
     if fast_h3 && model_mode == Mode::R2v {
@@ -73,6 +77,8 @@ pub fn spec(args: &Args) -> Result<Spec> {
         } else {
             20
         },
+        // LightX2V FL2VA Turbo intentionally leaves sampler selection to the
+        // compatible recipe; FastH3 and Ref2VA Turbo are fixed to Euler.
         sampler: if turbo && !fast_h3 && model_mode != Mode::R2v {
             None
         } else if turbo || balanced {

@@ -117,6 +117,8 @@ pub async fn resolve_model_defaults(client: &SogniClient, options: &mut ChatSett
 }
 
 fn fill_fallbacks(options: &mut ChatSettings, model: Option<&Value>) {
+    // Caller flags win, then the selected model's advertised thinking/non-thinking
+    // defaults, and only then the portable constants used when discovery fails.
     if options.max_tokens.is_none() {
         options.max_tokens = model
             .and_then(|value| {
@@ -283,6 +285,8 @@ pub async fn stream_response(
         }
     }
     let _visible = filter.finish()?;
+    // Usage, finish reason, cost, and complete tool calls live on the terminal
+    // result, so a clean end-of-chunks without that result is not success.
     let completion = stream
         .final_result()
         .context("stream ended without a terminal completion")?;

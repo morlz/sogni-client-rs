@@ -212,6 +212,8 @@ fn walk_markdown(root: &Path, depth: usize, warnings: &mut Vec<String>) -> Vec<P
         let Ok(kind) = entry.file_type() else {
             continue;
         };
+        // Never traverse symlinks: a workspace context glob must not silently
+        // escape into unrelated or sensitive directories.
         if kind.is_symlink() {
             continue;
         }

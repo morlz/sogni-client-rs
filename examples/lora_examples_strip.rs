@@ -1,3 +1,23 @@
+//! Render a fixed-seed strip that compares one Krea 2 LoRA across strengths.
+//!
+//! The sweep keeps prompt, model, seed, worker, and render settings constant so
+//! the LoRA strength is the intentional variable. `off` is a real baseline:
+//! the LoRA fields are omitted instead of sending a numeric zero. Strengths are
+//! rendered in numeric order and recorded with their URLs, paths, and timings in
+//! `strip.json`; PNG frames are downloaded beside it.
+//!
+//! This diagnostic workflow requires an API key; reliable worker pinning also
+//! requires Premium Spark eligibility, with placement remaining server-authoritative.
+//! `--help` and dry-run request inspection remain credential-free. Live renders
+//! are paid and require `--execute`; review every printed request before opting in.
+//!
+//! ```text
+//! cargo run --example lora_examples_strip -- --help
+//! cargo run --example lora_examples_strip -- --prompt "Editorial portrait" --values=-1,off,1 --dry-run
+//! cargo run --example lora_examples_strip -- --prompt-file prompt.txt --execute
+//! cargo run --example lora_examples_strip -- --lora krea2-amateur --values=-2,-1,off,1,2 --out examples/output/strip --execute
+//! ```
+
 mod common;
 
 use std::{collections::HashSet, env, fs, path::PathBuf, time::Instant};
@@ -119,6 +139,7 @@ fn request(args: &Args, prompt: &str, negative: &str, strength: &Strength) -> Pr
             .param("loras", json!([&args.lora]))
             .param("loraStrengths", json!([value]));
     }
+    // `Off` intentionally omits both fields; it is distinct from a zero-strength entry.
     request
 }
 

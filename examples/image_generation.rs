@@ -1,3 +1,23 @@
+//! Generate one or more images with an explicit Sogni model and request shape.
+//!
+//! The smallest end-to-end image example builds a [`sogni_client::ProjectRequest`],
+//! validates that its model is currently available, obtains a cost estimate,
+//! submits the project, follows progress, and prints its result URLs. Optional
+//! download mode stores the returned media in the selected output directory.
+//! Model ids are service catalog values and may evolve; inspect live availability
+//! rather than treating this example's default as a complete catalog.
+//!
+//! `--help` and dry runs do not load credentials. Paid generation requires
+//! Sogni credentials and the explicit `--execute` flag, followed by confirmation
+//! unless `--yes` is supplied.
+//!
+//! ```text
+//! cargo run --example image_generation -- --help
+//! cargo run --example image_generation -- --prompt "A moonlit greenhouse" --dry-run
+//! cargo run --example image_generation -- --prompt "A moonlit greenhouse" --execute
+//! cargo run --example image_generation -- --count 4 --download --output examples/output/images --execute --yes
+//! ```
+
 mod common;
 
 use std::path::PathBuf;

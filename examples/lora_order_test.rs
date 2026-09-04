@@ -1,3 +1,22 @@
+//! Compare every ordering of a fixed Krea 2 LoRA stack at one seed.
+//!
+//! LoRA ids and strengths are positional arrays, so stack order is part of the
+//! public request semantics and can change the result. This example generates
+//! all permutations while holding prompt, model, seed, worker, and dimensions
+//! constant, prints each request, and downloads one labeled PNG per ordering.
+//!
+//! The comparison requires an API key; reliable worker pinning also requires
+//! Premium Spark eligibility, with placement remaining server-authoritative.
+//! `--help` and dry-run permutation output need no credentials; paid rendering
+//! requires `--execute` and an explicit render-count confirmation, or `--yes`.
+//!
+//! ```text
+//! cargo run --example lora_order_test -- --help
+//! cargo run --example lora_order_test -- --prompt-file prompt.txt --dry-run
+//! cargo run --example lora_order_test -- --prompt-file prompt.txt --loras="krea2-detail-enhancer:3,krea2-amateur:-2" --execute
+//! cargo run --example lora_order_test -- --prompt-file prompt.txt --out examples/output/order --execute --yes
+//! ```
+
 mod common;
 
 use std::{env, path::PathBuf};
@@ -51,6 +70,7 @@ fn default_output() -> PathBuf {
 }
 
 fn request(args: &Args, prompt: &str, stack: &[LoraSetting]) -> ProjectRequest {
+    // Build both arrays from the same ordered slice so ids cannot drift from strengths.
     ProjectRequest::image(&args.model, format!("{prompt} --workers={}", args.worker))
         .number_of_media(1)
         .network(Network::Fast)

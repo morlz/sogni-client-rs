@@ -1,3 +1,25 @@
+//! Edit one or two reference images while preserving a person's or character's
+//! recognizable identity with Krea 2 Identity Edit.
+//!
+//! Reference order is meaningful: the first image is the base scene and the
+//! optional second image supplies additional identity or style context. The
+//! example uploads those numbered context slots, estimates the image project,
+//! waits through reconnect-safe project progress, prints hosted result URLs,
+//! and optionally downloads them. Identity-sensitive work should use this model
+//! family; general multi-subject or in-image-text edits are better served by a
+//! general image-edit workflow.
+//!
+//! `--help` is credential-free. A dry run still validates and reads the supplied
+//! local image paths, but sends nothing. Live generation needs credentials,
+//! `--execute`, and cost confirmation unless `--yes` is supplied.
+//!
+//! ```text
+//! cargo run --example krea_identity_edit -- --help
+//! cargo run --example krea_identity_edit -- examples/test-assets/placeholder.jpg --prompt "Give the subject a red coat" --dry-run
+//! cargo run --example krea_identity_edit -- portrait.jpg --prompt "Place the subject in a studio" --execute
+//! cargo run --example krea_identity_edit -- scene.jpg identity.jpg --prompt "Keep the face and change the lighting" --download --execute --yes
+//! ```
+
 mod common;
 
 use std::path::PathBuf;
@@ -51,6 +73,7 @@ fn build_request(args: &Args) -> ProjectRequest {
         .network(Network::Fast)
         .param("tokenType", "spark");
     for (index, path) in args.reference_images.iter().enumerate() {
+        // Slot order is part of the edit contract: base scene first, extra context second.
         request = request.asset(
             AssetRole::ContextImage(u8::try_from(index + 1).expect("at most two images")),
             MediaSource::Path(path.clone()),
@@ -82,6 +105,7 @@ async fn main() -> Result<()> {
         require_model(&client.projects, "krea2_identity_edit_v1_2").await?;
         estimate_and_confirm(&client.projects, &request, args.yes).await?;
         let project = client.projects.create(request).await?;
+        // Do not impose a client timeout: the server render survives reconnects.
         let urls = common::progress::wait_with_progress(&project).await?;
         for url in &urls {
             println!("{url}");

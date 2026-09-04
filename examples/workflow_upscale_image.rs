@@ -1,3 +1,25 @@
+//! Deterministically upscale an image with RTX VSR Pro while preserving aspect
+//! ratio and respecting the service's image-size contract.
+//!
+//! The workflow needs no creative prompt: the source image is uploaded as the
+//! starting image and a fixed one-step recipe preserves its content, identity,
+//! composition, and colors while increasing resolution. Choose an
+//! integer factor or an exact longest edge; the explicit longest edge wins.
+//! Computed dimensions preserve aspect ratio, align to multiples of eight, keep
+//! both edges at least 512 pixels, and cap the longest edge at 15,360 pixels.
+//!
+//! `--help` is credential-free. Dry runs validate/read the input image and print
+//! the resolved request without connecting. Paid upscaling requires credentials,
+//! `--execute`, and cost confirmation unless `--yes` is passed. PNG output is
+//! downloaded to `examples/output` by default.
+//!
+//! ```text
+//! cargo run --example workflow_upscale_image -- --help
+//! cargo run --example workflow_upscale_image -- --image input.png --scale 2 --dry-run
+//! cargo run --example workflow_upscale_image -- --image input.png --target 4096 --execute
+//! cargo run --example workflow_upscale_image -- --image input.png --scale 4 --output examples/output/upscaled --execute --yes
+//! ```
+
 mod common;
 
 use std::path::PathBuf;
@@ -60,6 +82,7 @@ fn resolve_dimensions(source: (u32, u32), scale: f64) -> Result<(u32, u32)> {
     if !scale.is_finite() || scale <= 1.0 {
         bail!("the upscaled output must be larger than the source");
     }
+    // Clamp before aligning down so neither output edge can cross the service ceiling.
     let scale = scale.min(f64::from(MAX_EDGE) / f64::from(longest));
     let align = |value: f64| (value as u32 / DIMENSION_STEP) * DIMENSION_STEP;
     let output = (
@@ -82,6 +105,7 @@ fn request(
     token: TokenType,
     billing: BillingMode,
 ) -> ProjectRequest {
+    // RTX VSR is a deterministic transform; creative prompt fields stay deliberately empty.
     ProjectRequest::image(MODEL_ID, "")
         .network(Network::Fast)
         .number_of_media(1)
@@ -117,6 +141,7 @@ async fn main() -> Result<()> {
     let image = choose_file(args.image.clone(), "source image", interactive)?;
     let source = image_dimensions(&image)?;
     let longest = source.0.max(source.1);
+    // An exact target is more specific and therefore takes precedence over --scale.
     let scale = args
         .target
         .map(|target| f64::from(target) / f64::from(longest))

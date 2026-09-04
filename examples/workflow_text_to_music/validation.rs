@@ -98,6 +98,8 @@ pub(super) struct ModelSpec {
 }
 
 pub(super) fn model_spec(id: &str) -> Result<ModelSpec> {
+    // Turbo variants deliberately omit CFG guidance. SFT variants retain it and
+    // use their larger validated step/sampler ranges.
     let spec = match id {
         "ace_step_1.5_xl_turbo" => ModelSpec {
             name: "ACE-Step 1.5 XL Turbo",

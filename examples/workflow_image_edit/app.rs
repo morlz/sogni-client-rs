@@ -33,6 +33,7 @@ fn request(config: &Config) -> ProjectRequest {
         request = request.param("stylePrompt", style.as_str());
     }
     for (index, path) in config.contexts.iter().enumerate() {
+        // Context slots preserve CLI order; the first image remains the base reference.
         request = request.asset(
             AssetRole::ContextImage((index + 1) as u8),
             MediaSource::Path(path.clone()),

@@ -41,6 +41,7 @@ fn request(config: &Config) -> ProjectRequest {
             .param("startingImageStrength", config.strength);
     }
     if let Some(lora) = &config.style_lora {
+        // LoRA ids and strengths are parallel positional arrays on the wire.
         request = request
             .param("loras", json!([lora]))
             .param("loraStrengths", json!([config.lora_strength]));
@@ -63,6 +64,7 @@ pub async fn run(args: Args) -> Result<()> {
         estimate_and_confirm(&client.projects, &request, config.yes).await?;
         let prefix = config.filename_prefix();
         let project = client.projects.create(request).await?;
+        // Preview polling is observational; final media comes from project completion.
         let previews = (config.previews > 0).then(|| {
             spawn_preview_downloader(
                 project.clone(),

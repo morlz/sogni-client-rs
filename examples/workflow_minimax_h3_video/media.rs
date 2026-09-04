@@ -35,6 +35,8 @@ pub fn probe(args: &Args) -> Result<Probed> {
         if meta.fps.is_none_or(|fps| (fps - 24.0).abs() > 0.001) {
             bail!("reference video {} must be exactly 24fps", index + 1);
         }
+        // On probe failure, assuming audio avoids binding a standalone voice to
+        // an earlier, uncounted video soundtrack ordinal.
         if has_audio(path).unwrap_or_else(|error| {
             eprintln!(
                 "Warning: {error}; assuming reference video {} has audio.",
@@ -74,6 +76,8 @@ pub fn probe(args: &Args) -> Result<Probed> {
     {
         bail!("reference audios may total at most 15 seconds");
     }
+    // Natural-language prompting is not authority for destructive soundtrack
+    // replacement; callers must choose reuse, reference, or replace explicitly.
     let source_count = soundtracked.len() + args.ref_audios.len();
     if source_count > 0 && args.source_audio_policy.is_none() {
         bail!("source audio is attached; set --source-audio-policy reuse, reference, or replace");
@@ -120,6 +124,8 @@ pub fn reuse_source(args: &Args, probed: &Probed) -> Option<PathBuf> {
         .or_else(|| args.ref_audios.first().cloned())
 }
 pub fn remux_exact(video: &Path, audio: &Path) -> Result<PathBuf> {
+    // Preserve the generated-audio result first. If stream-copy fails, restore
+    // it atomically rather than leaving a partial final deliverable.
     let backup = unique_path(video.with_extension("generated-audio.mp4"));
     fs::rename(video, &backup).with_context(|| format!("preserve {}", video.display()))?;
     let temporary = video.with_extension("remux.part.mp4");

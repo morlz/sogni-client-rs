@@ -9,6 +9,7 @@ repository = "https://github.com/Sogni-AI/sogni-client-rs"
 homepage = "https://www.sogni.ai"
 documentation = "https://docs.rs/sogni-client"
 readme = "README.md"
+publish = ["crates-io"]
 keywords = ["sogni", "generative-ai", "image", "video", "llm"]
 categories = ["api-bindings", "asynchronous", "multimedia"]
 include = [

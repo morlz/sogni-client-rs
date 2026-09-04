@@ -93,6 +93,8 @@ pub(super) fn spec(value: &str) -> Result<Spec> {
         "ltx23-a2v-dev" => "ltx23-22b-fp8_a2v_dev",
         other => other,
     };
+    // The workflow type, not a marketing alias, decides whether an image is
+    // required (S2V/IA2V) or forbidden (A2V).
     let workflow = get_video_workflow_type(id)
         .ok_or_else(|| anyhow::anyhow!("unsupported audio-driven model: {id}"))?;
     if !matches!(workflow, "s2v" | "ia2v" | "a2v") {

@@ -64,6 +64,7 @@ impl BillingMode {
     }
 }
 
+/// Resolve billing from an explicit CLI value, then `SOGNI_BILLING_MODE`, then `auto`.
 pub fn resolve_billing_mode(explicit: Option<BillingMode>) -> Result<BillingMode> {
     Ok(explicit
         .or(BillingMode::from_environment()?)
@@ -156,6 +157,7 @@ pub fn require_confirmation(label: &str, assume_yes: bool) -> Result<()> {
     }
 }
 
+/// Print every available currency estimate and require opt-in before paid work.
 pub fn confirm_estimate(estimate: &CostEstimate, assume_yes: bool) -> Result<()> {
     println!("Estimated cost:");
     println!("  Spark: {}", printable(&estimate.spark));
@@ -167,6 +169,7 @@ pub fn confirm_estimate(estimate: &CostEstimate, assume_yes: bool) -> Result<()>
     require_confirmation("Submit this paid request?", assume_yes)
 }
 
+/// Resolve payment token from CLI, environment, an optional prompt, then Spark.
 pub fn resolve_token_type(explicit: Option<TokenType>, interactive: bool) -> Result<TokenType> {
     if let Some(value) = explicit.or(TokenType::from_environment()?) {
         return Ok(value);
@@ -218,6 +221,7 @@ fn printable(value: &Value) -> String {
         .unwrap_or_else(|| value.to_string())
 }
 
+/// Resolve mutually exclusive inline/file prompt input and reject blank prompts.
 pub fn prompt_text(inline: Option<String>, file: Option<&Path>, fallback: &str) -> Result<String> {
     if inline.is_some() && file.is_some() {
         bail!("prompt text and --prompt-file are mutually exclusive");

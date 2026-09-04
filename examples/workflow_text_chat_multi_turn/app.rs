@@ -162,6 +162,8 @@ async fn conversation_loop(
                 );
             }
             Err(error) => {
+                // Commit a turn only after its terminal completion; otherwise a
+                // retry would include a user message the model never answered.
                 session.history.pop();
                 eprintln!("\n  Error: {error}\n");
             }

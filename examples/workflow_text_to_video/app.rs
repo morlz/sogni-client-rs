@@ -90,6 +90,8 @@ struct Spec {
 }
 
 fn spec(value: &str) -> Result<Spec> {
+    // Resolve aliases first so workflow validation and defaults follow the
+    // canonical model family rather than the spelling chosen on the CLI.
     let model = match value {
         "lightx2v" => "wan_v2.2-14b-fp8_t2v_lightx2v",
         "quality" => "wan_v2.2-14b-fp8_t2v",
@@ -167,6 +169,8 @@ fn build(args: &Args) -> Result<ProjectRequest> {
     if is_wan_model(&config.model) && ![16.0, 32.0].contains(&fps) {
         bail!("WAN 2.2 output FPS must be 16 or 32");
     }
+    // WAN uses 16 generated fps even when output is interpolated to 32; LTX
+    // generates at the requested FPS and follows its own frame grid.
     let frames = args.frames.unwrap_or(calculate_video_frames(
         &config.model,
         args.duration,
@@ -223,6 +227,7 @@ fn build(args: &Args) -> Result<ProjectRequest> {
         request = request.param("seed", value);
     }
     if let Some(path) = &args.identity_audio {
+        // Identity audio is a dedicated conditioning slot, not soundtrack input.
         require_file(path, "identity audio")?;
         request = request
             .asset(
@@ -258,6 +263,7 @@ pub async fn run() -> Result<()> {
             .expect("model")
             .to_owned();
         require_model(&client.projects, &model).await?;
+        // Cost is quoted from the fully resolved request before any paid work.
         let quote = client
             .projects
             .estimate_video_cost(&estimate(&request.params()))

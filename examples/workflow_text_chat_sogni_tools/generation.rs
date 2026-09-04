@@ -220,6 +220,8 @@ async fn finish(
     config: &PipelineConfig,
     extension: &str,
 ) -> Result<GeneratedMedia> {
+    // The estimate/confirmation happens before this submission. Once accepted,
+    // wait for terminal project results before attempting any downloads.
     let project = client.projects.create(request).await?;
     let urls = common::progress::wait_with_progress(&project).await?;
     if urls.is_empty() {
@@ -229,6 +231,7 @@ async fn finish(
         );
     }
     let prefix = format!("{}-{}", kind.label(), common::files::slug(&prompt, 48));
+    // Download every result, not merely the first variation returned by the job.
     let files =
         common::files::download_results(&urls, &config.output_dir, &prefix, extension).await?;
     Ok(GeneratedMedia {

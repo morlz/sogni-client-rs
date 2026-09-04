@@ -26,6 +26,10 @@ pub async fn connect(app_id: impl Into<String>, network: Network) -> Result<Sogn
     connect_with_credentials(app_id, network, credentials).await
 }
 
+/// Authenticate with credentials already selected by the caller.
+///
+/// API keys authenticate during client construction. Username/password uses the
+/// socket-backed account login flow and therefore requires the `wallet` feature.
 pub async fn connect_with_credentials(
     app_id: impl Into<String>,
     network: Network,
@@ -98,6 +102,11 @@ pub async fn close(client: &SogniClient) -> Result<()> {
     client.close().await.context("close Sogni client")
 }
 
+/// Load credentials without logging or returning a debuggable secret value.
+///
+/// Process environment values take precedence over `examples/.env` and `.env`,
+/// and an API key takes precedence over username/password. A terminal may prompt
+/// for missing username/password credentials; non-interactive callers fail.
 pub fn load_credentials() -> Result<Credentials> {
     let dotenv = dotenv_values();
     if let Some(api_key) = credential_value("SOGNI_API_KEY", &dotenv) {
@@ -233,6 +242,7 @@ fn save_credentials(username: &str, password: &str) -> Result<()> {
     Ok(())
 }
 
+/// Make an application id unique enough to keep concurrent example runs separate.
 pub fn unique_app_id(prefix: &str) -> String {
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)

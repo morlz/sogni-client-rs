@@ -96,6 +96,7 @@ pub async fn run() -> Result<()> {
         let project = client_a.projects.create(request).await?;
         let id = project.id();
         println!("Client A created {id}");
+        // Subscribe before creation above, then bound only this local observation wait.
         tokio::time::timeout(Duration::from_secs(args.first_event_timeout), async {
             loop {
                 let event = events
@@ -112,6 +113,7 @@ pub async fn run() -> Result<()> {
         .await
         .context("timed out waiting for the first job event")??;
         let before = project.status();
+        // Closing the transport simulates process loss; it must not cancel server work.
         client_a.close().await?;
         println!(
             "Client A dropped its socket: {before:?} -> {:?}",
@@ -132,6 +134,7 @@ pub async fn run() -> Result<()> {
     };
     let client_b = connect(app_id, Network::Fast).await?;
     let result_b = async {
+        // Reuse the application id so the server can reconcile this client's projects.
         let sync = client_b.projects.sync("resume-example").await?;
         println!("Recovery sync: {}", serde_json::to_string_pretty(&sync)?);
         let tracked = client_b
@@ -143,6 +146,7 @@ pub async fn run() -> Result<()> {
         if !tracked.snapshot().recovered {
             bail!("rehydrated project is not marked recovered");
         }
+        // A local timeout does not make the durable project terminal or lost.
         let urls = tokio::time::timeout(
             Duration::from_secs(args.completion_timeout),
             wait_with_progress(&tracked),

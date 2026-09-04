@@ -6,11 +6,13 @@ use sogni_client::{CostEstimate, Project, ProjectRequest, ProjectsApi};
 
 use super::{cli::confirm_estimate, files::download_results, progress::wait_with_progress};
 
+/// Print the public request parameters used by credential-free dry runs.
 pub fn print_request(request: &ProjectRequest) -> Result<()> {
     println!("{}", serde_json::to_string_pretty(&request.params())?);
     Ok(())
 }
 
+/// Wait briefly for the dynamic catalog and reject an unavailable model id.
 pub async fn require_model(projects: &ProjectsApi, model_id: &str) -> Result<Value> {
     projects
         .wait_for_models(Duration::from_secs(15))
@@ -68,6 +70,7 @@ pub async fn estimate_image(
     projects.estimate_cost(&estimate).await.map_err(Into::into)
 }
 
+/// Estimate an image request and obtain explicit consent before submission.
 pub async fn estimate_and_confirm(
     projects: &ProjectsApi,
     request: &ProjectRequest,
@@ -78,6 +81,10 @@ pub async fn estimate_and_confirm(
     Ok(estimate)
 }
 
+/// Submit, observe, and download an image project without imposing a local timeout.
+///
+/// Sogni projects are server-side work: an arbitrary client timeout would not
+/// cancel the render and could misreport a reconnectable project as abandoned.
 pub async fn run_image_project(
     projects: &ProjectsApi,
     request: ProjectRequest,

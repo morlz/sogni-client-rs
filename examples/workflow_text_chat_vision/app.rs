@@ -152,6 +152,8 @@ async fn chat_loop(
                 );
             }
             Err(error) => {
+                // Keep the multimodal transcript pairwise: failed user/image
+                // messages must not leak into the next request as answered turns.
                 session.history.pop();
                 eprintln!("\nError: {error}\n");
             }

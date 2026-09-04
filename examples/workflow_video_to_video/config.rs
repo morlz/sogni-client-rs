@@ -124,6 +124,8 @@ pub struct Spec {
 }
 
 pub fn spec(value: &str) -> Result<Spec> {
+    // Canonical ids distinguish LTX control workflows from WAN Animate; that
+    // distinction determines media requirements and the request wire shape.
     let id = match value {
         "ltx25-v2v-distilled" => "ltx25-22b-int8_v2v_distilled",
         "ltx25-v2v-dev" => "ltx25-22b-int8_v2v_dev",

@@ -66,6 +66,7 @@ fn build(
     if width < 480 || height < 480 {
         bail!("width and height must be at least 480");
     }
+    // An explicit duration wins; otherwise a live run follows the source audio.
     let duration = args.duration.or(detected_duration).unwrap_or(10.0);
     let fps = args.fps.unwrap_or(config.fps);
     if is_wan_model(&config.id) && ![16.0, 32.0].contains(&fps) {
@@ -74,6 +75,8 @@ fn build(
     if is_ltx_model(&config.id) && !(1.0..=60.0).contains(&fps) {
         bail!("LTX FPS must be 1 through 60");
     }
+    // WAN remains tied to 16 generated fps even for interpolated 32 fps output;
+    // LTX uses the requested rate and its native frame-step constraint.
     let frames = args.frames.unwrap_or(calculate_video_frames(
         &config.id,
         duration,
@@ -152,6 +155,8 @@ fn prepare_audio(path: &Path) -> Result<PreparedAudio> {
             temporary: false,
         });
     }
+    // Current video workers consume the driving track as M4A. Convert before
+    // upload and let PreparedAudio remove only the temporary derivative.
     let output = std::env::temp_dir().join(format!("sogni-s2v-{}.m4a", new_id()));
     let result = Command::new("ffmpeg")
         .args(["-y", "-hide_banner", "-loglevel", "error", "-i"])
@@ -189,6 +194,7 @@ pub async fn run() -> Result<()> {
     let args = Args::parse();
     let input = args.audio.as_ref().expect("required audio");
     let execute = execution_requested(args.execute, args.dry_run)?;
+    // Dry-run request construction never probes or reads the named local file.
     let duration = if execute {
         require_file(input, "audio")?;
         Some(media_duration(input))
@@ -213,6 +219,7 @@ pub async fn run() -> Result<()> {
             .expect("model")
             .to_owned();
         require_model(&client.projects, &id).await?;
+        // Estimate the exact post-conversion request before project creation.
         let quote = client
             .projects
             .estimate_video_cost(&estimate(&request.params()))

@@ -197,6 +197,8 @@ pub fn validate(args: &Args) -> Result<()> {
     if args.task_type == TaskType::Reference && counts.iter().sum::<usize>() == 0 {
         bail!("reference requires at least one loose image, video, or audio reference");
     }
+    // Edit and extend express a relationship to @Video1; loose references alone
+    // cannot silently change either operation into reference generation.
     if matches!(args.task_type, TaskType::Edit | TaskType::Extend) && args.videos.is_empty() {
         bail!(
             "{} requires at least one source video as @Video1",
@@ -206,6 +208,7 @@ pub fn validate(args: &Args) -> Result<()> {
     if args.layer == Layer::Direct && args.task_type == TaskType::Edit && args.duration.is_none() {
         bail!("Direct edit requires --duration set to @Video1's source duration");
     }
+    // The 2.5 task discriminator is not part of the legacy 2.0 wire contract.
     if !config.supports_task_type && args.task_type != TaskType::Reference {
         bail!(
             "{} is exposed by this example only for Seedance 2.5",

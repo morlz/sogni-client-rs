@@ -181,6 +181,8 @@ fn build(args: &Args) -> Result<ProjectRequest> {
     if is_wan_model(&config.id) && ![16.0, 32.0].contains(&fps) {
         bail!("WAN FPS must be 16 or 32");
     }
+    // WAN calculates inference frames at its fixed internal rate; LTX uses the
+    // requested FPS. The shared helper also applies each family's frame grid.
     let frames = args.frames.unwrap_or(calculate_video_frames(
         &config.id,
         args.duration,
@@ -188,6 +190,8 @@ fn build(args: &Args) -> Result<ProjectRequest> {
         Some(config.min_frames),
         Some(config.max_frames),
     )?);
+    // The transition adapter is activated by both its LoRA and this trigger;
+    // preserve a caller-supplied trigger instead of duplicating it.
     let prompt = if args.transition && !args.prompt.to_ascii_lowercase().contains("zhuanchang") {
         format!("{} zhuanchang", args.prompt)
     } else {
@@ -236,12 +240,14 @@ fn build(args: &Args) -> Result<ProjectRequest> {
         request = request.param("stylePrompt", value.clone());
     }
     if let Some(path) = &args.end_image {
+        // End frames use their dedicated slot rather than becoming loose context.
         request = request.asset(
             AssetRole::ReferenceImageEnd,
             MediaSource::Path(path.clone()),
         );
     }
     if args.transition {
+        // LoRA ids and strengths are positional and must remain in lockstep.
         request = request
             .param("loras", json!(["transition"]))
             .param("loraStrengths", json!([args.transition_strength]));
@@ -281,6 +287,8 @@ fn estimate(params: &Value) -> Value {
 pub async fn run() -> Result<()> {
     let args = Args::parse();
     let request = build(&args)?;
+    // Building and printing a request is intentionally credential-free. Media
+    // existence, model availability, upload, and billing are live-only checks.
     if !execution_requested(args.execute, args.dry_run)? {
         print_request(&request)?;
         explain_dry_run();

@@ -154,6 +154,7 @@ async fn generate(
     State(state): State<AppState>,
     Json(input): Json<GenerateInput>,
 ) -> Result<Json<GenerateOutput>, ApiError> {
+    // This is a UX confirmation, not an authorization boundary; deployments need auth.
     if !input.confirmed {
         return Err(ApiError(
             StatusCode::PRECONDITION_REQUIRED,
@@ -161,6 +162,7 @@ async fn generate(
         ));
     }
     let request = project_request(&state, &input)?;
+    // Refuse excess paid work instead of building an unbounded in-memory queue.
     let _permit = state
         .permits
         .clone()

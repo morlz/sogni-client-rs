@@ -1,3 +1,24 @@
+//! Render an ordered stack of up to eight bipolar Krea 2 LoRAs.
+//!
+//! Each `id:strength` entry becomes a pair of positional `loras` and
+//! `loraStrengths` arrays. Positive and negative strengths can push an effect in
+//! opposite directions, `0` is an explicit neutral value, and order remains
+//! significant. `--reverse` renders the same prompt and seed with reversed stack
+//! order for a controlled comparison. The example validates stack count, unique
+//! ids, and finite strengths, estimates every paid render, and downloads PNGs.
+//! Valid and recommended strength bands differ by LoRA; the service catalog and
+//! server validation remain authoritative.
+//!
+//! `--help` and dry-run request inspection need no credentials. Live generation
+//! requires credentials, `--execute`, and confirmation unless `--yes` is used.
+//!
+//! ```text
+//! cargo run --example workflow_krea2_lora_stack -- --help
+//! cargo run --example workflow_krea2_lora_stack -- "Editorial portrait at dusk" --dry-run
+//! cargo run --example workflow_krea2_lora_stack -- "Editorial portrait" --loras="krea2-detail-enhancer:3,krea2-amateur:-2" --execute
+//! cargo run --example workflow_krea2_lora_stack -- "Editorial portrait" --reverse --execute --yes
+//! ```
+
 mod common;
 
 use std::path::PathBuf;
@@ -53,6 +74,7 @@ struct Args {
 }
 
 fn request(args: &Args, prompt: &str, seed: i64, stack: &[LoraSetting]) -> ProjectRequest {
+    // Derive paired positional arrays together; order is an intentional model input.
     ProjectRequest::image(&args.model, prompt)
         .number_of_media(1)
         .network(Network::Fast)
@@ -111,6 +133,7 @@ async fn main() -> Result<()> {
     let seed = args.seed.unwrap_or_else(|| rand::random::<u32>() as i64);
     let mut variants = vec![("stack", stack.clone())];
     if args.reverse {
+        // Keep the seed and strengths fixed so only stack order changes.
         variants.push(("reversed", stack.iter().cloned().rev().collect()));
     }
     for (label, stack) in &variants {

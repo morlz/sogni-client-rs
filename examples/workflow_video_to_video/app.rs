@@ -67,6 +67,8 @@ fn build(
     if !(0.0..=1.0).contains(&args.strength) {
         bail!("strength must be 0 through 1");
     }
+    // Source metadata supplies defaults only. Explicit CLI dimensions, duration,
+    // and FPS remain authoritative, then dimensions are aligned to the grid.
     let metadata = metadata.unwrap_or_default();
     let width = args.width.or(metadata.width).unwrap_or(config.width) / config.grid * config.grid;
     let height =
@@ -77,6 +79,8 @@ fn build(
         bail!("WAN FPS must be 16 or 32");
     }
     let duration = args.duration.or(metadata.duration_seconds).unwrap_or(4.0);
+    // Family-aware frame math preserves WAN interpolation and LTX generation
+    // semantics instead of treating output FPS uniformly.
     let frames = args.frames.unwrap_or(calculate_video_frames(
         &config.id,
         duration,
@@ -125,6 +129,8 @@ fn build(
         request = request.asset(AssetRole::ReferenceImage, MediaSource::Path(path.clone()));
     }
     if config.control {
+        // LTX control data is structured; masks and outpaint anchors are attached
+        // only to the control modes that consume them.
         request = request.param(
             "controlNet",
             json!({"name":args.control.as_str(),"strength":args.strength}),
@@ -176,6 +182,7 @@ fn inputs(args: &Args) -> Result<crate::common::files::MediaMetadata> {
     if let Some(v) = &args.identity_audio {
         require_file(v, "identity audio")?;
     }
+    // Probing improves defaults but is not fatal when callers provide overrides.
     match ffprobe(video) {
         Ok(v) => Ok(v),
         Err(error) => {
@@ -207,6 +214,8 @@ pub async fn run() -> Result<()> {
             .expect("model")
             .to_owned();
         require_model(&client.projects, &id).await?;
+        // Quote after metadata resolution so dimensions, duration, and frames
+        // match the request that will actually be submitted.
         let quote = client
             .projects
             .estimate_video_cost(&estimate(&request.params()))

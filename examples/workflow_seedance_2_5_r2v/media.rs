@@ -28,6 +28,8 @@ async fn resolve_kind(
 ) -> Result<Vec<String>> {
     let mut urls = Vec::with_capacity(inputs.len());
     for (index, input) in inputs.iter().enumerate() {
+        // Workflows require durable HTTPS media. Live local paths use the signed
+        // upload flow; dry runs preserve slot order without reading the files.
         if input.starts_with("https://") {
             urls.push(input.clone());
         } else if input.starts_with("http://") || input.starts_with("data:") {

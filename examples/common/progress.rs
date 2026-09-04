@@ -45,6 +45,7 @@ pub fn spawn_api_reporter(projects: ProjectsApi) -> JoinHandle<()> {
     })
 }
 
+/// Await the project's authoritative terminal result while a reporter observes it.
 pub async fn wait_with_progress(project: &Project) -> Result<Vec<String>> {
     let reporter = spawn_project_reporter(project.clone());
     let result = project.wait_for_completion(None).await;

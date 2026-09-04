@@ -117,6 +117,8 @@ pub fn dimensions(args: &Args, spec: &Spec) -> Result<(u32, u32)> {
     Ok((width, height))
 }
 pub fn frames_and_duration(args: &Args) -> Result<(i64, f64)> {
+    // H3 is generated at 24 fps on the 124 + n*17 grid. Convert back from the
+    // snapped frame count so the transmitted duration resolves to the same grid.
     let frames = if let Some(value) = args.frames {
         if !(124..=362).contains(&value) || (value - 124) % 17 != 0 {
             bail!("frames must use the H3 grid 124 + n*17 in 124-362");
@@ -137,6 +139,8 @@ pub fn validate_shape(args: &Args) -> Result<()> {
     if !(1..=512).contains(&args.batch) {
         bail!("batch must be 1 through 512");
     }
+    // Frame anchors and labelled R2V references are different contracts; never
+    // let the two vocabularies share a slot or ambiguous prompt ordinal.
     match mode {
         Mode::T2v if args.image.is_some() || args.end_image.is_some() => {
             bail!("t2v does not accept frame images")

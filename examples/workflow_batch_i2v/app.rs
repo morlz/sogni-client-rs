@@ -88,6 +88,8 @@ struct Spec {
     max: i64,
 }
 fn spec(value: &str) -> Result<Spec> {
+    // Friendly aliases are only shortcuts. Validation and defaults are derived
+    // from the canonical model id so custom catalog ids keep their own family.
     let id = match value {
         "lightx2v" => "wan_v2.2-14b-fp8_i2v_lightx2v",
         "quality" => "wan_v2.2-14b-fp8_i2v",
@@ -182,6 +184,8 @@ fn build(args: &Args, image: &Path, inferred: Option<(u32, u32)>) -> Result<Proj
     if is_wan_model(&config.id) && ![16.0, 32.0].contains(&fps) {
         bail!("WAN FPS must be 16 or 32");
     }
+    // WAN's output FPS can be interpolated, while LTX generates at the requested
+    // FPS. Keep all duration-to-frame behavior in the SDK family-aware helper.
     let frames = args.frames.unwrap_or(calculate_video_frames(
         &config.id,
         args.duration,
@@ -234,6 +238,8 @@ fn estimate(params: &Value) -> Value {
 pub async fn run() -> Result<()> {
     let args = Args::parse();
     let execute = execution_requested(args.execute, args.dry_run)?;
+    // A dry run may describe a batch before the input directory exists; live
+    // execution always enumerates and validates the real files.
     let inputs = if !execute && !args.folder.is_dir() {
         vec![args.folder.join("example.png")]
     } else {
@@ -258,6 +264,8 @@ pub async fn run() -> Result<()> {
             .expect("model")
             .to_owned();
         require_model(&client.projects, &model).await?;
+        // Quote one representative request before asking permission for the
+        // whole sequential batch; billing remains server-authoritative.
         let quote = client
             .projects
             .estimate_video_cost(&estimate(&sample.params()))

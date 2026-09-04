@@ -108,6 +108,8 @@ fn arrays(value: &mut Value, media: &Media) {
     }
 }
 fn primary(value: &mut Value, one: &str, many: &str, urls: &[String]) {
+    // Endpoint schemas give the first reference a singular field; only the
+    // remaining ordered references belong in the plural continuation field.
     if let Some(first) = urls.first() {
         value[one] = json!(first);
         if urls.len() > 1 {
@@ -173,6 +175,8 @@ pub fn workflow(args: &Args, tool_args: &Value) -> Value {
             fields.insert("controlMode".into(), json!("seedance-v2v"));
         }
     }
+    // Workflow indices are modality-local references into this ordered media
+    // list; keep images, videos, and audios grouped deterministically.
     let refs = images
         .iter()
         .map(|u| json!({"kind":"image","url":u}))

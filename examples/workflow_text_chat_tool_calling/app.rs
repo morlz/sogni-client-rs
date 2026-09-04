@@ -143,6 +143,8 @@ async fn run_tool_loop(
             );
             return Ok(());
         }
+        // The assistant tool-call message must precede every matching tool result
+        // in history; providers reject orphaned or reordered tool_call_id values.
         messages.push(json!({
             "role": "assistant",
             "content": if content.is_empty() { Value::Null } else { json!(content) },
@@ -150,6 +152,8 @@ async fn run_tool_loop(
         }));
         println!("Executing {} tool call(s):", result.tool_calls.len());
         for call in &result.tool_calls {
+            // Only this example's explicit custom-tool registry is executable.
+            // Hosted/Sogni tool names are never dispatched by this local loop.
             let output = tools::execute(call).await;
             println!("  {} -> {}", call.function.name, preview(&output, 160));
             messages.push(json!({

@@ -52,6 +52,8 @@ pub async fn run_turn(client: &SogniClient, session: &mut Session, user_text: &s
     } else {
         response::print(&response, elapsed);
     }
+    // Mutate conversation history only after a successful hosted response. This
+    // leaves retries free of a dangling user turn while retaining tool summaries.
     session
         .messages
         .push(json!({"role": "user", "content": user_text}));

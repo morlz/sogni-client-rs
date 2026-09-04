@@ -108,6 +108,7 @@ pub async fn download(url: &str, destination: impl Into<PathBuf>) -> Result<Path
     Ok(destination)
 }
 
+/// Download a result batch in server order with stable one-based file suffixes.
 pub async fn download_results(
     urls: &[String],
     output_dir: &Path,
@@ -125,6 +126,7 @@ pub async fn download_results(
     Ok(paths)
 }
 
+/// Read image dimensions from the file contents rather than trusting its extension.
 pub fn image_dimensions(path: &Path) -> Result<(u32, u32)> {
     image::ImageReader::open(path)
         .with_context(|| format!("open image {}", path.display()))?
@@ -190,6 +192,7 @@ fn parse_ratio(value: &str) -> Option<f64> {
     (denominator != 0.0).then_some(numerator / denominator)
 }
 
+/// Produce a bounded ASCII filename component from user-controlled text.
 pub fn slug(value: &str, maximum: usize) -> String {
     let mut output = String::with_capacity(value.len().min(maximum));
     let mut separator = false;

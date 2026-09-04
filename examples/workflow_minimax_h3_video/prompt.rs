@@ -24,6 +24,8 @@ fn with_alignment(value: &str, args: &Args, mode: Mode, duration: f64) -> String
     let Some(line) = alignment_line(args, mode, duration) else {
         return value.to_owned();
     };
+    // Preserve a caller-authored body byte-for-byte and prepend only the exact
+    // required line when it is absent.
     if value.starts_with(&line) {
         value.to_owned()
     } else {
@@ -63,6 +65,8 @@ fn r2v(args: &Args, soundtracked: &[usize]) -> String {
         .collect::<Vec<_>>()
         .join("\n");
     let videos=(1..=args.ref_videos.len()).map(|n|format!("<Video {n}> defines camera movement, blocking, and temporal rhythm; soundtrack present: {}.",soundtracked.contains(&n))).collect::<Vec<_>>().join("\n");
+    // Video soundtracks are presented before standalone clips, so their count
+    // shifts every following <Audio N> ordinal.
     let audios = (1..=args.ref_audios.len() + soundtracked.len())
         .map(|n| format!("<Audio {n}> has source-audio policy {policy}."))
         .collect::<Vec<_>>()
@@ -98,6 +102,8 @@ fn review(value: &str, mode: Mode) -> Result<String> {
         ]
         .as_slice()
     };
+    // Section review is advisory: arbitrary caller prompts remain valid input,
+    // but ordering mistakes are called out because they reduce H3 prompt quality.
     let mut previous = 0;
     for section in required {
         if let Some(index) = value.find(section) {

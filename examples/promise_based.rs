@@ -1,3 +1,22 @@
+//! Submit an image project, await its terminal result, and download every image.
+//!
+//! This example presents the future/promise-style alternative to explicit event
+//! handling. It discovers a currently staffed image model, estimates the batch,
+//! creates one project, reports progress while awaiting completion, and saves
+//! the returned media. Model discovery is dynamic, so no static model choice is
+//! assumed to be permanently available.
+//!
+//! `--help` and dry-run request rendering need no credentials. Live generation
+//! requires Sogni credentials and `--execute`, with cost confirmation unless
+//! `--yes` is passed. Downloads are written to `images/` by default.
+//!
+//! ```text
+//! cargo run --example promise_based -- --help
+//! cargo run --example promise_based -- --prompt "A paper city at blue hour" --count 2 --dry-run
+//! cargo run --example promise_based -- --prompt "A paper city at blue hour" --execute
+//! cargo run --example promise_based -- --count 4 --output examples/output/promise --execute --yes
+//! ```
+
 mod common;
 
 use std::{path::PathBuf, time::Duration};
