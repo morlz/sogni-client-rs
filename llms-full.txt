@@ -1,0 +1,173 @@
+# sogni-client Rust SDK complete agent reference
+
+Version: 5.27.1 contract compatibility. Crate path: `sogni_client`.
+Async runtime: Tokio. All public network methods return
+`sogni_client::Result<T>`.
+
+## Construction and authentication
+
+`SogniClient::builder()` returns `ClientBuilder`.
+
+Builder methods: `app_id`, `app_source`, `attribution`, `network`, `api_key`,
+`tokens`, `cookie_auth`, `rest_endpoint`, `socket_endpoint`, `disable_socket`,
+`testnet`, `request_timeout`, `connect_timeout`,
+`socket_event_subscription`, and async `build`.
+
+Default REST endpoint: `https://api.sogni.ai`.
+Default socket endpoint: `wss://socket.sogni.ai`.
+Networks: `Network::Fast`, `Network::Relaxed`.
+
+API-key authentication starts automatically. Token authentication accepts the
+Authorization value and refresh token; JWT expiry drives refresh through
+`/v1/account/refresh-token`. `check_auth` is only for cookie-auth flows.
+Username/password authentication requires the default `wallet` feature and is
+available through `account.login` or `account.create_account`.
+
+## AccountApi
+
+Methods: `get_nonce`, `login`, `login_with_options`, `create_account`, `logout`,
+`me`, `account_balance`, `refresh_balance`, `wallet_balance`,
+`validate_username`, `switch_network`, `transaction_history`, `rewards`,
+`claim_rewards`, `withdraw`, `deposit`, `approve_token_usage`,
+`get_subscription_status`, `get_subscription_usage`, `get_trial_eligibility`,
+`set_device_id`, `get_subscription_plans`, `create_subscription_checkout`, and
+`create_subscription_portal_session`.
+
+`current_account()` returns a cheap cloneable handle. `snapshot()` is the raw
+serializable state. Convenience getters expose username, email, wallet,
+balance, subscription, free-Spark lock state, network, and unlimited
+entitlement. Versioned socket subscription events remain authoritative over
+older in-flight REST refreshes. `subscribe()` emits updates.
+
+## ProjectsApi
+
+Construct requests with `ProjectRequest::image`, `video`, or `audio`. All set
+`type`, `modelId`, `positivePrompt`, and default `numberOfMedia=1`. Builder
+methods: `param`, `number_of_media`, `steps`, `guidance`, `dimensions`,
+`duration`, `fps`, `network`, `asset`, and `attribution`.
+
+`MediaSource::Path` performs async file I/O. `MediaSource::bytes` and
+`named_bytes` accept memory. `AssetRole` includes starting/control/context
+images and video/audio/mask roles. `ReferenceAudioSlot(1..=3)` and
+`ReferenceVideoSlot(1..=3)` map MiniMax H3 r2v's numbered, contiguous media
+slots. Adding any asset enables its matching wire flag. `Custom` carries a
+forward-compatible wire name and whether the media endpoint is required.
+
+`projects.create(request)` uploads assets, submits `jobRequest`, and returns a
+cloneable `Project`. `Project` methods: `id`, `status`, `jobs`, `progress`,
+`result_urls`, `snapshot`, `subscribe`, `wait_for_completion`, `cancel`.
+`Job` methods: `snapshot`, `id`, `status`, `progress`, `result_url`,
+`is_withheld`, `has_result_media`, `subscribe`, `get_result_url`,
+`get_result_data`, `enhance`, and `enhancement_project`.
+
+Safety semantics: `is_nsfw && !nsfw_detected` means media was withheld. A
+completed result with `nsfw_detected=true` was labeled but delivered.
+
+Discovery/metadata: `wait_for_models`, `get_supported_models`,
+`get_model_options`, `get_size_presets`, `get_available_models`,
+`get_video_asset_config`, `available_loras`, `get_lora`, `supports_loras`,
+`lora_constraints`.
+
+Costs: `estimate_cost` (image), `estimate_video_cost`, `estimate_audio_cost`,
+`estimate_enhancement_cost`, and low-level forward-compatible `estimate`.
+
+URLs/uploads: v1 `upload_url`, `download_url`, `media_upload_url`,
+`media_download_url`; v2 `image_upload_post`, `media_upload_post`, and
+`upload_presigned`.
+
+Recovery: `sync(reason)` fetches the app-scoped durable snapshot and replays
+media project state. `list_projects_elsewhere` is read-only. The SDK invokes
+recovery after socket authentication and after an internal receiver lag.
+
+## Video frame behavior
+
+Call `calculate_video_frames(model_id, duration, fps, min, max)`.
+
+- WAN 2.2: generation is fixed at 16 FPS; output FPS may represent later
+  interpolation. Frames = rounded(duration * 16) + 1.
+- LTX families: generate at requested FPS, then snap to `1 + n*8`.
+- MiniMax H3: fixed 24 FPS and `124 + n*17`, clamped to supported limits.
+- Other video families: rounded(duration * fps) + 1.
+
+Project creation performs local preflight validation for the current MiniMax
+H3, Wan 3, Seedance, and HappyHorse asset/task/duration contracts before any
+generation request is submitted.
+
+Use runtime model metadata where possible. Model IDs in docs are illustrative.
+
+## ChatApi
+
+Socket-native non-streaming:
+
+```rust
+let result = client.chat.create_completion(&serde_json::json!({
+  "model": model_id,
+  "messages": [{"role": "user", "content": "Hello"}],
+  "think": false
+})).await?;
+```
+
+Socket-native streaming returns `ChatStream`, which implements
+`futures_util::Stream<Item = Result<ChatChunk>>`. `wait(timeout)` returns the
+assembled completion; `final_result()` is available after stream closure.
+Tool-call argument fragments are assembled by index.
+
+Supported completion wire options include maxTokens/max_tokens, temperature,
+topP/top_p, topK/top_k, minP/min_p, repetition/frequency/presence penalties,
+stop, tokenType, billingMode, tools, toolChoice/tool_choice, sogniTools,
+sogniToolExecution, taskProfile, responseFormat, safeContentFilter, `think`, and
+workload attribution.
+
+`think` maps to `chat_template_kwargs.enable_thinking`. For structured output,
+prefer function tools plus required tool choice. Helpers:
+`is_sogni_tool_call` and `parse_tool_call_arguments`.
+
+Hosted REST: `create_hosted_completion`. Direct synchronous hosted tools:
+`execute_hosted_tool`. The hosted tool manifest has 25 version-pinned entries;
+read through `HostedTools` rather than copying schemas.
+
+Durable chat: `create_run`, `get_run`, `cancel_run`, `confirm_run_cost`, and
+`stream_run_events`. `Idempotency-Key` and workload attribution are propagated.
+SSE resume uses `Last-Event-ID`.
+
+## CreativeWorkflowsApi
+
+`WorkflowStart` accepts exactly one of inline `input` or saved `workflow_id`.
+Other fields: `inputs`, `token_type`, `billing_mode`, `app_source`,
+`max_estimated_capacity_units`, `confirm_cost`, `media_references`,
+`idempotency_key`, and attribution.
+
+Methods: `start`, `list`, `get`, `events`, `stream_events`, `confirm_cost`,
+`resume`, `reseed`, `cancel`. Terminal statuses include `completed`, `failed`,
+`cancelled`, and `partial_failure`. Waiting reasons are exposed through
+`CREATIVE_WORKFLOW_WAITING_REASONS`.
+
+Templates: `workflows.templates.list/get/create/update/delete/fork`.
+
+## Other namespaces
+
+- `ReplayApi`: `write`, `list`, `get`.
+- `StatsApi`: `leaderboard`.
+- `AnnouncementsApi`: `active`, `dismiss`. Subscribe to `appAlert` at client
+  construction when live app alerts are desired.
+
+## Transport, lifecycle, and errors
+
+The shared reqwest client pools HTTP connections, stores cookies, follows a
+bounded redirect policy, uses Rustls/native roots, and applies request/connect
+timeouts. The WebSocket sends JSON envelopes with a base64-encoded JSON `data`
+field, normalizes `jobID`/`imgID` to uppercase, pings periodically, and applies
+capped jittered exponential reconnect delay.
+
+SSE APIs return `SseStream`; each `SseEvent` includes event, parsed data, id,
+and raw frame. Consumers own endpoint-specific terminal handling and reconnect
+policy.
+
+Error variants: `Api`, `Project`, `Chat`, `InvalidInput`, `Protocol`,
+`Transport`, `Timeout`, `Closed`, `Json`, `Url`, `Http`, `Io`.
+`is_subscription_limit_error` recognizes the stable public subscription error
+contract.
+
+Never embed secrets. Credential `Debug` output is redacted. Keep one client
+alive, explicitly `close()` it during shutdown, and never interpret a local
+timeout as server cancellation.

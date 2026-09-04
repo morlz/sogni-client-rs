@@ -1,0 +1,73 @@
+# sogni-client Rust SDK 5.27.1
+
+Async Rust client for Sogni Supernet generation and Sogni Intelligence.
+Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.85.
+
+Primary documentation: README.md and https://docs.sogni.ai/
+
+## Client
+
+```rust
+let client = sogni_client::SogniClient::builder()
+    .app_id("stable-unique-app-id")
+    .app_source("my-service")
+    .api_key(std::env::var("SOGNI_API_KEY")?)
+    .build().await?;
+```
+
+Reuse one client. Call `close().await` during graceful shutdown.
+
+Namespaces:
+
+- `account`: auth, balances, rewards, wallet, subscriptions
+- `projects`: generation, uploads, models, estimates, LoRAs, recovery
+- `chat`: socket completion/stream, hosted completion/tools, durable runs
+- `workflows`: durable workflows and `workflows.templates`
+- `replay`: RunRecord write/list/get
+- `stats`: leaderboard
+- `announcements`: active/dismiss
+
+## Generation
+
+```rust
+let project = client.projects.create(
+    sogni_client::ProjectRequest::image("flux1-schnell-fp8", "A lighthouse")
+        .steps(4).guidance(1.0).dimensions(1024, 1024)
+).await?;
+let urls = project.wait_for_completion(None).await?;
+```
+
+Use `.param("wireName", serde_json::json!(value))` for any forward-compatible
+project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
+
+LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
+`1 + n*8`. WAN 2.2 generates internally at 16 FPS. Use
+`calculate_video_frames()` instead of duplicating this behavior.
+
+## Chat
+
+- `chat.create_completion(&json)` -> `ChatCompletion`
+- `chat.stream_completion(&json)` -> `ChatStream` (`futures::Stream`)
+- `chat.create_hosted_completion(&json)` -> hosted REST response
+- `chat.execute_hosted_tool(&json)` -> direct hosted tool execution
+- `chat.create_run/get_run/cancel_run/confirm_run_cost/stream_run_events`
+- `chat.tools.get(name)` / `.all()` -> bundled hosted definitions
+
+Vision socket/hosted chat supports PNG/JPEG data URIs, URLs, or local paths.
+Durable runs/workflows require HTTP(S) media URLs.
+
+## Workflows
+
+`workflows.start(WorkflowStart)`, `list`, `get`, `events`, `stream_events`,
+`confirm_cost`, `resume`, `reseed`, `cancel`. Templates: `list`, `get`,
+`create`, `update`, `delete`, `fork`.
+
+## Reliability
+
+The socket reconnects with capped exponential backoff. Project recovery is
+requested after authentication and internal event lag. Broadcast receiver lag
+is explicit. A local wait timeout does not cancel the remote project.
+
+All errors use `sogni_client::Error`. Preserve `ApiError.payload`,
+`ProjectError.payload`, or `ChatError.payload` for structured application logic,
+but do not log credentials or private media URLs.
