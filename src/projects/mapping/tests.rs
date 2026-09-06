@@ -11,6 +11,33 @@ fn fixture() -> Value {
     serde_json::from_str(include_str!("rtx-options-fixture.json")).unwrap()
 }
 
+#[test]
+fn context_edit_capability_is_a_strict_tier_boolean_and_retains_controls() {
+    for capability in [
+        json!(true),
+        json!(false),
+        json!(null),
+        json!("true"),
+        json!(1),
+    ] {
+        let tier = json!({"requiresContextImage":capability,
+            "steps":{"min":4,"max":8,"default":4},
+            "comfySampler":{"allowed":["euler"],"default":"euler"}});
+        let mapped = map_model_options(&tier, "image");
+        assert_eq!(
+            mapped.get("requiresContextImage").and_then(Value::as_bool),
+            capability.as_bool()
+        );
+        assert_eq!(mapped["steps"]["max"], 8);
+        assert_eq!(mapped["sampler"]["allowed"], json!(["euler"]));
+    }
+    assert!(
+        map_model_options(&json!({}), "image")
+            .get("requiresContextImage")
+            .is_none()
+    );
+}
+
 #[tokio::test]
 async fn native_tier_capability_survives_the_public_model_options_path() {
     let captured = fixture();

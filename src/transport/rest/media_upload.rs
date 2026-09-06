@@ -62,8 +62,8 @@ async fn put_once(
         .headers()
         .get(reqwest::header::RETRY_AFTER)
         .and_then(|value| value.to_str().ok())
-        .and_then(|value| value.parse::<u64>().ok());
-    Err(ApiError::new(
+        .and_then(|value| crate::retry_after::seconds(value, chrono::Utc::now()));
+    let mut error = ApiError::new(
         status.as_u16(),
         json!({
             "status": "error",
@@ -71,8 +71,9 @@ async fn put_once(
             "errorCode": 0,
             "retryAfterSeconds": retry_after,
         }),
-    )
-    .into())
+    );
+    error.retry_after_seconds = retry_after;
+    Err(error.into())
 }
 
 fn retryable(error: &Error) -> bool {
@@ -87,11 +88,12 @@ fn retryable(error: &Error) -> bool {
 
 fn retry_delay(error: &Error, attempt: u32) -> Duration {
     if let Error::Api(error) = error {
-        if let Some(seconds) = error
-            .payload
-            .get("retryAfterSeconds")
-            .and_then(Value::as_u64)
-        {
+        if let Some(seconds) = error.retry_after_seconds.or_else(|| {
+            error
+                .payload
+                .get("retryAfterSeconds")
+                .and_then(Value::as_u64)
+        }) {
             return Duration::from_secs(seconds);
         }
     }

@@ -127,6 +127,11 @@ impl RestClient {
 
     pub async fn process_response(&self, response: reqwest::Response) -> Result<Value> {
         let status = response.status();
+        let retry_after = response
+            .headers()
+            .get(reqwest::header::RETRY_AFTER)
+            .and_then(|value| value.to_str().ok())
+            .map(str::to_owned);
         if status == StatusCode::UNAUTHORIZED && self.auth.is_authenticated() {
             self.auth.clear();
         }
@@ -153,7 +158,9 @@ impl RestClient {
                 };
                 json!({"status": "error", "message": message, "errorCode": status.as_u16()})
             });
-            return Err(ApiError::new(status.as_u16(), payload).into());
+            return Err(ApiError::new(status.as_u16(), payload)
+                .with_retry_after(retry_after.as_deref())
+                .into());
         }
         if text.trim().is_empty() {
             return Ok(Value::Null);
@@ -236,6 +243,7 @@ impl RestClient {
                 status.as_u16(),
                 json!({"status": "error", "message": "Failed to upload media", "errorCode": status.as_u16()}),
             )
+            .with_retry_after(response.headers().get(reqwest::header::RETRY_AFTER).and_then(|value| value.to_str().ok()))
             .into())
         }
     }

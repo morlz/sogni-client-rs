@@ -17,6 +17,8 @@ pub struct ApiError {
     pub error_code: Value,
     pub message: String,
     pub payload: Value,
+    /// Parsed server Retry-After advice. Reading it never retries a request.
+    pub retry_after_seconds: Option<u64>,
 }
 
 impl ApiError {
@@ -36,7 +38,15 @@ impl ApiError {
             error_code,
             message,
             payload,
+            retry_after_seconds: None,
         }
+    }
+
+    #[must_use]
+    pub fn with_retry_after(mut self, value: Option<&str>) -> Self {
+        self.retry_after_seconds =
+            value.and_then(|value| crate::retry_after::seconds(value, chrono::Utc::now()));
+        self
     }
 }
 

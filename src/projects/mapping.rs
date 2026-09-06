@@ -46,8 +46,10 @@ pub(super) fn ranged_number(
 pub(super) fn map_model_options(tier: &Value, media_type: &str) -> Value {
     let mut output = Map::new();
     output.insert("type".into(), json!(media_type));
-    if let Some(is_upscale) = tier.get("isUpscale").and_then(Value::as_bool) {
-        output.insert("isUpscale".into(), json!(is_upscale));
+    for field in ["isUpscale", "requiresContextImage"] {
+        if let Some(capability) = tier.get(field).and_then(Value::as_bool) {
+            output.insert(field.into(), json!(capability));
+        }
     }
     for (name, aliases) in [
         ("sampler", sampler_aliases()),
