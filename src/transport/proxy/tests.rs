@@ -6,6 +6,9 @@ use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpListener,
 };
+use tokio_tungstenite::tungstenite::handshake::server::{
+    Callback, ErrorResponse, Request, Response,
+};
 
 use super::*;
 use crate::{
@@ -13,6 +16,20 @@ use crate::{
     auth::AuthManager,
     transport::{ApiClient, HttpClients},
 };
+
+// The callback trait fixes the unboxed error response type for the handshake.
+struct CheckApiKey;
+
+impl Callback for CheckApiKey {
+    fn on_request(
+        self,
+        request: &Request,
+        response: Response,
+    ) -> std::result::Result<Response, ErrorResponse> {
+        assert_eq!(request.headers().get("api-key").unwrap(), "fixture-key");
+        Ok(response)
+    }
+}
 
 #[test]
 fn proxy_validation_and_debug_never_expose_credentials() {
@@ -76,16 +93,9 @@ async fn explicit_proxy_routes_authenticated_rest_media_and_websocket() {
                 .await
                 .unwrap();
             if index == 2 {
-                let mut socket = tokio_tungstenite::accept_hdr_async(
-                    socket,
-                    |request: &tokio_tungstenite::tungstenite::handshake::server::Request,
-                     response| {
-                        assert_eq!(request.headers().get("api-key").unwrap(), "fixture-key");
-                        Ok(response)
-                    },
-                )
-                .await
-                .unwrap();
+                let mut socket = tokio_tungstenite::accept_hdr_async(socket, CheckApiKey)
+                    .await
+                    .unwrap();
                 while let Some(Ok(message)) = socket.next().await {
                     if message.is_text() {
                         assert!(message.into_text().unwrap().contains("fixtureRequest"));

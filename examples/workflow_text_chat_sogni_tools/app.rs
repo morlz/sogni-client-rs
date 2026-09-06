@@ -263,7 +263,7 @@ async fn execute_call(
         spec,
         config,
         quantity,
-        Some(duration).filter(|_| kind != MediaKind::Image),
+        (kind != MediaKind::Image).then_some(duration),
         Some(&aspect),
     )
     .await

@@ -1,0 +1,2 @@
+# Match rustfmt's Unix newline policy on every checkout.
+* text=auto eol=lf
