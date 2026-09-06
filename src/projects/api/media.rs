@@ -1,5 +1,38 @@
 use super::*;
+
+#[cfg(test)]
+#[path = "media/live_probe.rs"]
+mod live_probe;
+
 impl ProjectsApi {
+    /// Upload a guide under caller-reserved UUIDs before project submission.
+    /// Persist the UUIDs first when the source must be verified or recovered.
+    /// Submit afterward with `startingImage=true` and without a duplicate asset.
+    /// This uploads bytes only; it does not create a generation project.
+    pub async fn upload_guide_image(
+        &self,
+        project_id: &str,
+        image_id: &str,
+        source: &MediaSource,
+    ) -> Result<()> {
+        let project_id = super::create::normalize_project_id(project_id)?;
+        let image_id = uuid::Uuid::parse_str(image_id)
+            .map_err(|_| Error::InvalidInput("image id must be a UUID".into()))?
+            .to_string()
+            .to_uppercase();
+        let media = source.read().await?;
+        let query = json!({
+            "imageId": image_id, "jobId": project_id, "type": "startingImage",
+            "contentType": media.content_type,
+        });
+        let upload = self.upload_url(&query).await?;
+        self.inner
+            .client
+            .rest
+            .put_bytes(upload, media.data, media.content_type.as_deref())
+            .await
+    }
+
     pub async fn upload_url(&self, query: &Value) -> Result<Url> {
         response_url(
             self.inner
@@ -94,6 +127,7 @@ impl ProjectsApi {
         project_id: &str,
         assets: &[(AssetRole, MediaSource)],
         request: &mut Value,
+        annotate_video: bool,
     ) -> Result<()> {
         let model_id = request
             .pointer("/keyFrames/0/modelID")
@@ -126,6 +160,11 @@ impl ProjectsApi {
                     "duplicate project asset role {wire_role}"
                 )));
             }
+            if matches!(role, AssetRole::StartingImage) {
+                self.upload_guide_image(project_id, &new_id(), source)
+                    .await?;
+                continue;
+            }
             let media = source.read().await?;
             let query = if role.is_media() {
                 json!({
@@ -151,16 +190,21 @@ impl ProjectsApi {
                 .rest
                 .put_bytes(upload, media.data, media.content_type.as_deref())
                 .await?;
-            if let Some(keyframe) = request.pointer_mut("/keyFrames/0") {
-                if let Some(content_type) = media.content_type {
-                    if matches!(role, AssetRole::ReferenceAudioIdentity) {
-                        keyframe["referenceAudioIdentityContentType"] = json!(content_type);
-                        if keyframe.get("referenceAudioContentType").is_none() {
-                            keyframe["referenceAudioContentType"] = json!(content_type);
-                        }
-                    } else {
-                        keyframe[format!("{wire_role}ContentType")] = json!(content_type);
+            // Image uploads advertise their MIME in the resource registration
+            // and PUT only. The worker payload annotates video assets alone.
+            if let (Some(keyframe), Some(content_type)) = (
+                request
+                    .pointer_mut("/keyFrames/0")
+                    .filter(|_| annotate_video),
+                media.content_type,
+            ) {
+                if matches!(role, AssetRole::ReferenceAudioIdentity) {
+                    keyframe["referenceAudioIdentityContentType"] = json!(content_type);
+                    if keyframe.get("referenceAudioContentType").is_none() {
+                        keyframe["referenceAudioContentType"] = json!(content_type);
                     }
+                } else {
+                    keyframe[format!("{wire_role}ContentType")] = json!(content_type);
                 }
             }
         }

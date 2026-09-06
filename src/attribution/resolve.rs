@@ -53,6 +53,11 @@ impl Attribution {
             replace_some!(parent_operation_id);
         }
         resolved.sanitize();
+        // An absent or invalid attribution must not become attributed traffic
+        // merely because the transport has allocated a request identifier.
+        if resolved.wire_fields().is_empty() {
+            return None;
+        }
         if resolved.operation_id.is_none() {
             resolved.operation_id = fallback_operation_id.and_then(valid_operation_id);
         }
@@ -125,5 +130,80 @@ impl Attribution {
             }
         }
         headers
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{ExecutionMode, WorkloadKind};
+
+    #[test]
+    fn missing_or_empty_attribution_does_not_invent_request_lineage() {
+        let empty = Attribution::default();
+        assert!(empty.resolve_workload(None, Some("request-123")).is_none());
+        assert!(
+            empty
+                .resolve_workload(Some(&WorkloadAttribution::default()), Some("request-123"))
+                .is_none()
+        );
+        let invalid = WorkloadAttribution {
+            operation_id: Some(" ".into()),
+            ..WorkloadAttribution::default()
+        };
+        assert!(
+            empty
+                .resolve_workload(Some(&invalid), Some("request-123"))
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn explicit_workload_metadata_and_lineage_remain_intact() {
+        let defaults = Attribution {
+            workload: Some(WorkloadAttribution {
+                workload_kind: Some(WorkloadKind::Service),
+                execution_mode: Some(ExecutionMode::Server),
+                ..WorkloadAttribution::default()
+            }),
+            ..Attribution::default()
+        };
+        let input = WorkloadAttribution {
+            operation_scope: Some(OperationScope::Child),
+            operation_id: Some("child-123".into()),
+            root_operation_id: Some("root-123".into()),
+            parent_operation_id: Some("parent-123".into()),
+            ..WorkloadAttribution::default()
+        };
+        let actual = defaults
+            .resolve_workload(Some(&input), Some("unused-fallback"))
+            .unwrap();
+        assert_eq!(actual.workload_kind, Some(WorkloadKind::Service));
+        assert_eq!(actual.execution_mode, Some(ExecutionMode::Server));
+        assert_eq!(actual.operation_scope, input.operation_scope);
+        assert_eq!(actual.operation_id, input.operation_id);
+        assert_eq!(actual.root_operation_id, input.root_operation_id);
+        assert_eq!(actual.parent_operation_id, input.parent_operation_id);
+    }
+
+    #[test]
+    fn explicit_framework_without_workload_kind_keeps_metadata_and_lineage() {
+        let input = WorkloadAttribution {
+            agent_framework: Some("fixture-framework".into()),
+            agent_framework_version: Some("1.2.3".into()),
+            ..WorkloadAttribution::default()
+        };
+        let actual = Attribution::default()
+            .resolve_workload(Some(&input), Some("request-123"))
+            .unwrap();
+        assert_eq!(actual.workload_kind, None);
+        assert_eq!(actual.agent_framework, input.agent_framework);
+        assert_eq!(
+            actual.agent_framework_version,
+            input.agent_framework_version
+        );
+        assert_eq!(actual.operation_scope, Some(OperationScope::TopLevel));
+        assert_eq!(actual.operation_id.as_deref(), Some("request-123"));
+        assert_eq!(actual.root_operation_id.as_deref(), Some("request-123"));
     }
 }

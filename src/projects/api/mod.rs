@@ -5,6 +5,7 @@ mod loras;
 mod media;
 mod models;
 mod recovery;
+mod status;
 
 #[derive(Clone)]
 pub struct ProjectsApi {

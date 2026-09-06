@@ -19,8 +19,8 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
                     );
                     if let Some(inner) = weak.upgrade() {
                         let api = ProjectsApi { inner };
-                        if let Err(error) = api.sync("event-lagged").await {
-                            tracing::warn!(%error, "project recovery after event lag failed");
+                        if api.sync("event-lagged").await.is_err() {
+                            tracing::warn!("project recovery after event lag failed");
                         }
                     }
                     continue;
@@ -46,8 +46,8 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
                         inner: inner.clone(),
                     };
                     tokio::spawn(async move {
-                        if let Err(error) = api.sync("authenticated").await {
-                            tracing::warn!(%error, "project recovery failed");
+                        if api.sync("authenticated").await.is_err() {
+                            tracing::warn!("project recovery failed");
                         }
                     });
                 }
@@ -69,8 +69,8 @@ fn handle_swarm_models(inner: &Arc<ProjectsInner>, data: &Value) {
         };
         let supported = match api.get_supported_models(false).await {
             Ok(models) => models,
-            Err(error) => {
-                tracing::warn!(%error, "failed to resolve live model metadata");
+            Err(_) => {
+                tracing::warn!("failed to resolve live model metadata");
                 return;
             }
         };

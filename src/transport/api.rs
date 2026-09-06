@@ -90,6 +90,13 @@ impl ApiClient {
     }
 
     #[must_use]
+    pub fn is_socket_authenticated(&self) -> bool {
+        self.socket
+            .as_ref()
+            .is_some_and(SocketTransport::is_authenticated)
+    }
+
+    #[must_use]
     pub fn subscribe(&self) -> EventReceiver {
         self.events.subscribe()
     }
@@ -198,6 +205,14 @@ impl ApiClient {
         }
         self.auth.clear();
         Ok(())
+    }
+
+    pub fn abort(&self) {
+        self.closed.store(true, Ordering::Release);
+        if let Some(socket) = &self.socket {
+            socket.abort();
+        }
+        self.auth.clear();
     }
 }
 

@@ -91,7 +91,10 @@ impl WorkloadAttribution {
             .parent_operation_id
             .as_deref()
             .and_then(valid_operation_id);
-        if self.workload_kind != Some(WorkloadKind::AgentMediated) {
+        if self
+            .workload_kind
+            .is_some_and(|kind| kind != WorkloadKind::AgentMediated)
+        {
             self.agent_framework = None;
             self.agent_framework_version = None;
         }

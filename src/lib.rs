@@ -39,7 +39,8 @@ pub use projects::{
     ACTIVE_PROJECTS_RECOVERED_EVENT, AssetRole, COMPLETED_PROJECTS_RECOVERED_EVENT, CostEstimate,
     Job, JobSnapshot, JobStatus, MediaSource, ModelOptions, PROJECT_LOST_ORIGINAL_CODE,
     PresignedPost, Project, ProjectRequest, ProjectResolution, ProjectSnapshot, ProjectStatus,
-    ProjectsApi, ResolveMissingOptions, is_project_lost_error, is_project_lost_payload,
+    ProjectSubmissionError, ProjectsApi, ResolveMissingOptions, SubmissionPhase,
+    is_project_lost_error, is_project_lost_payload,
 };
 pub use replay::{ReplayApi, ReplayGetResult, ReplayWriteResult};
 pub use stats::StatsApi;

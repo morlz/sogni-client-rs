@@ -27,6 +27,31 @@ fn builds_image_wire_envelope() {
 }
 
 #[test]
+fn image_to_image_uses_inverse_preservation_strength_and_reserved_identity() {
+    let model = "flux1-schnell-fp8";
+    let request = ProjectRequest::image(model, "preserve the source")
+        .steps(4)
+        .guidance(1.0)
+        .dimensions(1024, 1024)
+        .asset(
+            AssetRole::StartingImage,
+            MediaSource::bytes(Bytes::from_static(b"fixture")),
+        )
+        .param("startingImageStrength", 0.75)
+        .param("numberOfPreviews", 0);
+    let id = "A3F360CB-7F84-4D56-B360-A047E7CFB3CD";
+    let wire = build_job_request(id, &request.params, &options("image"), None).unwrap();
+    assert_eq!(wire["jobID"], id);
+    assert_eq!(wire["keyFrames"][0]["hasStartingImage"], true);
+    assert_eq!(wire["keyFrames"][0]["strength"], 0.25);
+    assert_eq!(wire["keyFrames"][0]["steps"], 4);
+    assert_eq!(wire["keyFrames"][0]["guidanceScale"], 1.0);
+    assert_eq!(wire["keyFrames"][0]["width"], 1024.0);
+    assert_eq!(wire["keyFrames"][0]["height"], 1024.0);
+    assert_eq!(wire["previews"], 0);
+}
+
+#[test]
 fn distinguishes_withheld_from_labeled_media() {
     let mut job = JobSnapshot::pending("I".into(), "P".into(), 1.0);
     job.status = JobStatus::Completed;

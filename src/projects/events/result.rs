@@ -148,6 +148,7 @@ pub(in crate::projects) async fn cancel_project(
     {
         return Ok(());
     }
+    let deadline = tokio::time::Instant::now() + CANCEL_TIMEOUT;
     let mut events = inner.client.subscribe();
     inner
         .client
@@ -161,7 +162,7 @@ pub(in crate::projects) async fn cancel_project(
             }),
         )
         .await?;
-    tokio::time::timeout(CANCEL_TIMEOUT, async {
+    tokio::time::timeout_at(deadline, async {
         loop {
             let event = events.recv().await.map_err(|error| {
                 Error::Transport(format!("cancellation event stream closed: {error}"))
@@ -186,19 +187,38 @@ pub(in crate::projects) async fn cancel_project(
     })
     .await
     .map_err(|_| Error::Timeout("project cancellation was not confirmed".into()))??;
+    let api = ProjectsApi {
+        inner: inner.clone(),
+    };
+    let terminal = tokio::time::timeout_at(deadline, terminal_after_cancel(&api, project_id))
+        .await
+        .map_err(|_| Error::Timeout("project cancellation has not finished".into()))??;
     if let Some(project) = inner.projects.read().get(project_id).cloned() {
+        replay_recovered(&project, &terminal, false);
+        let status = match project.status() {
+            ProjectStatus::Canceled => JobStatus::Canceled,
+            ProjectStatus::Failed => JobStatus::Failed,
+            _ => return Ok(()),
+        };
         for job in project.jobs() {
             if !job.status().is_finished() {
-                job.update(|state| state.status = JobStatus::Canceled, &["status"]);
+                job.update(|state| state.status = status, &["status"]);
             }
         }
-        project.update(
-            |state| {
-                state.status = ProjectStatus::Canceled;
-                state.error = None;
-            },
-            &["status"],
-        );
     }
     Ok(())
 }
+
+async fn terminal_after_cancel(api: &ProjectsApi, project_id: &str) -> Result<Value> {
+    loop {
+        let status = api.get_status(project_id).await?;
+        if status.get("finished").and_then(Value::as_bool) == Some(true) {
+            return Ok(status);
+        }
+        tokio::time::sleep(Duration::from_secs(2)).await;
+    }
+}
+
+#[cfg(test)]
+#[path = "cancel_tests.rs"]
+mod cancel_tests;

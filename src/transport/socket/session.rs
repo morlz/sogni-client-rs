@@ -1,6 +1,11 @@
 mod policy;
+mod tls;
 
-use std::{collections::VecDeque, sync::Arc, time::Duration};
+use std::{
+    collections::VecDeque,
+    sync::{Arc, atomic::Ordering},
+    time::Duration,
+};
 
 use bytes::Bytes;
 use futures_util::{SinkExt, StreamExt};
@@ -8,7 +13,7 @@ use rand::Rng as _;
 use serde_json::{Value, json};
 use tokio::sync::mpsc;
 use tokio_tungstenite::{
-    connect_async,
+    client_async_tls_with_config, connect_async_tls_with_config,
     tungstenite::{
         Message,
         client::IntoClientRequest,
@@ -72,6 +77,7 @@ pub(super) async fn socket_manager(
         match connect_socket(&inner).await {
             Ok(mut socket) => {
                 reconnect_attempt = 0;
+                inner.authenticated.store(false, Ordering::Release);
                 inner.connected.send_replace(true);
                 inner.events.emit(
                     "connected",
@@ -85,6 +91,7 @@ pub(super) async fn socket_manager(
                 }
                 let outcome = socket_session(&inner, &mut socket, &mut commands).await;
                 inner.connected.send_replace(false);
+                inner.authenticated.store(false, Ordering::Release);
                 match outcome {
                     SocketOutcome::Closed => {
                         fail_pending(&mut pending, Error::Closed);
@@ -115,8 +122,8 @@ pub(super) async fn socket_manager(
                     }
                 }
             }
-            Err(error) => {
-                tracing::warn!(error = %error, "Sogni WebSocket connection attempt failed");
+            Err(_) => {
+                tracing::warn!("Sogni WebSocket connection attempt failed");
                 reconnect_attempt = reconnect_attempt.saturating_add(1);
             }
         }
@@ -144,7 +151,9 @@ async fn connect_socket(
         query.append_pair(
             "clientName",
             &format!(
-                "Sogni/{PROTOCOL_VERSION} (sogni-client-rs) {}",
+                // The service's API-key handshake requires this protocol family.
+                // HTTP User-Agent keeps the actual sogni-client-rs identity.
+                "Sogni/{PROTOCOL_VERSION} (sogni-client) {}",
                 crate::VERSION
             ),
         );
@@ -180,10 +189,26 @@ async fn connect_socket(
             request.headers_mut().insert(name, value);
         }
     }
-    let (socket, _) = tokio::time::timeout(inner.connect_timeout, connect_async(request))
-        .await
-        .map_err(|_| Error::Timeout("WebSocket connection timed out".into()))?
-        .map_err(|error| Error::Transport(format!("WebSocket connection failed: {error}")))?;
+    let connector = if url.scheme() == "wss" {
+        Some(tls::native_connector()?)
+    } else {
+        None
+    };
+    let (socket, _) = tokio::time::timeout(inner.connect_timeout, async {
+        if let Some(proxy) = &inner.proxy {
+            let stream = proxy.connect(&url).await?;
+            client_async_tls_with_config(request, stream, None, connector)
+                .await
+                .map_err(|_| Error::Transport("WebSocket proxy handshake failed".into()))
+        } else {
+            connect_async_tls_with_config(request, None, false, connector)
+                .await
+                .map_err(|_| Error::Transport("WebSocket handshake failed".into()))
+        }
+    })
+    .await
+    .map_err(|_| Error::Timeout("WebSocket connection timed out".into()))?
+    .map_err(|error| Error::Transport(format!("WebSocket connection failed: {error}")))?;
     Ok(socket)
 }
 
@@ -251,7 +276,7 @@ where
                 }
                 Some(Ok(_)) => {}
                 Some(Err(error)) => {
-                    tracing::warn!(error = %error, "Sogni WebSocket receive failed");
+                    tracing::warn!("Sogni WebSocket receive failed");
                     return transport_loss(error.to_string());
                 }
                 None => return transport_loss("WebSocket stream ended"),
@@ -272,8 +297,8 @@ where
             if response.is_closed() {
                 return Ok(());
             }
-            if let Err(error) = socket.send(message.clone()).await {
-                tracing::warn!(error = %error, "Sogni WebSocket send failed");
+            if socket.send(message.clone()).await.is_err() {
+                tracing::warn!("Sogni WebSocket send failed");
                 return Err(SocketCommand::Send { message, response });
             }
             let _ = response.send(Ok(()));
@@ -321,8 +346,13 @@ fn handle_socket_frame(inner: &SocketInner, bytes: &[u8]) {
         Ok((message_type, payload))
     })();
     match parsed {
-        Ok((message_type, payload)) => inner.events.emit(message_type, payload),
-        Err(error) => tracing::warn!(error = %error, "dropped malformed Sogni WebSocket frame"),
+        Ok((message_type, payload)) => {
+            if message_type == "authenticated" && payload.is_object() {
+                inner.authenticated.store(true, Ordering::Release);
+            }
+            inner.events.emit(message_type, payload);
+        }
+        Err(_) => tracing::warn!("dropped malformed Sogni WebSocket frame"),
     }
 }
 

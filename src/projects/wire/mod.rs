@@ -3,6 +3,9 @@ mod image;
 mod video;
 use image::build_image_keyframe;
 use video::build_video_keyframe;
+
+#[cfg(test)]
+mod tests;
 pub(super) fn build_job_request(
     project_id: &str,
     params: &Map<String, Value>,
@@ -105,7 +108,9 @@ pub(super) fn build_job_request(
             object.insert(key, json!(value));
         }
     }
-    Ok(drop_nulls(template))
+    // These nulls are worker reset fields, not absent optional parameters.
+    // Workers require these fields to interpret the complete default template.
+    Ok(template)
 }
 
 fn build_audio_keyframe(
@@ -174,7 +179,6 @@ fn request_template() -> Value {
             "cnRotationIsEnabled": true,
             "negativePrompt": "",
             "startingImageZoomPanIsOn": false,
-            "seed": null,
             "siRotationIsEnabled": true,
             "cnImageBackgroundColor": "clear",
             "strengthIsEnabled": true,
@@ -197,6 +201,7 @@ fn request_template() -> Value {
         "cnVideoFrames": [],
         "disableSafety": false,
         "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
         "numberOfImages": 1,
         "cnVideoFramesPose": [],
         "jobID": "",

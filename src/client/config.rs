@@ -38,9 +38,16 @@ pub struct ClientConfig {
     pub socket_endpoint: Url,
     pub socket_event_subscriptions: BTreeMap<String, bool>,
     pub disable_socket: bool,
+    /// Keep socket-hosted HTTP APIs available without starting realtime I/O at build.
+    pub defer_socket_start: bool,
     pub testnet: bool,
     pub request_timeout: Duration,
     pub connect_timeout: Duration,
+    /// Explicit SOCKS5 route for HTTP, media and realtime transport.
+    /// `socks5h` resolves service hostnames at the proxy; `socks5` resolves locally.
+    pub proxy_url: Option<String>,
+    /// Restrict provider media transfers to HTTPS and pinned public destinations.
+    pub strict_media_destinations: bool,
 }
 
 impl std::fmt::Debug for ClientConfig {
@@ -64,9 +71,12 @@ impl std::fmt::Debug for ClientConfig {
                 &self.socket_event_subscriptions,
             )
             .field("disable_socket", &self.disable_socket)
+            .field("defer_socket_start", &self.defer_socket_start)
             .field("testnet", &self.testnet)
             .field("request_timeout", &self.request_timeout)
             .field("connect_timeout", &self.connect_timeout)
+            .field("proxy_url", &self.proxy_url.as_ref().map(|_| "[REDACTED]"))
+            .field("strict_media_destinations", &self.strict_media_destinations)
             .finish()
     }
 }
@@ -87,9 +97,12 @@ impl Default for ClientConfig {
                 .expect("valid default WebSocket URL"),
             socket_event_subscriptions: BTreeMap::new(),
             disable_socket: false,
+            defer_socket_start: false,
             testnet: false,
             request_timeout: Duration::from_secs(30),
             connect_timeout: Duration::from_secs(30),
+            proxy_url: None,
+            strict_media_destinations: false,
         }
     }
 }
@@ -163,6 +176,14 @@ impl ClientBuilder {
         self
     }
 
+    /// Delay realtime connection until the first socket command. HTTP catalogue
+    /// reads remain available and cannot replace an active app's socket session.
+    #[must_use]
+    pub fn defer_socket_start(mut self, value: bool) -> Self {
+        self.config.defer_socket_start = value;
+        self
+    }
+
     #[must_use]
     pub fn testnet(mut self, value: bool) -> Self {
         self.config.testnet = value;
@@ -178,6 +199,18 @@ impl ClientBuilder {
     #[must_use]
     pub fn connect_timeout(mut self, value: Duration) -> Self {
         self.config.connect_timeout = value;
+        self
+    }
+
+    #[must_use]
+    pub fn proxy_url(mut self, value: impl Into<String>) -> Self {
+        self.config.proxy_url = Some(value.into());
+        self
+    }
+
+    #[must_use]
+    pub fn strict_media_destinations(mut self, value: bool) -> Self {
+        self.config.strict_media_destinations = value;
         self
     }
 

@@ -23,11 +23,11 @@ use crate::{
         MINIMAX_H3_BASE_FRAMES, MINIMAX_H3_DIMENSION_STEP, MINIMAX_H3_FRAME_STEP,
         MINIMAX_H3_MAX_DIMENSION, MINIMAX_H3_MAX_DURATION, MINIMAX_H3_MAX_FRAMES,
         MINIMAX_H3_MAX_PIXELS, MINIMAX_H3_MIN_DURATION, MINIMAX_H3_MIN_FRAMES,
-        calculate_video_frames, detect_content_type, drop_nulls, get_video_workflow_type,
-        is_audio_model, is_external_video_model, is_happyhorse_model, is_ltx_model,
-        is_minimax_h3_balanced_model, is_minimax_h3_model, is_minimax_h3_reference_model,
-        is_minimax_h3_turbo_model, is_seedance_model, is_seedance25_model, is_video_model,
-        is_wan3_enhanced_model, is_wan3_model, new_id, path_segment, scalar_string,
+        calculate_video_frames, detect_content_type, get_video_workflow_type, is_audio_model,
+        is_external_video_model, is_happyhorse_model, is_ltx_model, is_minimax_h3_balanced_model,
+        is_minimax_h3_model, is_minimax_h3_reference_model, is_minimax_h3_turbo_model,
+        is_seedance_model, is_seedance25_model, is_video_model, is_wan3_enhanced_model,
+        is_wan3_model, new_id, path_segment, scalar_string,
     },
 };
 
@@ -40,6 +40,7 @@ mod project;
 mod recovery;
 mod request;
 mod snapshots;
+mod submission;
 mod validation;
 mod wire;
 
@@ -59,6 +60,7 @@ pub use snapshots::{
     CostEstimate, JobSnapshot, JobStatus, ModelOptions, PresignedPost, ProjectSnapshot,
     ProjectStatus,
 };
+pub use submission::{ProjectSubmissionError, SubmissionPhase};
 
 use events::{cancel_project, listen_for_project_events};
 use helpers::*;

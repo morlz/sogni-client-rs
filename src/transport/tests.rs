@@ -1,5 +1,8 @@
 use std::time::Duration;
 
+mod media_timeout;
+mod socket_abort;
+
 use futures_util::{SinkExt, StreamExt};
 use reqwest::header::HeaderMap;
 use serde_json::{Value, json};
@@ -104,7 +107,7 @@ fn api_key_auth(base_url: Url, http: &HttpClients) -> AuthManager {
     auth
 }
 
-fn api_key_rest(base_url: Url, timeout: Duration) -> RestClient {
+pub(super) fn api_key_rest(base_url: Url, timeout: Duration) -> RestClient {
     let http = HttpClients::build(timeout).expect("HTTP clients");
     let auth = api_key_auth(base_url.clone(), &http);
     RestClient::new(base_url, auth, http, timeout)

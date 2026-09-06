@@ -1,6 +1,49 @@
 use super::*;
 
 impl ProjectsApi {
+    /// Rehydrate one application-owned project without submitting new work.
+    /// Keep the same app id across restarts for active-project recovery.
+    pub async fn recover_project(&self, project_id: &str) -> Result<Project> {
+        require_nonempty(project_id, "project_id")?;
+        let project_id = project_id.to_uppercase();
+        let tracked = { self.inner.projects.read().get(&project_id).cloned() };
+        if let Some(project) = tracked.filter(incomplete_results) {
+            let raw = self.get_status(&project_id).await?;
+            if is_llm_recovery(&raw) {
+                return Err(Error::Protocol(
+                    "recovered project type does not match".into(),
+                ));
+            }
+            replay_recovered(&project, &raw, false);
+            self.resolve_recovered_urls(&project).await;
+            return Ok(project);
+        }
+        self.sync("application-recovery").await?;
+        let tracked = { self.inner.projects.read().get(&project_id).cloned() };
+        if let Some(project) = tracked {
+            return Ok(project);
+        }
+        let raw = self.get_status(&project_id).await?;
+        if recovery_id(&raw).as_deref() != Some(&project_id) || is_llm_recovery(&raw) {
+            return Err(Error::Protocol(
+                "recovered project identity does not match".into(),
+            ));
+        }
+        let project = Project::new(
+            project_id.clone(),
+            recovered_params(&raw),
+            true,
+            Arc::downgrade(&self.inner),
+        );
+        replay_recovered(&project, &raw, false);
+        self.resolve_recovered_urls(&project).await;
+        self.inner
+            .projects
+            .write()
+            .insert(project_id, project.clone());
+        Ok(project)
+    }
+
     /// Reconcile tracked projects with the socket server's durable snapshot.
     ///
     /// The returned JSON follows the JavaScript and Python `ProjectSyncResult`
@@ -70,15 +113,22 @@ impl ProjectsApi {
             }
             let mut still_missing = Vec::new();
             for project_id in pending {
-                match self.get(&project_id).await {
+                match self.get_status(&project_id.to_uppercase()).await {
                     Ok(project) => {
-                        result.insert(project_id, ProjectResolution::Finished { project });
+                        let resolution =
+                            if project.get("finished").and_then(Value::as_bool) == Some(true) {
+                                ProjectResolution::Finished { project }
+                            } else {
+                                ProjectResolution::Active
+                            };
+                        result.insert(project_id, resolution);
                     }
                     Err(Error::Api(error)) if error.status == 404 => {
                         still_missing.push(project_id);
                     }
                     Err(error) => {
-                        tracing::debug!(%error, %project_id, "missing project lookup was inconclusive");
+                        let _ = error;
+                        tracing::debug!("missing project lookup was inconclusive");
                         result.insert(
                             project_id,
                             ProjectResolution::Unknown {
@@ -157,7 +207,7 @@ impl ProjectsApi {
             }
             let tracked = { self.inner.projects.read().get(&id).cloned() };
             if let Some(project) = tracked {
-                if !project.status().is_finished() {
+                if !project.status().is_finished() || incomplete_results(&project) {
                     replay_recovered(&project, raw, true);
                     self.resolve_recovered_urls(&project).await;
                     completed.push(json!(id));
@@ -197,7 +247,7 @@ impl ProjectsApi {
             .values()
             .filter(|project| {
                 let snapshot = project.snapshot();
-                !snapshot.status.is_finished()
+                (!snapshot.status.is_finished() || incomplete_results(project))
                     && !seen.contains(&snapshot.id)
                     && snapshot.started_at <= cutoff
             })
@@ -208,7 +258,7 @@ impl ProjectsApi {
             let ids = missing.iter().map(Project::id).collect::<Vec<_>>();
             let resolutions = self.resolve_missing(&ids, None).await;
             for project in missing {
-                if project.status().is_finished() {
+                if project.status().is_finished() && !incomplete_results(&project) {
                     continue;
                 }
                 match resolutions.get(&project.id()) {
@@ -220,18 +270,26 @@ impl ProjectsApi {
                     Some(ProjectResolution::Active) => active.push(json!(project.id())),
                     Some(ProjectResolution::Lost) => {
                         let error = project_lost_payload();
+                        let mut marked_lost = false;
                         project.update(
                             |state| {
-                                state.status = ProjectStatus::Failed;
-                                state.error = Some(error.clone());
+                                if !state.status.is_finished() {
+                                    state.status = ProjectStatus::Failed;
+                                    state.error = Some(error.clone());
+                                    marked_lost = true;
+                                }
                             },
                             &["status", "error"],
                         );
-                        self.inner.events.emit(
-                            "project",
-                            json!({"type": "error", "projectId": project.id(), "error": error}),
-                        );
-                        lost.push(json!(project.id()));
+                        if marked_lost {
+                            self.inner.events.emit(
+                                "project",
+                                json!({"type": "error", "projectId": project.id(), "error": error}),
+                            );
+                            lost.push(json!(project.id()));
+                        } else {
+                            unverified.push(json!(project.id()));
+                        }
                     }
                     Some(ProjectResolution::Unknown { .. }) | None => {
                         unverified.push(json!(project.id()));
@@ -271,13 +329,27 @@ impl ProjectsApi {
             if job.status() == JobStatus::Completed
                 && !job.is_withheld()
                 && job.result_url().is_none()
+                && job.get_result_url().await.is_err()
             {
-                if let Err(error) = job.get_result_url().await {
-                    tracing::debug!(%error, job_id = %job.id(), "recovered result URL unavailable");
-                }
+                tracing::debug!("recovered result URL unavailable");
             }
         }
     }
+}
+
+fn incomplete_results(project: &Project) -> bool {
+    let snapshot = project.snapshot();
+    if snapshot.status != ProjectStatus::Completed {
+        return false;
+    }
+    let expected = u64::from(expected_jobs(&snapshot.params));
+    snapshot.jobs.len() < usize::try_from(expected).unwrap_or(usize::MAX)
+        || snapshot.jobs.iter().any(|job| {
+            !job.status.is_finished()
+                || (job.status == JobStatus::Completed
+                    && (!job.is_nsfw || job.nsfw_detected)
+                    && job.result_url.is_none())
+        })
 }
 
 fn recovery_records<'a>(snapshot: &'a Value, field: &str) -> impl Iterator<Item = &'a Value> {
@@ -293,15 +365,12 @@ fn recovery_id(raw: &Value) -> Option<String> {
 }
 
 fn active_project_ids(response: &Value) -> Option<HashSet<String>> {
-    Some(
-        response
-            .get("projects")?
-            .as_array()?
-            .iter()
-            .filter_map(|project| project.get("id")?.as_str())
-            .map(ToOwned::to_owned)
-            .collect(),
-    )
+    response
+        .get("projects")?
+        .as_array()?
+        .iter()
+        .map(|project| project.get("id")?.as_str().map(str::to_uppercase))
+        .collect()
 }
 
 fn classify_exhausted_404s(
@@ -310,10 +379,14 @@ fn classify_exhausted_404s(
     active: Option<&HashSet<String>>,
 ) {
     for project_id in pending {
-        let resolution = if active.is_some_and(|active| active.contains(&project_id)) {
-            ProjectResolution::Active
-        } else {
-            ProjectResolution::Lost
+        let resolution = match active {
+            Some(active) if active.contains(&project_id.to_uppercase()) => {
+                ProjectResolution::Active
+            }
+            Some(_) => ProjectResolution::Lost,
+            None => ProjectResolution::Unknown {
+                error: "project status could not be verified".into(),
+            },
         };
         result.insert(project_id, resolution);
     }
@@ -321,3 +394,6 @@ fn classify_exhausted_404s(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod result_tests;

@@ -1,15 +1,32 @@
 use super::*;
 
 #[test]
-fn exhausted_404_is_lost_when_socket_lookup_is_unavailable_or_malformed() {
+fn lower_case_caller_preserves_its_key_and_matches_upper_case_active_registry() {
+    let input = "a3f360cb-7f84-4d56-b360-a047e7cfb3cd";
+    let active = active_project_ids(&json!({
+        "projects": [{"id": "A3F360CB-7F84-4D56-B360-A047E7CFB3CD"}]
+    }))
+    .unwrap();
+    let mut result = BTreeMap::new();
+    classify_exhausted_404s(&mut result, vec![input.to_owned()], Some(&active));
+    assert_eq!(result.get(input), Some(&ProjectResolution::Active));
+    assert_eq!(result.len(), 1);
+}
+
+#[test]
+fn exhausted_404_stays_unknown_when_socket_lookup_is_unavailable_or_malformed() {
     for active in [
         None,
         active_project_ids(&json!({"projects": "malformed"})),
         active_project_ids(&json!({"unexpected": []})),
+        active_project_ids(&json!({"projects": [{"id": "ACTIVE"}, {"id": null}]})),
     ] {
         let mut result = BTreeMap::new();
         classify_exhausted_404s(&mut result, vec!["REST-404".into()], active.as_ref());
-        assert_eq!(result.get("REST-404"), Some(&ProjectResolution::Lost));
+        assert!(matches!(
+            result.get("REST-404"),
+            Some(ProjectResolution::Unknown { .. })
+        ));
     }
 }
 
@@ -31,7 +48,7 @@ fn final_socket_verdict_preserves_non_404_and_completed_results() {
         ),
     ]);
     let active = active_project_ids(&json!({
-        "projects": [{"id": "ACTIVE"}, {"invalid": true}]
+        "projects": [{"id": "active"}]
     }))
     .expect("valid active-project fixture");
 

@@ -23,6 +23,9 @@ pub(super) fn handle_job_state(inner: &Arc<ProjectsInner>, data: &Value) {
                 .map(ToOwned::to_owned);
             project.update(
                 |state| {
+                    if state.status.is_finished() {
+                        return;
+                    }
                     state.status = ProjectStatus::Queued;
                     state.queue_position = data
                         .get("queuePosition")
@@ -41,7 +44,14 @@ pub(super) fn handle_job_state(inner: &Arc<ProjectsInner>, data: &Value) {
             );
         }
         "jobCompleted" => {
-            project.update(|state| state.status = ProjectStatus::Completed, &["status"]);
+            project.update(
+                |state| {
+                    if !state.status.is_finished() {
+                        state.status = ProjectStatus::Completed;
+                    }
+                },
+                &["status"],
+            );
         }
         "initiatingModel" | "jobStarted" => {
             let Some(job_id) = data.get("imgID").and_then(Value::as_str) else {
@@ -55,6 +65,9 @@ pub(super) fn handle_job_state(inner: &Arc<ProjectsInner>, data: &Value) {
             };
             job.update(
                 |state| {
+                    if state.status.is_finished() {
+                        return;
+                    }
                     state.status = status;
                     state.worker_name = data
                         .get("workerName")
@@ -75,6 +88,9 @@ pub(super) fn handle_job_state(inner: &Arc<ProjectsInner>, data: &Value) {
             );
             project.update(
                 |state| {
+                    if state.status.is_finished() {
+                        return;
+                    }
                     state.status = ProjectStatus::Processing;
                     state.estimated_start_at = None;
                     state.queue_status = None;
@@ -97,6 +113,9 @@ pub(super) fn handle_job_progress(inner: &Arc<ProjectsInner>, data: &Value) {
     let job = project.ensure_job(&job_id.to_uppercase());
     job.update(
         |state| {
+            if state.status.is_finished() {
+                return;
+            }
             state.status = JobStatus::Processing;
             if let Some(step) = number(data.get("step")) {
                 state.step = state.step.max(step);
@@ -115,7 +134,11 @@ pub(super) fn handle_job_progress(inner: &Arc<ProjectsInner>, data: &Value) {
         &["status", "step", "stepCount", "progress"],
     );
     project.update(
-        |state| state.status = ProjectStatus::Processing,
+        |state| {
+            if !state.status.is_finished() {
+                state.status = ProjectStatus::Processing;
+            }
+        },
         &["status", "jobs"],
     );
     inner.events.emit("job", data.clone());
@@ -146,6 +169,10 @@ pub(super) fn handle_job_progress(inner: &Arc<ProjectsInner>, data: &Value) {
         });
     }
 }
+
+#[cfg(test)]
+#[path = "state_tests.rs"]
+mod tests;
 
 pub(super) fn handle_job_eta(inner: &Arc<ProjectsInner>, data: &Value) {
     let Some(project) = project_by_id(inner, data) else {

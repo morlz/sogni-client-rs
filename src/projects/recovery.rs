@@ -31,11 +31,12 @@ impl Default for ResolveMissingOptions {
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "state", rename_all = "lowercase")]
 pub enum ProjectResolution {
-    /// The durable REST record exists and contains the completed project.
+    /// The durable REST record confirms a terminal project (success, failure or cancellation).
     Finished { project: Value },
-    /// The socket still owns the in-flight project.
+    /// The v2 REST status or socket registry still owns the in-flight project.
     Active,
-    /// Neither the durable REST API nor the socket has a record of the project.
+    /// Neither the durable REST API nor the socket currently has a record.
+    /// This does not establish that a historical project never existed.
     Lost,
     /// A non-404 error prevented a reliable verdict.
     Unknown { error: String },
@@ -173,6 +174,9 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
         };
         job.update(
             |state| {
+                if state.status.is_finished() && !status.is_finished() {
+                    return;
+                }
                 if !state.status.is_finished() {
                     state.status = status;
                 }
@@ -210,14 +214,23 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
     }
     let status = match raw.get("status").and_then(Value::as_str) {
         Some("completed") => Some(ProjectStatus::Completed),
-        Some("errored") => Some(ProjectStatus::Failed),
-        Some("cancelled") => Some(ProjectStatus::Canceled),
+        Some("errored" | "failed") => Some(ProjectStatus::Failed),
+        Some("cancelled" | "canceled") => Some(ProjectStatus::Canceled),
         Some("queued" | "active") => Some(ProjectStatus::Queued),
+        Some("processing") => Some(ProjectStatus::Processing),
+        Some("pending") => Some(ProjectStatus::Pending),
         _ if completed => Some(ProjectStatus::Completed),
         _ => None,
     };
     if let Some(status) = status {
-        project.update(|state| state.status = status, &["status", "jobs"]);
+        project.update(
+            |state| {
+                if !state.status.is_finished() {
+                    state.status = status;
+                }
+            },
+            &["status", "jobs"],
+        );
     }
 }
 

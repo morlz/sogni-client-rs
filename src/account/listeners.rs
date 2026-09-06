@@ -285,14 +285,17 @@ fn handle_socket_authenticated(
     let current = context.current.clone();
     let projection = context.subscription_projection.clone();
     lifecycle.spawn(async move {
-        if let Err(error) = refresh_subscription_projection(&client, &current, &projection).await {
-            tracing::debug!(%error, "failed to refresh subscription after authentication");
+        if refresh_subscription_projection(&client, &current, &projection)
+            .await
+            .is_err()
+        {
+            tracing::debug!("failed to refresh subscription after authentication");
         }
     });
 }
 
 fn log_hydration_error(result: Result<()>) {
-    if let Err(error) = result {
-        tracing::debug!(%error, "failed to hydrate account after authentication");
+    if result.is_err() {
+        tracing::debug!("failed to hydrate account after authentication");
     }
 }

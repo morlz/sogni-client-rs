@@ -17,6 +17,8 @@ use crate::{
     utils::{ParsedSseEvent, drop_nulls, parse_sse_chunk, query_pairs},
 };
 
+mod media_upload;
+
 pub type SseEvent = ParsedSseEvent;
 pub type SseStream = Pin<Box<dyn Stream<Item = Result<SseEvent>> + Send>>;
 
@@ -28,6 +30,8 @@ pub struct RestClient {
     cookies: Arc<ClearableCookieStore>,
     media_http: reqwest::Client,
     timeout: Duration,
+    strict_media: bool,
+    media_proxy: Option<super::proxy::SocksProxy>,
 }
 
 impl std::fmt::Debug for RestClient {
@@ -53,6 +57,8 @@ impl RestClient {
             cookies: http.cookies,
             media_http: http.media,
             timeout,
+            strict_media: http.strict_media,
+            media_proxy: http.media_proxy,
         }
     }
 
@@ -192,29 +198,7 @@ impl RestClient {
     }
 
     pub async fn put_bytes(&self, url: Url, data: Bytes, content_type: Option<&str>) -> Result<()> {
-        let mut request = self
-            .media_http
-            .put(url)
-            .body(data)
-            .timeout(Duration::from_secs(300));
-        if let Some(content_type) = content_type {
-            request = request.header(reqwest::header::CONTENT_TYPE, content_type);
-        }
-        let response = request.send().await?;
-        if response.status().is_success() {
-            Ok(())
-        } else {
-            let status = response.status();
-            Err(ApiError::new(
-                status.as_u16(),
-                json!({
-                    "status": "error",
-                    "message": status.canonical_reason().unwrap_or("Failed to upload media"),
-                    "errorCode": 0,
-                }),
-            )
-            .into())
-        }
+        media_upload::put(self, url, data, content_type).await
     }
 
     pub async fn post_multipart(
@@ -237,10 +221,11 @@ impl RestClient {
             })?;
         }
         let response = self
-            .media_http
+            .media_client(&url)
+            .await?
             .post(url)
             .multipart(form.part("file", part))
-            .timeout(Duration::from_secs(300))
+            .timeout(self.timeout)
             .send()
             .await?;
         if response.status().is_success() {
@@ -257,13 +242,22 @@ impl RestClient {
 
     pub async fn get_bytes(&self, url: Url) -> Result<Bytes> {
         let response = self
-            .media_http
+            .media_client(&url)
+            .await?
             .get(url)
-            .timeout(Duration::from_secs(300))
+            .timeout(self.timeout)
             .send()
             .await?
             .error_for_status()?;
         Ok(response.bytes().await?)
+    }
+
+    async fn media_client(&self, url: &Url) -> Result<reqwest::Client> {
+        if self.strict_media {
+            super::media_policy::client(url, self.timeout, self.media_proxy.as_ref()).await
+        } else {
+            Ok(self.media_http.clone())
+        }
     }
 
     pub async fn stream_sse(

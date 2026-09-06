@@ -46,6 +46,9 @@ pub(super) fn ranged_number(
 pub(super) fn map_model_options(tier: &Value, media_type: &str) -> Value {
     let mut output = Map::new();
     output.insert("type".into(), json!(media_type));
+    if let Some(is_upscale) = tier.get("isUpscale").and_then(Value::as_bool) {
+        output.insert("isUpscale".into(), json!(is_upscale));
+    }
     for (name, aliases) in [
         ("sampler", sampler_aliases()),
         ("scheduler", scheduler_aliases()),
@@ -259,3 +262,6 @@ pub(super) fn value_array(value: &Value) -> Vec<Value> {
         .cloned()
         .unwrap_or_default()
 }
+
+#[cfg(test)]
+mod tests;

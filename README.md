@@ -71,6 +71,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+For an explicit SOCKS route, set `ClientBuilder::proxy_url(...)` with a
+`socks5://host:port` URL (local DNS) or `socks5h://host:port` (proxy DNS).
+It applies to REST, media transfer, and WebSocket connections without changing
+global proxy settings. Proxy credentials are redacted from configuration debug
+output. `strict_media_destinations(true)` restricts provider media transfers to
+approved public HTTPS hosts, rejects redirects, and pins validated destination
+addresses even through a proxy; TLS still verifies the original hostname.
+Media requests honor `request_timeout`. Idempotent asset `PUT` retries transient
+transport/service failures up to three times with the same URL and bytes inside
+that original deadline. Input and authorization failures are not retried; this
+does not retry generation requests.
+
+The service requires the `sogni-client` WebSocket protocol-family identifier for
+API-key authentication. The wire field uses that family with the actual compatible
+version; HTTP User-Agent remains `sogni-client-rs/<version>`. A WebSocket upgrade
+alone is not authentication: `is_socket_authenticated()` becomes true only after
+the server's authenticated event. `abort()` synchronously stops the shared
+client's transport and pending sends; it does not cancel remote projects. Scoped
+execution owners should abort on lease loss and reconcile persisted project IDs.
+
 Token authentication is available through
 `SogniClient::builder().tokens(token, refresh_token)`. For an interactive
 username/password flow, create a token-auth client and call
@@ -112,7 +132,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 `wait_for_completion` never cancels the remote generation when its local
 timeout expires. Call `project.cancel()` explicitly when cancellation is the
-desired outcome.
+desired outcome. Cancellation waits for owner-scoped status to confirm
+`finished=true`; a cancellation acknowledgment alone is not completion. A missing
+or unavailable status leaves cancellation unconfirmed.
+
+Durable backends can reserve and persist a UUID before calling
+`projects.create_with_id(id, request)`, then use `projects.recover_project(id)`
+after reconnect or restart with the same stable app ID. Explicit IDs do not
+guarantee server idempotency: never resubmit after an uncertain send until the
+original request has been reconciled. Missing projects remain `Unknown` when
+the live registry is unavailable or malformed. `is_socket_connected()` exposes
+transport continuity for applications that measure their own generation intervals.
+
+`create_with_id_detailed` preserves an explicit `SubmissionPhase` and typed cause
+without exposing private URLs in default error formatting. `Prepare` and
+`AssetUpload` mean that this call did not send a generation request; `Send` may
+have transmitted it. This says nothing about previous calls using the same ID.
+Inspect typed cause/status/timeout fields instead of logging raw error text.
+
+Recovery uses owner-scoped v2 project status: pending/queued/processing remain
+active, and compact failed/canceled records terminate even when jobs are absent.
+`get_status` exposes that response directly, while `get` retains its legacy v1
+terminal-result contract. Inconsistent or unavailable status stays unknown; a
+current 404 is not proof that a historical project never existed.
 
 Completed image jobs also support `job.enhance("light", overrides).await`;
 the returned enhancement is tracked through `job.enhancement_project()`.
@@ -230,6 +272,12 @@ snapshot after socket authentication and after an internal receiver lag.
 
 Project and job handles are cheap clones backed by synchronized state. Use
 `snapshot()` when an immutable, serializable view is needed.
+
+Use `.defer_socket_start(true)` for authenticated HTTP-only catalogue access.
+Unlike `disable_socket`, it preserves socket-hosted HTTP endpoints and starts
+realtime I/O only when a socket command is sent. Give concurrent durable jobs
+distinct, stable app IDs so catalogue and worker processes do not replace one
+another's realtime sessions. Reuse the same job app ID during crash recovery.
 
 ## Errors
 

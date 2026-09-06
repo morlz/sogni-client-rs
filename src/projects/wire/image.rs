@@ -41,8 +41,9 @@ pub(super) fn build_image_keyframe(
             scheduler,
         );
     }
-    if let Some(vae) = validate_option(params.get("vae"), options.raw.get("vae"), "vae")? {
-        keyframe.insert("vae".into(), vae);
+    if comfy {
+        let vae = validate_option(params.get("vae"), options.raw.get("vae"), "vae")?;
+        keyframe.insert("vae".into(), vae.unwrap_or(Value::Null));
     }
     let has_starting_image = truthy(params.get("startingImage"));
     if has_starting_image {

@@ -53,10 +53,12 @@ struct SocketInner {
     commands: mpsc::Sender<SocketCommand>,
     command_receiver: Mutex<Option<mpsc::Receiver<SocketCommand>>>,
     connected: watch::Sender<bool>,
+    authenticated: AtomicBool,
     task: ParkingMutex<Option<tokio::task::JoinHandle<()>>>,
     cancel: CancellationToken,
     closed: AtomicBool,
     connect_timeout: Duration,
+    proxy: Option<super::proxy::SocksProxy>,
 }
 
 impl SocketTransport {
@@ -97,10 +99,16 @@ impl SocketTransport {
                 commands,
                 command_receiver: Mutex::new(Some(command_receiver)),
                 connected,
+                authenticated: AtomicBool::new(false),
                 task: ParkingMutex::new(None),
                 cancel: CancellationToken::new(),
                 closed: AtomicBool::new(false),
                 connect_timeout: config.connect_timeout,
+                proxy: config
+                    .proxy_url
+                    .as_deref()
+                    .map(super::proxy::SocksProxy::parse)
+                    .transpose()?,
             }),
         })
     }
@@ -109,12 +117,28 @@ impl SocketTransport {
         *self.inner.connected.borrow()
     }
 
+    pub(super) fn is_authenticated(&self) -> bool {
+        self.is_connected()
+            && self.inner.auth.is_authenticated()
+            && self.inner.authenticated.load(Ordering::Acquire)
+    }
+
     pub(super) fn network(&self) -> Network {
         *self.inner.network.read()
     }
 
     pub(super) fn cancel(&self) {
         self.inner.cancel.cancel();
+    }
+
+    pub(super) fn abort(&self) {
+        self.inner.closed.store(true, Ordering::Release);
+        self.inner.cancel.cancel();
+        if let Some(task) = self.inner.task.lock().take() {
+            task.abort();
+        }
+        self.inner.connected.send_replace(false);
+        self.inner.authenticated.store(false, Ordering::Release);
     }
 
     pub(super) async fn start(&self) -> Result<()> {
@@ -218,6 +242,7 @@ impl SocketTransport {
             let _ = task.await;
         }
         self.inner.connected.send_replace(false);
+        self.inner.authenticated.store(false, Ordering::Release);
         Ok(())
     }
 }
