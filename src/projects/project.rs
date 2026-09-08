@@ -216,7 +216,10 @@ impl Project {
 
     #[must_use]
     pub fn job(&self, id: &str) -> Option<Job> {
-        let id = id.to_uppercase();
+        self.job_by_canonical_id(&id.to_uppercase())
+    }
+
+    fn job_by_canonical_id(&self, id: &str) -> Option<Job> {
         self.inner
             .jobs
             .read()
@@ -226,7 +229,12 @@ impl Project {
     }
 
     pub(super) fn ensure_job(&self, id: &str) -> Job {
-        if let Some(job) = self.job(id) {
+        self.ensure_job_before_insert(id, || {})
+    }
+
+    fn ensure_job_before_insert(&self, id: &str, before_insert: impl FnOnce()) -> Job {
+        let canonical_id = id.to_uppercase();
+        if let Some(job) = self.job_by_canonical_id(&canonical_id) {
             return job;
         }
         let state = self.inner.state.read();
@@ -237,7 +245,7 @@ impl Project {
             .and_then(Value::as_str)
             .map(ToOwned::to_owned);
         let job = Job::new(
-            JobSnapshot::pending(id.to_owned(), state.id.clone(), step_count),
+            JobSnapshot::pending(canonical_id.clone(), state.id.clone(), step_count),
             self.inner
                 .api
                 .upgrade()
@@ -249,7 +257,14 @@ impl Project {
             output_format,
         );
         drop(state);
-        self.inner.jobs.write().push(job.clone());
+        before_insert();
+        let mut jobs = self.inner.jobs.write();
+        // Recovery and socket events can construct the same missing child concurrently.
+        if let Some(existing) = jobs.iter().find(|existing| existing.id() == canonical_id) {
+            return existing.clone();
+        }
+        jobs.push(job.clone());
+        drop(jobs);
         self.notify("jobStarted", json!({"jobId": id}));
         job
     }
@@ -266,53 +281,5 @@ impl Project {
 }
 
 #[cfg(test)]
-mod tests {
-    use std::{sync::mpsc, thread, time::Duration};
-
-    use super::*;
-
-    #[test]
-    fn snapshot_releases_state_before_collecting_jobs() {
-        let project = Project::new(
-            "PROJECT".into(),
-            json!({"type": "image", "numberOfMedia": 1}),
-            false,
-            Weak::new(),
-        );
-        let jobs_guard = project.inner.jobs.write();
-        let (state_cloned_tx, state_cloned_rx) = mpsc::sync_channel(0);
-        let (snapshot_tx, snapshot_rx) = mpsc::sync_channel(1);
-        let snapshot_project = project.clone();
-        let snapshot_thread = thread::spawn(move || {
-            let snapshot = snapshot_project.snapshot_after_state_clone(|| {
-                state_cloned_tx.send(()).expect("test receiver is alive");
-            });
-            snapshot_tx.send(snapshot).expect("test receiver is alive");
-        });
-
-        state_cloned_rx
-            .recv_timeout(Duration::from_secs(5))
-            .expect("snapshot reached job collection");
-        let (writer_done_tx, writer_done_rx) = mpsc::sync_channel(1);
-        let writer_project = project.clone();
-        let writer_thread = thread::spawn(move || {
-            writer_project.update(|state| state.queue_position = 7, &["queuePosition"]);
-            writer_done_tx.send(()).expect("test receiver is alive");
-        });
-
-        writer_done_rx
-            .recv_timeout(Duration::from_secs(5))
-            .expect("a queued state writer was blocked while snapshot waited on the jobs lock");
-        drop(jobs_guard);
-
-        let snapshot = snapshot_rx
-            .recv_timeout(Duration::from_secs(5))
-            .expect("snapshot completes after the jobs lock is released");
-        snapshot_thread
-            .join()
-            .expect("snapshot thread did not panic");
-        writer_thread.join().expect("writer thread did not panic");
-        assert_eq!(snapshot.queue_position, -1);
-        assert_eq!(project.inner.state.read().queue_position, 7);
-    }
-}
+#[path = "project_tests.rs"]
+mod tests;
