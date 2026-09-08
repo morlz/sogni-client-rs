@@ -1,9 +1,10 @@
 # Sogni Client for Rust
 
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
-It tracks the public wire contract of `sogni-client` and
-`sogni-client-python` at version **5.27.1**, while exposing Rust-native typed
-errors, streams, snapshots, and builders.
+It follows the public wire contract of the TypeScript and Python clients,
+while exposing Rust-native typed errors, streams, snapshots, and builders.
+The unreleased changes include TypeScript **5.32.0**, through
+[`18b43c9`](https://github.com/Sogni-AI/sogni-client/commit/18b43c99363ef1bd41a872d20a1cb65e10712bdb).
 
 ## What is included
 
@@ -11,6 +12,7 @@ errors, streams, snapshots, and builders.
 - Reconnecting authenticated WebSocket transport with exponential backoff
 - Image, video, and audio project submission, progress, results, cancellation,
   uploads, cost estimates, model metadata, LoRAs, and reconnect recovery
+- SAM3 image segmentation, Pixal3D GLB artifacts, and worker result provenance
 - Socket-native streaming LLM chat, hosted chat completions, hosted tools, and
   durable chat runs with resumable SSE
 - Durable creative workflows, cost confirmation, reseeding, SSE, and template
@@ -92,9 +94,29 @@ client's transport and pending sends; it does not cancel remote projects. Scoped
 execution owners should abort on lease loss and reconcile persisted project IDs.
 
 Token authentication is available through
-`SogniClient::builder().tokens(token, refresh_token)`. For an interactive
+`SogniClient::builder().app_id("my-installation").tokens(token, refresh_token)`. For an interactive
 username/password flow, create a token-auth client and call
 `client.account.login(username, password)`.
+
+Supply a stable `app_id` for WebSocket clients and persist it across restarts.
+Blank IDs now fail locally when sockets are enabled, including deferred socket
+startup; the builder no longer creates a random ID on every run. IDs need to be
+unique among simultaneous connections for the same account. A second connection
+using the same ID replaces the first.
+
+For hosted chat, workflows, replay, announcements, or account REST APIs, use
+`disable_socket(true)`. This mode never opens a socket and needs no app ID:
+
+```rust,no_run
+# async fn rest_only() -> sogni_client::Result<()> {
+let client = sogni_client::SogniClient::builder()
+    .api_key(std::env::var("SOGNI_API_KEY").expect("API key"))
+    .disable_socket(true)
+    .build().await?;
+client.close().await?;
+# Ok(())
+# }
+```
 
 ## Generate an image
 
@@ -158,6 +180,53 @@ current 404 is not proof that a historical project never existed.
 
 Completed image jobs also support `job.enhance("light", overrides).await`;
 the returned enhancement is tracked through `job.enhancement_project()`.
+
+`job.preparation()` and `job.snapshot().preparation()` expose `JobPreparation`
+while a worker downloads LoRAs, unloads a model, or loads the next model. Match
+the enum variant before reading its fields. Model phases include a `Start` or
+`End` step and optional elapsed seconds. Raw preparation data remains in the
+snapshot's `extra` map, including future phases.
+
+## Segment an image or reconstruct a 3D object
+
+```rust,no_run
+use sogni_client::{AssetRole, MediaSource, ProjectRequest, Sam3ImagePrompt};
+
+# async fn segment(client: &sogni_client::SogniClient) -> sogni_client::Result<()> {
+let project = client.projects.create(
+    ProjectRequest::image("sam3_image_segment_bf16", "")
+        .asset(AssetRole::StartingImage, MediaSource::Path("source.png".into()))
+        .sam3_prompt(Sam3ImagePrompt {
+            text: Some("teapot".into()),
+            ..Default::default()
+        })
+).await?;
+let masks = project.wait_for_completion(None).await?;
+# let _ = masks;
+# Ok(())
+# }
+```
+
+SAM3 always requests one mask, no previews, and PNG output, including in the
+local project snapshot. Coordinates in `Sam3PromptPoint` and `Sam3PromptBox`
+are normalized to the original source image. Prompts accept up to 32 points,
+16 boxes, or 240 UTF-16 code units of text. Text cannot be combined with points;
+point prompts allow at most one box. The default threshold is 0.5 and multimask
+is true. Invalid prompts fail before an asset upload or generation submission.
+
+Pixal3D uses `ProjectRequest::image("pixal3d_int8_i23d", "object description")`
+with a starting-image asset. Its result is a GLB 3D artifact, so
+`job.media_type()` returns `"model"`. The SDK requests `model/gltf-binary` from
+the media download endpoint during live completion, explicit URL lookup, and
+recovery. Image enhancement rejects model artifacts.
+
+`job.provenance()` and `JobSnapshot::provenance` expose optional `JobProvenance`
+hashes and mask metadata from both live and persisted results. Hashes are
+normalized to lowercase SHA-256 hex digests. Sogni World callers can set
+`.world_generation_receipt(WorldGenerationReceiptRequest::TargetStill { ... })`
+or `Transition { ... }` with `.param("appSource", "sogni-world")`. The still
+stage uses `krea2_identity_edit_sogni_v0_3_alpha`; the transition stage uses
+`minimax-h3-fastvideo-int8_flf2v_turbo`. The service verifies the uploaded inputs.
 
 ## Upload an input asset
 

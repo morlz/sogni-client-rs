@@ -1,5 +1,7 @@
 # sogni-client Rust SDK 5.27.1
 
+Unreleased compatibility includes TypeScript 5.32.0 (18b43c9).
+
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.85.
 
@@ -16,6 +18,9 @@ let client = sogni_client::SogniClient::builder()
 ```
 
 Reuse one client. Call `close().await` during graceful shutdown.
+Persist `app_id` across restarts; WebSocket clients now require it explicitly.
+For REST-only APIs, use `.disable_socket(true)` with no app ID. Deferred
+socket startup still requires an ID.
 
 Namespaces:
 
@@ -39,6 +44,15 @@ let urls = project.wait_for_completion(None).await?;
 
 Use `.param("wireName", serde_json::json!(value))` for any forward-compatible
 project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
+
+- SAM3: image model `sam3_image_segment_bf16`, starting image, and
+  `.sam3_prompt(Sam3ImagePrompt { ... })`; always one PNG mask, no previews.
+- Pixal3D: image request `pixal3d_int8_i23d` with a starting image; produces
+  GLB through the media endpoint and reports `job.media_type() == "model"`.
+- `job.provenance()` carries optional worker hashes from live/recovered jobs.
+- `.world_generation_receipt(...)` supports target still/transition hashes
+  for the Sogni World pipeline; see llms-full.txt for model and field contracts.
+- `job.preparation()` exposes typed download/unload/load phases.
 
 LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
 `1 + n*8`. WAN 2.2 generates internally at 16 FPS. Use

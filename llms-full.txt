@@ -1,6 +1,7 @@
 # sogni-client Rust SDK complete agent reference
 
-Version: 5.27.1 contract compatibility. Crate path: `sogni_client`.
+Crate version: 5.27.1. Unreleased compatibility includes TypeScript 5.32.0
+(upstream commit 18b43c9). Crate path: `sogni_client`.
 Async runtime: Tokio. All public network methods return
 `sogni_client::Result<T>`.
 
@@ -16,6 +17,12 @@ Builder methods: `app_id`, `app_source`, `attribution`, `network`, `api_key`,
 Default REST endpoint: `https://api.sogni.ai`.
 Default socket endpoint: `wss://socket.sogni.ai`.
 Networks: `Network::Fast`, `Network::Relaxed`.
+
+WebSocket clients require an explicit, nonblank `app_id`, trimmed during
+construction. Generate it once and persist it across restarts. There is no
+random per-start default. `disable_socket(true)` needs no ID, uses `rest-only`
+when omitted, and never connects a WebSocket. `defer_socket_start(true)` still
+requires a stable app ID because later socket commands can open a connection.
 
 API-key authentication starts automatically. Token authentication accepts the
 Authorization value and refresh token; JWT expiry drives refresh through
@@ -44,7 +51,8 @@ older in-flight REST refreshes. `subscribe()` emits updates.
 Construct requests with `ProjectRequest::image`, `video`, or `audio`. All set
 `type`, `modelId`, `positivePrompt`, and default `numberOfMedia=1`. Builder
 methods: `param`, `number_of_media`, `steps`, `guidance`, `dimensions`,
-`duration`, `fps`, `network`, `asset`, and `attribution`.
+`duration`, `fps`, `network`, `asset`, `sam3_prompt`,
+`world_generation_receipt`, and `attribution`.
 
 `MediaSource::Path` performs async file I/O. `MediaSource::bytes` and
 `named_bytes` accept memory. `AssetRole` includes starting/control/context
@@ -58,7 +66,42 @@ cloneable `Project`. `Project` methods: `id`, `status`, `jobs`, `progress`,
 `result_urls`, `snapshot`, `subscribe`, `wait_for_completion`, `cancel`.
 `Job` methods: `snapshot`, `id`, `status`, `progress`, `result_url`,
 `is_withheld`, `has_result_media`, `subscribe`, `get_result_url`,
-`get_result_data`, `enhance`, and `enhancement_project`.
+`get_result_data`, `enhance`, `enhancement_project`, `media_type`,
+`preparation`, and `provenance`.
+
+SAM3: use `ProjectRequest::image("sam3_image_segment_bf16", "")` with
+`AssetRole::StartingImage` and `Sam3ImagePrompt`. It forces numberOfMedia=1,
+numberOfPreviews=0, and outputFormat=png in both the request and project state.
+Points use x/y in [0,1] and Sam3PointLabel::Positive or Negative. Boxes use
+x0/y0/x1/y1 in [0,1], with x0<x1 and y0<y1. At least one point, box, or text
+prompt is required. Limits: 32 points, 16 boxes, 240 UTF-16 text code units.
+Text and points cannot be combined; points allow at most one box. Optional
+threshold defaults to 0.5 and multimask to true. Unknown prompt fields fail.
+
+Pixal3D: `ProjectRequest::image("pixal3d_int8_i23d", prompt)` requires a
+starting image. Wire outputFormat is always glb. `job.media_type()` is model;
+result URL lookups and recovery use /v1/media/downloadUrl with
+contentType=model/gltf-binary. Model artifacts cannot use image enhancement.
+`is_model_artifact_model` recognizes pixal3d_ IDs; the ProjectsApi method
+`is_model_artifact_model_id` prefers advertised model metadata.
+
+`JobProvenance` includes optional sha256, source_image_sha256,
+sam_prompt_sha256, mask_rle_sha256, mask_width, mask_height, sam_version,
+selection_hash, first_frame_sha256, and last_frame_sha256. Live and recovered
+results normalize valid hashes to lowercase; malformed and unknown fields
+are omitted from this projection. `jobCompleted` events include provenance
+when present, and JobSnapshot serializes it as camelCase.
+
+`WorldGenerationReceiptRequest::TargetStill` carries source_image_sha256 and
+selection_hash for krea2_identity_edit_sogni_v0_3_alpha. `Transition` carries
+first_frame_sha256 and last_frame_sha256 for
+minimax-h3-fastvideo-int8_flf2v_turbo. Both require appSource=sogni-world;
+receipts serialize inside keyFrames[0]. The service verifies uploaded inputs.
+
+`JobPreparation` variants: DownloadingAssets, UnloadingModel, LoadingModel.
+Model phases carry model, JobModelPhaseStep::{Start,End}, and optional
+elapsed_sec. Typed views are available from Job and JobSnapshot; raw fields
+remain in JobSnapshot.extra["preparation"] for forward compatibility.
 
 Safety semantics: `is_nsfw && !nsfw_detected` means media was withheld. A
 completed result with `nsfw_detected=true` was labeled but delivered.
@@ -78,6 +121,9 @@ URLs/uploads: v1 `upload_url`, `download_url`, `media_upload_url`,
 Recovery: `sync(reason)` fetches the app-scoped durable snapshot and replays
 media project state. `list_projects_elsewhere` is read-only. The SDK invokes
 recovery after socket authentication and after an internal receiver lag.
+Terminal failed/canceled recovery settles outstanding waiters and unfinished
+jobs, preserving existing errors or the server's reason. Completed jobs remain
+unchanged. Local timeouts never imply server cancellation.
 
 ## Video frame behavior
 
@@ -92,6 +138,8 @@ Call `calculate_video_frames(model_id, duration, fps, min, max)`.
 Project creation performs local preflight validation for the current MiniMax
 H3, Wan 3, Seedance, and HappyHorse asset/task/duration contracts before any
 generation request is submitted.
+Wan 3 rejects the retired smartDuration field whenever present, including
+false or null. Supply an explicit duration from 2 to 30 seconds.
 
 Use runtime model metadata where possible. Model IDs in docs are illustrative.
 

@@ -19,6 +19,7 @@ Use an API key (recommended):
 
 ```text
 SOGNI_API_KEY=your_api_key
+SOGNI_APP_ID=my-persisted-example-installation
 SOGNI_TOKEN_TYPE=spark
 SOGNI_BILLING_MODE=auto
 ```
@@ -26,6 +27,10 @@ SOGNI_BILLING_MODE=auto
 The helpers read process environment variables first, then `examples/.env`, then `.env`. They also
 support `SOGNI_USERNAME` plus `SOGNI_PASSWORD`. Username/password authentication requires the
 default `wallet` feature; builds using `--no-default-features` should use `SOGNI_API_KEY`.
+
+Example helpers reuse the example's ID across restarts. Set `SOGNI_APP_ID` to
+a stable installation-specific ID when running concurrent installations; reuse
+that value for recovery. They no longer append a timestamp on every run.
 
 Optional development endpoint overrides are `SOGNI_REST_ENDPOINT`, `SOGNI_SOCKET_ENDPOINT`, and
 `SOGNI_TESTNET=true`. TLS certificate verification remains enabled.
