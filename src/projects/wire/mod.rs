@@ -1,11 +1,19 @@
 use super::*;
 mod image;
+mod sam3;
 mod video;
+mod world;
 use image::build_image_keyframe;
+pub(super) use sam3::normalize_utility_params;
+use sam3::{PIXAL3D_MODEL_ID, SAM3_MODEL_ID, normalize_sam3_prompt};
 use video::build_video_keyframe;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod upstream_tests;
+#[cfg(test)]
+mod utility_tests;
 pub(super) fn build_job_request(
     project_id: &str,
     params: &Map<String, Value>,
@@ -25,6 +33,7 @@ pub(super) fn build_job_request(
         )));
     }
     let model_id = required_str(params, "modelId")?;
+    let receipt = world::normalize_world_receipt(params)?;
     let mut template = request_template();
     let keyframe = template
         .pointer_mut("/keyFrames/0")
@@ -35,12 +44,19 @@ pub(super) fn build_job_request(
         "positivePrompt".into(),
         params.get("positivePrompt").cloned().unwrap_or(json!("")),
     );
+    // Let the model's server defaults apply when callers omit diffusion settings.
+    // Keeping the template's image defaults would send 20 steps to H3 Turbo.
+    keyframe.remove("steps");
+    keyframe.remove("guidanceScale");
     copy_if_present(params, keyframe, "steps", "steps");
     copy_if_present(params, keyframe, "guidance", "guidanceScale");
     copy_if_present(params, keyframe, "seed", "seed");
     copy_if_present(params, keyframe, "stylePrompt", "stylePrompt");
     copy_if_present(params, keyframe, "loras", "loras");
     copy_if_present(params, keyframe, "loraStrengths", "loraStrengths");
+    if let Some(receipt) = receipt {
+        keyframe.insert("worldGenerationReceipt".into(), receipt);
+    }
     if let Some(prompt) = params
         .get("negativePrompt")
         .and_then(Value::as_str)
@@ -68,7 +84,7 @@ pub(super) fn build_job_request(
         .expect("static request template is an object");
     object.insert(
         "previews".into(),
-        if media_type == "image" {
+        if media_type == "image" && model_id != SAM3_MODEL_ID {
             params.get("numberOfPreviews").cloned().unwrap_or(json!(0))
         } else {
             json!(0)
@@ -76,7 +92,11 @@ pub(super) fn build_job_request(
     );
     object.insert(
         "numberOfImages".into(),
-        params.get("numberOfMedia").cloned().unwrap_or(json!(1)),
+        if model_id == SAM3_MODEL_ID {
+            json!(1)
+        } else {
+            params.get("numberOfMedia").cloned().unwrap_or(json!(1))
+        },
     );
     object.insert("jobID".into(), json!(project_id));
     object.insert(
@@ -90,13 +110,19 @@ pub(super) fn build_job_request(
     );
     object.insert(
         "outputFormat".into(),
-        params.get("outputFormat").cloned().unwrap_or_else(|| {
-            json!(match media_type {
-                "video" => "mp4",
-                "audio" => "mp3",
-                _ => "png",
+        if model_id == PIXAL3D_MODEL_ID {
+            json!("glb")
+        } else if model_id == SAM3_MODEL_ID {
+            json!("png")
+        } else {
+            params.get("outputFormat").cloned().unwrap_or_else(|| {
+                json!(match media_type {
+                    "video" => "mp4",
+                    "audio" => "mp3",
+                    _ => "png",
+                })
             })
-        }),
+        },
     );
     for field in ["tokenType", "billingMode", "network", "appSource"] {
         if let Some(value) = params.get(field).filter(|value| !value.is_null()) {
@@ -136,6 +162,8 @@ fn build_audio_keyframe(
         validate_option(params.get("sampler"), options.raw.get("sampler"), "sampler")?
     {
         keyframe.insert("comfySampler".into(), value);
+    } else {
+        keyframe.insert("comfySampler".into(), Value::Null);
     }
     if let Some(value) = validate_option(
         params.get("scheduler"),
@@ -143,6 +171,8 @@ fn build_audio_keyframe(
         "scheduler",
     )? {
         keyframe.insert("comfyScheduler".into(), value);
+    } else {
+        keyframe.insert("comfyScheduler".into(), Value::Null);
     }
     Ok(())
 }

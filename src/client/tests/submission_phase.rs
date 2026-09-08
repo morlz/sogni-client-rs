@@ -10,6 +10,7 @@ use url::Url;
 async fn detailed_submission_separates_local_preparation_assets_and_uncertain_send() {
     let mut fixture = Fixture::start().await;
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key(KEY)
         .rest_endpoint(Url::parse(&format!("http://{}/", fixture.address)).unwrap())
         .socket_endpoint(Url::parse(&format!("ws://{}/", fixture.address)).unwrap())

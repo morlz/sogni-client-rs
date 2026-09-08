@@ -8,6 +8,15 @@ wire contract is compatible.
 
 ## Unreleased
 
+- Port the public TypeScript 5.32.0 contract through upstream `18b43c9`.
+- Add SAM3 prompts and preflight validation with a single lossless PNG mask per source.
+- Deliver Pixal3D GLB artifacts through the media API, including recovered results.
+- Expose worker result provenance, Sogni World receipt requests, and typed model preparation phases.
+- Allow REST-only startup without an app ID; require an explicit stable ID for WebSocket clients.
+- Reuse stable example identities, with `SOGNI_APP_ID` available for separate installations.
+- Preserve terminal recovery reasons and settle unfinished children and completion waiters.
+- Reject retired Wan 3 `smartDuration` whenever present, including false and null.
+- Keep omitted diffusion settings under model defaults and preserve null Comfy sampler/scheduler fields.
 - Preserve the advertised boolean upscale capability from model tiers in normalized model options.
 - Add application-reserved UUID submission and exact project recovery for durable callers.
 - Keep missing-project recovery inconclusive when the live registry is unavailable or malformed.

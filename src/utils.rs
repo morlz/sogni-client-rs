@@ -17,7 +17,8 @@ pub use models::{
     MINIMAX_H3_MAX_FRAMES, MINIMAX_H3_MAX_PIXELS, MINIMAX_H3_MIN_DURATION, MINIMAX_H3_MIN_FRAMES,
     calculate_video_frames, get_video_workflow_type, is_audio_model, is_external_video_model,
     is_happyhorse_model, is_ltx_model, is_minimax_h3_balanced_model, is_minimax_h3_model,
-    is_minimax_h3_reference_model, is_minimax_h3_turbo_model, is_seedance_model,
-    is_seedance25_model, is_video_model, is_wan_model, is_wan3_enhanced_model, is_wan3_model,
+    is_minimax_h3_reference_model, is_minimax_h3_turbo_model, is_model_artifact_model,
+    is_seedance_model, is_seedance25_model, is_video_model, is_wan_model, is_wan3_enhanced_model,
+    is_wan3_model,
 };
 pub use sse::{ParsedSseEvent, parse_sse_chunk};

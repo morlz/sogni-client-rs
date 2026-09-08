@@ -174,6 +174,18 @@ impl ProjectRequest {
         self.param("numberOfMedia", value)
     }
 
+    /// Select the source-image foreground for a SAM3 segmentation request.
+    #[must_use]
+    pub fn sam3_prompt(self, value: Sam3ImagePrompt) -> Self {
+        self.param("sam3Prompt", json!(value))
+    }
+
+    /// Request worker-attested hashes for a Sogni World generation stage.
+    #[must_use]
+    pub fn world_generation_receipt(self, value: WorldGenerationReceiptRequest) -> Self {
+        self.param("worldGenerationReceipt", json!(value))
+    }
+
     #[must_use]
     pub fn steps(self, value: u32) -> Self {
         self.param("steps", value)

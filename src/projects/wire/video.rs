@@ -203,6 +203,8 @@ pub(super) fn build_video_keyframe(
         validate_option(params.get("sampler"), options.raw.get("sampler"), "sampler")?
     {
         keyframe.insert("comfySampler".into(), value);
+    } else {
+        keyframe.insert("comfySampler".into(), Value::Null);
     }
     if let Some(value) = validate_option(
         params.get("scheduler"),
@@ -210,6 +212,8 @@ pub(super) fn build_video_keyframe(
         "scheduler",
     )? {
         keyframe.insert("comfyScheduler".into(), value);
+    } else {
+        keyframe.insert("comfyScheduler".into(), Value::Null);
     }
     Ok(())
 }

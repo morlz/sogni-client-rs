@@ -70,6 +70,7 @@ async fn verify_create(png: Vec<u8>, output: Option<&Path>, reserve_guide: bool,
     let mut fixture = Fixture::start().await;
     let endpoint = format!("http://{}/", fixture.address);
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key(KEY)
         .rest_endpoint(Url::parse(&endpoint).unwrap())
         .socket_endpoint(Url::parse(&format!("ws://{}/", fixture.address)).unwrap())

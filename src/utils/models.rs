@@ -129,6 +129,12 @@ pub fn is_video_model(model_id: &str) -> bool {
         || is_minimax_h3_model(model_id)
 }
 
+/// Whether a model produces a downloadable 3D artifact.
+#[must_use]
+pub fn is_model_artifact_model(model_id: &str) -> bool {
+    model_id.starts_with("pixal3d_")
+}
+
 #[must_use]
 pub fn is_audio_model(model_id: &str) -> bool {
     model_id.starts_with("ace_step") || model_id == "minimax_music3"

@@ -15,6 +15,7 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
         .unwrap_or(false);
     let detected = data.get("nsfwDetected").and_then(Value::as_bool) == Some(true);
     let canceled = data.get("userCanceled").and_then(Value::as_bool) == Some(true);
+    let provenance = JobProvenance::from_result(data);
     let mut result_url = raw_result_url(data);
     job.update(
         |state| {
@@ -26,8 +27,17 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
             state.result_url.clone_from(&result_url);
             state.is_nsfw = nsfw;
             state.nsfw_detected = detected;
+            if provenance.is_some() {
+                state.provenance.clone_from(&provenance);
+            }
         },
-        &["status", "resultUrl", "isNSFW", "nsfwDetected"],
+        &[
+            "status",
+            "resultUrl",
+            "isNSFW",
+            "nsfwDetected",
+            "provenance",
+        ],
     );
     if result_url.is_none() && (!nsfw || detected) && !canceled {
         if let Ok(url) = job.get_result_url().await {
@@ -60,8 +70,14 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
         },
         &["status", "resultUrl", "isNSFW", "nsfwDetected"],
     );
-    project.notify("jobCompleted", json!({"jobId": job_id}));
-    inner.events.emit("job", data.clone());
+    let mut completed = json!({"jobId": job_id});
+    let mut event = data.clone();
+    if let Some(provenance) = provenance {
+        completed["provenance"] = json!(provenance);
+        event["provenance"] = json!(provenance);
+    }
+    project.notify("jobCompleted", completed);
+    inner.events.emit("job", event);
 }
 
 pub(super) fn handle_job_error(inner: &Arc<ProjectsInner>, data: &Value) {
@@ -222,3 +238,7 @@ async fn terminal_after_cancel(api: &ProjectsApi, project_id: &str) -> Result<Va
 #[cfg(test)]
 #[path = "cancel_tests.rs"]
 mod cancel_tests;
+
+#[cfg(test)]
+#[path = "result_tests.rs"]
+mod tests;

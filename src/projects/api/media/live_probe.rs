@@ -24,6 +24,7 @@ async fn registered_guide_round_trip_without_generation() -> Result<()> {
     let input = prepare_input(&source, &workspace)?;
     let bytes = tokio::fs::read(&input).await?;
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key(key)
         .proxy_url(proxy)
         .strict_media_destinations(true)

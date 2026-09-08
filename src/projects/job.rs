@@ -70,6 +70,22 @@ impl Job {
         self.inner.state.read().result_url.clone()
     }
 
+    /// Media produced by the model, which may differ from the request type.
+    #[must_use]
+    pub fn media_type(&self) -> &str {
+        &self.inner.project_media_type
+    }
+
+    #[must_use]
+    pub fn provenance(&self) -> Option<JobProvenance> {
+        self.inner.state.read().provenance.clone()
+    }
+
+    #[must_use]
+    pub fn preparation(&self) -> Option<JobPreparation> {
+        self.inner.state.read().preparation()
+    }
+
     #[must_use]
     pub fn is_withheld(&self) -> bool {
         let state = self.inner.state.read();
@@ -104,12 +120,13 @@ impl Job {
             ("audio", Some("flac")) => Some("audio/flac"),
             ("audio", Some("wav")) => Some("audio/wav"),
             ("audio", _) => Some("audio/mpeg"),
+            ("model", _) => Some("model/gltf-binary"),
             ("image", Some("jpg" | "jpeg")) => Some("image/jpeg"),
             ("image", Some("webp")) => Some("image/webp"),
             ("image", Some("png")) => Some("image/png"),
             _ => None,
         };
-        let query = if matches!(self.inner.project_media_type.as_str(), "video" | "audio") {
+        let query = if matches!(self.media_type(), "video" | "audio" | "model") {
             json!({
                 "jobId": state.project_id,
                 "id": state.id,
@@ -124,7 +141,7 @@ impl Job {
                 "contentType": content_type,
             })
         };
-        let endpoint = if matches!(self.inner.project_media_type.as_str(), "video" | "audio") {
+        let endpoint = if matches!(self.media_type(), "video" | "audio" | "model") {
             "/v1/media/downloadUrl"
         } else {
             "/v1/image/downloadUrl"
@@ -164,7 +181,9 @@ impl Job {
     ) -> Result<Option<String>> {
         let parent = self.inner.project.upgrade().ok_or(Error::Closed)?;
         let parent_params = parent.state.read().params.clone();
-        if parent_params.get("type").and_then(Value::as_str) != Some("image") {
+        if parent_params.get("type").and_then(Value::as_str) != Some("image")
+            || self.media_type() != "image"
+        {
             return Err(Error::InvalidInput(
                 "enhancement is only available for images".into(),
             ));

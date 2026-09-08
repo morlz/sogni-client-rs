@@ -27,6 +27,7 @@ async fn fixture(code: StatusCode) -> (SogniClient, Arc<AtomicUsize>, tokio::tas
         axum::serve(listener, app).await.unwrap();
     });
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key("fixture")
         .rest_endpoint(Url::parse(&format!("http://{address}/")).unwrap())
         .defer_socket_start(true)

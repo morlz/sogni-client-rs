@@ -76,6 +76,7 @@ impl ProjectsApi {
         for (role, _) in &request.assets {
             mark_asset_param(&mut request.params, role);
         }
+        wire::normalize_utility_params(&mut request.params);
         validate_project_params(&request.params)?;
         let model_id = required_str(&request.params, "modelId")?;
         validate_asset_roles(model_id, &request.assets)?;

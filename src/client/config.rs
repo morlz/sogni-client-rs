@@ -26,6 +26,8 @@ impl Network {
 
 #[derive(Clone)]
 pub struct ClientConfig {
+    /// Stable application-installation ID. Persist it across process restarts.
+    /// May be empty only when `disable_socket` is true.
     pub app_id: String,
     pub app_source: Option<String>,
     pub attribution: Attribution,
@@ -37,6 +39,7 @@ pub struct ClientConfig {
     pub rest_endpoint: Url,
     pub socket_endpoint: Url,
     pub socket_event_subscriptions: BTreeMap<String, bool>,
+    /// REST-only mode: never open a socket. Socket generation/chat are unavailable.
     pub disable_socket: bool,
     /// Keep socket-hosted HTTP APIs available without starting realtime I/O at build.
     pub defer_socket_start: bool,
@@ -84,7 +87,7 @@ impl std::fmt::Debug for ClientConfig {
 impl Default for ClientConfig {
     fn default() -> Self {
         Self {
-            app_id: uuid::Uuid::new_v4().to_string(),
+            app_id: String::new(),
             app_source: None,
             attribution: Attribution::default(),
             network: Network::Fast,
@@ -113,6 +116,7 @@ pub struct ClientBuilder {
 }
 
 impl ClientBuilder {
+    /// Set a persisted installation ID, unique among simultaneous account connections.
     #[must_use]
     pub fn app_id(mut self, value: impl Into<String>) -> Self {
         self.config.app_id = value.into();
@@ -170,6 +174,7 @@ impl ClientBuilder {
         self
     }
 
+    /// Use only REST APIs; no app ID is required in this mode.
     #[must_use]
     pub fn disable_socket(mut self, value: bool) -> Self {
         self.config.disable_socket = value;

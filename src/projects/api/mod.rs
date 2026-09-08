@@ -79,6 +79,15 @@ impl ProjectsApi {
             .map_or_else(|| is_audio_model(model_id), |media| media == "audio")
     }
 
+    /// Consult advertised media metadata, falling back to known 3D model IDs.
+    #[must_use]
+    pub fn is_model_artifact_model_id(&self, model_id: &str) -> bool {
+        cached_model_media(&self.inner.supported_models, model_id).map_or_else(
+            || is_model_artifact_model(model_id),
+            |media| media == "model",
+        )
+    }
+
     pub async fn wait_for_models(&self, timeout: Duration) -> Result<Vec<Value>> {
         if !self.available_models().is_empty() {
             return Ok(self.available_models());

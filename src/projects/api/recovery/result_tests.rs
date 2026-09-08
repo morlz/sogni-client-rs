@@ -68,6 +68,7 @@ async fn fixture(
     let address = listener.local_addr().unwrap();
     let server = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key("local-fixture")
         .rest_endpoint(Url::parse(&format!("http://{address}/")).unwrap())
         .socket_endpoint(Url::parse(&format!("ws://{address}/")).unwrap())

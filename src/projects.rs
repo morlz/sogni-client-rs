@@ -1,4 +1,4 @@
-//! Image, video, and audio generation projects.
+//! Image, video, audio, segmentation, and 3D artifact generation projects.
 
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
@@ -26,8 +26,8 @@ use crate::{
         calculate_video_frames, detect_content_type, get_video_workflow_type, is_audio_model,
         is_external_video_model, is_happyhorse_model, is_ltx_model, is_minimax_h3_balanced_model,
         is_minimax_h3_model, is_minimax_h3_reference_model, is_minimax_h3_turbo_model,
-        is_seedance_model, is_seedance25_model, is_video_model, is_wan3_enhanced_model,
-        is_wan3_model, new_id, path_segment, scalar_string,
+        is_model_artifact_model, is_seedance_model, is_seedance25_model, is_video_model,
+        is_wan3_enhanced_model, is_wan3_model, new_id, path_segment, scalar_string,
     },
 };
 
@@ -36,9 +36,12 @@ mod events;
 mod helpers;
 mod job;
 mod mapping;
+mod preparation;
 mod project;
+mod provenance;
 mod recovery;
 mod request;
+mod sam3;
 mod snapshots;
 mod submission;
 mod validation;
@@ -49,13 +52,16 @@ mod tests;
 
 pub use api::ProjectsApi;
 pub use job::Job;
+pub use preparation::{JobModelPhaseStep, JobPreparation};
 pub use project::Project;
+pub use provenance::{JobProvenance, WorldGenerationReceiptRequest};
 pub use recovery::{
     ACTIVE_PROJECTS_RECOVERED_EVENT, COMPLETED_PROJECTS_RECOVERED_EVENT,
     PROJECT_LOST_ORIGINAL_CODE, ProjectResolution, ResolveMissingOptions, is_project_lost_error,
     is_project_lost_payload,
 };
 pub use request::{AssetRole, MediaSource, ProjectRequest};
+pub use sam3::{Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint};
 pub use snapshots::{
     CostEstimate, JobSnapshot, JobStatus, ModelOptions, PresignedPost, ProjectSnapshot,
     ProjectStatus,

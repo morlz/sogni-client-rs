@@ -36,8 +36,14 @@ impl SogniClient {
     }
 
     pub async fn create(mut config: ClientConfig) -> Result<Self> {
-        if config.app_id.trim().is_empty() {
-            return Err(Error::InvalidInput("app_id must be non-empty".into()));
+        config.app_id = config.app_id.trim().to_owned();
+        if config.app_id.is_empty() {
+            if !config.disable_socket {
+                return Err(Error::InvalidInput(
+                    "appId is required when WebSocket connections are enabled".into(),
+                ));
+            }
+            config.app_id = "rest-only".into();
         }
         if config.api_key.is_some() && config.auth_kind != AuthKind::ApiKey {
             return Err(Error::InvalidInput(

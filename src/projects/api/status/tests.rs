@@ -41,6 +41,7 @@ async fn fixture(
         axum::serve(listener, app).await.unwrap();
     });
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key("local-fixture")
         .rest_endpoint(Url::parse(&format!("http://{address}/")).unwrap())
         .socket_endpoint(Url::parse(&format!("ws://{address}/")).unwrap())
@@ -78,6 +79,7 @@ async fn lower_case_uuid_uses_the_case_sensitive_canonical_v2_route() {
         axum::serve(listener, app).await.unwrap();
     });
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key("local-fixture")
         .rest_endpoint(Url::parse(&format!("http://{address}/")).unwrap())
         .defer_socket_start(true)

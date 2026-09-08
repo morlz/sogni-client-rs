@@ -29,6 +29,8 @@ pub(super) fn build_image_keyframe(
             if comfy { "comfySampler" } else { "scheduler" }.into(),
             sampler,
         );
+    } else if comfy {
+        keyframe.insert("comfySampler".into(), Value::Null);
     }
     if let Some(scheduler) = scheduler {
         keyframe.insert(
@@ -40,6 +42,8 @@ pub(super) fn build_image_keyframe(
             .into(),
             scheduler,
         );
+    } else if comfy {
+        keyframe.insert("comfyScheduler".into(), Value::Null);
     }
     if comfy {
         let vae = validate_option(params.get("vae"), options.raw.get("vae"), "vae")?;
@@ -56,6 +60,29 @@ pub(super) fn build_image_keyframe(
         keyframe.insert("hasStartingImage".into(), json!(true));
         keyframe.insert("strengthIsEnabled".into(), json!(true));
         keyframe.insert("strength".into(), json!(1.0 - strength));
+    }
+    if model_id == SAM3_MODEL_ID {
+        if !has_starting_image {
+            return Err(Error::InvalidInput(
+                "SAM3 image segmentation requires startingImage".into(),
+            ));
+        }
+        let prompt = params
+            .get("sam3Prompt")
+            .filter(|v| !sam3::is_falsy(v))
+            .ok_or_else(|| {
+                Error::InvalidInput("SAM3 image segmentation requires sam3Prompt".into())
+            })?;
+        keyframe.insert("sam3Prompt".into(), normalize_sam3_prompt(prompt)?);
+    } else if params.contains_key("sam3Prompt") {
+        return Err(Error::InvalidInput(format!(
+            "sam3Prompt is only supported by {SAM3_MODEL_ID}"
+        )));
+    }
+    if model_id == PIXAL3D_MODEL_ID && !has_starting_image {
+        return Err(Error::InvalidInput(
+            "Pixal3D reconstruction requires startingImage".into(),
+        ));
     }
     for index in 1_usize..=16 {
         let direct = truthy(params.get(&format!("contextImage{index}")));

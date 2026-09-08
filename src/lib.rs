@@ -38,10 +38,11 @@ pub use error::{
 pub use event::{Event, EventReceiver};
 pub use projects::{
     ACTIVE_PROJECTS_RECOVERED_EVENT, AssetRole, COMPLETED_PROJECTS_RECOVERED_EVENT, CostEstimate,
-    Job, JobSnapshot, JobStatus, MediaSource, ModelOptions, PROJECT_LOST_ORIGINAL_CODE,
-    PresignedPost, Project, ProjectRequest, ProjectResolution, ProjectSnapshot, ProjectStatus,
-    ProjectSubmissionError, ProjectsApi, ResolveMissingOptions, SubmissionPhase,
-    is_project_lost_error, is_project_lost_payload,
+    Job, JobModelPhaseStep, JobPreparation, JobProvenance, JobSnapshot, JobStatus, MediaSource,
+    ModelOptions, PROJECT_LOST_ORIGINAL_CODE, PresignedPost, Project, ProjectRequest,
+    ProjectResolution, ProjectSnapshot, ProjectStatus, ProjectSubmissionError, ProjectsApi,
+    ResolveMissingOptions, Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint,
+    SubmissionPhase, WorldGenerationReceiptRequest, is_project_lost_error, is_project_lost_payload,
 };
 pub use replay::{ReplayApi, ReplayGetResult, ReplayWriteResult};
 pub use stats::StatsApi;
@@ -53,8 +54,8 @@ pub use utils::{
     calculate_video_frames, detect_content_type, get_video_workflow_type, is_audio_model,
     is_external_video_model, is_happyhorse_model, is_ltx_model, is_minimax_h3_balanced_model,
     is_minimax_h3_model, is_minimax_h3_reference_model, is_minimax_h3_turbo_model,
-    is_seedance_model, is_seedance25_model, is_video_model, is_wan_model, is_wan3_enhanced_model,
-    is_wan3_model, new_id, parse_sse_chunk,
+    is_model_artifact_model, is_seedance_model, is_seedance25_model, is_video_model, is_wan_model,
+    is_wan3_enhanced_model, is_wan3_model, new_id, parse_sse_chunk,
 };
 pub use workflows::{
     CREATIVE_WORKFLOW_WAITING_REASONS, CreativeWorkflowTemplatesApi, CreativeWorkflowsApi,

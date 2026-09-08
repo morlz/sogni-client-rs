@@ -14,7 +14,9 @@ use super::SogniClient;
 
 mod project_wire;
 mod project_wire_server;
+mod rest_only;
 mod submission_phase;
+mod utility_projects;
 mod wire_auth;
 
 #[tokio::test]
@@ -41,6 +43,7 @@ async fn deferred_catalogue_auth_uses_http_without_opening_realtime_session() {
         axum::serve(listener, app).await.expect("serve fixture");
     });
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key("fixture-key")
         .socket_endpoint(Url::parse(&format!("ws://{address}/")).expect("fixture endpoint"))
         .defer_socket_start(true)

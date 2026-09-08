@@ -84,7 +84,7 @@ pub(super) fn handle_job_state(inner: &Arc<ProjectsInner>, data: &Value) {
                         }
                     }
                 },
-                &["status", "workerName"],
+                &["status", "workerName", "preparation"],
             );
             project.update(
                 |state| {

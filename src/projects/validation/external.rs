@@ -111,12 +111,9 @@ pub(super) fn validate_wan3_references(
             "Wan 3.0 Enhanced does not expose a watermark option".into(),
         ));
     }
-    if params
-        .get("smartDuration")
-        .is_some_and(|value| !value.is_null())
-    {
+    if params.contains_key("smartDuration") {
         return Err(Error::InvalidInput(
-            "Wan 3 smartDuration has been retired. Send an explicit duration between 2 and 30 seconds instead"
+            "Wan 3 smartDuration has been retired. Send an explicit duration between 2 and 30 seconds instead."
                 .into(),
         ));
     }

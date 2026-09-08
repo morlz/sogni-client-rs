@@ -1,5 +1,9 @@
 use super::*;
 
+#[cfg(test)]
+#[path = "recovery_tests.rs"]
+mod tests;
+
 /// Stable marker stored in `originalCode` when reconciliation proves a project was lost.
 pub const PROJECT_LOST_ORIGINAL_CODE: &str = "projectLost";
 
@@ -120,6 +124,8 @@ pub(super) fn recovered_params(raw: &Value) -> Value {
         ("seed", "seed"),
         ("loras", "loras"),
         ("loraStrengths", "loraStrengths"),
+        ("sam3Prompt", "sam3Prompt"),
+        ("worldGenerationReceipt", "worldGenerationReceipt"),
     ] {
         if let Some(value) = keyframe.get(source).filter(|value| !value.is_null()) {
             params[target] = value.clone();
@@ -136,6 +142,7 @@ pub(super) fn recovered_params(raw: &Value) -> Value {
     if let Some(value) = request.get("outputFormat") {
         params["outputFormat"] = value.clone();
     }
+    wire::normalize_utility_params(params.as_object_mut().expect("recovered params object"));
     params
 }
 
@@ -192,6 +199,14 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
                     .map(ToOwned::to_owned)
                     .or_else(|| state.worker_name.clone());
                 state.result_url = raw_result_url(&job_raw).or_else(|| state.result_url.clone());
+                if let Some(provenance) = JobProvenance::from_result(&job_raw) {
+                    state.provenance = Some(provenance);
+                }
+                if let Some(preparation) = job_raw.get("preparation") {
+                    state
+                        .extra
+                        .insert("preparation".into(), preparation.clone());
+                }
                 state.is_nsfw = job_raw
                     .get("triggeredNSFWFilter")
                     .and_then(Value::as_bool)
@@ -209,7 +224,7 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
                     .map(ToOwned::to_owned)
                     .collect();
             },
-            &["status", "step", "resultUrl"],
+            &["status", "step", "resultUrl", "provenance", "preparation"],
         );
     }
     let status = match raw.get("status").and_then(Value::as_str) {
@@ -223,15 +238,74 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
         _ => None,
     };
     if let Some(status) = status {
+        // A compact terminal record may omit unfinished children entirely.
+        // Preserve an existing server error and settle every remaining child.
+        let snapshot = project.snapshot();
+        let terminal_error = if matches!(status, ProjectStatus::Failed | ProjectStatus::Canceled)
+            && (!snapshot.status.is_finished() || snapshot.status == status)
+        {
+            Some(
+                snapshot
+                    .error
+                    .unwrap_or_else(|| recovered_terminal_error(raw, status)),
+            )
+        } else {
+            None
+        };
+        if let Some(error) = &terminal_error {
+            for job in project.jobs() {
+                job.update(
+                    |state| {
+                        if !state.status.is_finished() {
+                            state.status = if status == ProjectStatus::Canceled {
+                                JobStatus::Canceled
+                            } else {
+                                JobStatus::Failed
+                            };
+                            state.error = Some(error.clone());
+                        }
+                    },
+                    &["status", "error"],
+                );
+            }
+        }
         project.update(
             |state| {
-                if !state.status.is_finished() {
+                if !state.status.is_finished() || state.status == status {
                     state.status = status;
+                    if terminal_error.is_some() {
+                        state.error = terminal_error;
+                    }
                 }
             },
-            &["status", "jobs"],
+            &["status", "jobs", "error"],
         );
     }
+}
+
+fn recovered_terminal_error(raw: &Value, status: ProjectStatus) -> Value {
+    let reason = raw
+        .get("reason")
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .trim();
+    let code = reason
+        .bytes()
+        .all(|b| b.is_ascii_digit())
+        .then(|| reason.parse::<u64>().ok())
+        .flatten()
+        .filter(|code| *code <= 9_007_199_254_740_991)
+        .unwrap_or(0);
+    let message = if reason.is_empty() {
+        if status == ProjectStatus::Canceled {
+            "Project canceled"
+        } else {
+            "Project failed"
+        }
+    } else {
+        reason
+    };
+    json!({"code":code, "message":message})
 }
 
 pub(super) fn is_llm_recovery(raw: &Value) -> bool {

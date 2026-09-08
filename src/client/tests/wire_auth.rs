@@ -94,6 +94,7 @@ async fn full_client_preserves_api_key_on_http_and_websocket_after_initializatio
         }
     });
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key(SENTINEL)
         .rest_endpoint(Url::parse(&format!("http://{address}/")).unwrap())
         .socket_endpoint(Url::parse(&format!("ws://{address}/")).unwrap())

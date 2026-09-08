@@ -48,6 +48,9 @@ pub struct JobSnapshot {
     pub seed: Option<i64>,
     pub result_url: Option<String>,
     pub preview_url: Option<String>,
+    /// Public worker receipt, when this result includes one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub provenance: Option<JobProvenance>,
     pub error: Option<Value>,
     pub is_nsfw: bool,
     pub nsfw_detected: bool,
@@ -61,6 +64,12 @@ pub struct JobSnapshot {
 }
 
 impl JobSnapshot {
+    /// Typed view of known preparation phases; raw future phases stay in `extra`.
+    #[must_use]
+    pub fn preparation(&self) -> Option<JobPreparation> {
+        serde_json::from_value(self.extra.get("preparation")?.clone()).ok()
+    }
+
     pub(super) fn pending(id: String, project_id: String, step_count: f64) -> Self {
         Self {
             id,
@@ -72,6 +81,7 @@ impl JobSnapshot {
             seed: None,
             result_url: None,
             preview_url: None,
+            provenance: None,
             error: None,
             is_nsfw: false,
             nsfw_detected: false,

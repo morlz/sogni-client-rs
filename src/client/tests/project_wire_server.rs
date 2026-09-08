@@ -145,13 +145,20 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
         }
         "/api/v1/models/list" => json!([
             {"id":"flux1-schnell-fp8","SID":1,"tier":"fixture"},
-            {"id":"z_image_turbo_bf16","SID":2,"tier":"comfy-fixture"}
+            {"id":"z_image_turbo_bf16","SID":2,"tier":"comfy-fixture"},
+            {"id":"sam3_image_segment_bf16","SID":3,"tier":"utility","media":"image"},
+            {"id":"pixal3d_int8_i23d","SID":4,"tier":"utility","media":"model"}
         ]),
         "/api/v2/models/tiers" => json!({"fixture": {
             "steps":{"min":1,"max":5,"default":4},
             "guidance":{"min":1,"max":1,"default":1},
             "sampler":{"allowed":["Euler"],"default":"Euler"},
             "scheduler":{"allowed":["Simple","DDIM"],"default":"Simple"}
+        }, "utility": {
+            "type":"image", "steps":{"min":1,"max":56,"default":1},
+            "guidance":{"min":0,"max":1,"default":0},
+            "sampler":{"allowed":[],"default":null},
+            "scheduler":{"allowed":[],"default":null}
         }, "comfy-fixture": {
             "type":"image", "steps":{"min":4,"max":12,"default":8},
             "guidance":{"min":1,"max":1,"default":1},
@@ -189,7 +196,27 @@ async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>) {
                 if envelope["type"] == "jobRequest" {
                     let value =
                         crate::utils::b64_json_decode(envelope["data"].as_str().unwrap()).unwrap();
-                    sender.send(value).await.unwrap();
+                    sender.send(value.clone()).await.unwrap();
+                    if matches!(
+                        value["keyFrames"][0]["modelID"].as_str(),
+                        Some("sam3_image_segment_bf16" | "pixal3d_int8_i23d")
+                    ) {
+                        let project_id = &value["jobID"];
+                        for (name, data) in [
+                            (
+                                "jobResult",
+                                json!({"jobID":project_id,"imgID":"UTILITY-RESULT","resultUrl":"https://example.test/utility-result"}),
+                            ),
+                            (
+                                "jobState",
+                                json!({"jobID":project_id,"type":"jobCompleted"}),
+                            ),
+                        ] {
+                            socket.send(Message::Text(json!({
+                                "type":name,"data":crate::utils::b64_json_encode(&data).unwrap()
+                            }).to_string().into())).await.unwrap();
+                        }
+                    }
                 }
             }
             Message::Ping(value) => {

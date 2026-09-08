@@ -189,10 +189,9 @@ impl Project {
                             .into());
                         }
                         ProjectStatus::Canceled => {
-                            return Err(ProjectError::from_payload(json!({
-                                "code": 5004,
-                                "message": "Project was canceled",
-                            }))
+                            return Err(ProjectError::from_payload(snapshot.error.unwrap_or_else(
+                                || json!({"code": 0, "message": "Project canceled"}),
+                            ))
                             .into());
                         }
                         _ => {}
@@ -244,16 +243,28 @@ impl Project {
             .get("outputFormat")
             .and_then(Value::as_str)
             .map(ToOwned::to_owned);
+        let api = self
+            .inner
+            .api
+            .upgrade()
+            .expect("project API lives while project is tracked");
+        let model_id = state
+            .params
+            .get("modelId")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        let media_type = cached_model_media(&api.supported_models, model_id).unwrap_or_else(|| {
+            if is_model_artifact_model(model_id) {
+                "model".into()
+            } else {
+                state.media_type.clone()
+            }
+        });
         let job = Job::new(
             JobSnapshot::pending(canonical_id.clone(), state.id.clone(), step_count),
-            self.inner
-                .api
-                .upgrade()
-                .expect("project API lives while project is tracked")
-                .client
-                .clone(),
+            api.client.clone(),
             Arc::downgrade(&self.inner),
-            state.media_type.clone(),
+            media_type,
             output_format,
         );
         drop(state);

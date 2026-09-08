@@ -65,6 +65,7 @@ async fn native_tier_capability_survives_the_public_model_options_path() {
     let endpoint = Url::parse(&format!("ws://{}/", listener.local_addr().unwrap())).unwrap();
     let server = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key("local-fixture")
         .socket_endpoint(endpoint)
         .defer_socket_start(true)

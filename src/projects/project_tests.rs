@@ -77,6 +77,7 @@ fn snapshot_releases_state_before_collecting_jobs() {
 async fn concurrent_job_recovery_reuses_one_child_and_notifies_once() {
     const IMAGE: &str = "BBBBBBBB-BBBB-4BBB-8BBB-BBBBBBBBBBBB";
     let client = SogniClient::builder()
+        .app_id("local-parity-fixture")
         .api_key("local-fixture")
         .defer_socket_start(true)
         .build()

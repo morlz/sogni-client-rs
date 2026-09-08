@@ -242,11 +242,10 @@ fn save_credentials(username: &str, password: &str) -> Result<()> {
     Ok(())
 }
 
-/// Make an application id unique enough to keep concurrent example runs separate.
+/// Reuse an example's application identity across restarts. Set `SOGNI_APP_ID`
+/// to a persisted installation-specific value for simultaneous installations.
 pub fn unique_app_id(prefix: &str) -> String {
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis();
-    format!("{prefix}-{timestamp}")
+    setting("SOGNI_APP_ID")
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| prefix.to_owned())
 }
