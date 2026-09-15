@@ -3,7 +3,7 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.50.1** implements the TypeScript **5.50.0** public contract through
+Version **5.50.2** implements the TypeScript **5.50.0** public contract through
 [`452e789`](https://github.com/Sogni-AI/sogni-client/commit/452e78967a21ab80977c11f16517072d1836405a),
 including hosted tool definitions from Sogni Protocol `1.0.0-alpha.42`.
 
@@ -43,7 +43,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client = { version = "5.50.1", default-features = false }
+sogni-client = { version = "5.50.2", default-features = false }
 ```
 
 For development against the repository:
@@ -517,7 +517,7 @@ checkout with `scripts/update-generation-parity-fixtures.cjs` and
 recorded upstream revision. CI publishes a new manifest version to crates.io after a
 successful default-branch push; see [RELEASING.md](RELEASING.md) for registry
 credentials and release checks. Weekly synchronization runs as a Codex task on
-Mondays at 09:00 Europe/Moscow, using the recorded upstream baseline.
+Mondays at 06:00 UTC, using the recorded upstream baseline.
 
 See [Sogni documentation](https://docs.sogni.ai/),
 [`sogni-client`](https://github.com/Sogni-AI/sogni-client), and

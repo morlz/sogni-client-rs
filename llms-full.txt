@@ -1,12 +1,12 @@
 # sogni-client Rust SDK complete agent reference
 
-Crate version: 5.50.1. Compatible with TypeScript 5.50.0 at upstream commit
+Crate version: 5.50.2. Compatible with TypeScript 5.50.0 at upstream commit
 452e78967a21ab80977c11f16517072d1836405a; hosted protocol 1.0.0-alpha.42.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client = "5.50.1"`; disable default features for clients
+Dependency: `sogni-client = "5.50.2"`; disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 

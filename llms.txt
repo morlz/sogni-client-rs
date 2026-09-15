@@ -1,4 +1,4 @@
-# sogni-client Rust SDK 5.50.1
+# sogni-client Rust SDK 5.50.2
 
 Compatibility: TypeScript 5.50.0 at 452e789; hosted protocol 1.0.0-alpha.42.
 Repository: https://github.com/morlz/sogni-client-rs
