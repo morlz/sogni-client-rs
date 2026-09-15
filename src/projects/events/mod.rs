@@ -3,6 +3,7 @@ use crate::projects::api::ProjectsInner;
 mod result;
 mod state;
 pub(super) use result::cancel_project;
+pub(super) use result::copy_export_metadata;
 use result::{handle_job_error, handle_job_result};
 use state::{handle_job_eta, handle_job_progress, handle_job_state};
 pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
@@ -30,13 +31,33 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
             let Some(inner) = weak.upgrade() else {
                 return;
             };
+            if matches!(
+                event.name.as_str(),
+                "jobState" | "jobProgress" | "jobETA" | "jobResult" | "jobRetry"
+            ) {
+                if let Some(id) = event.data.get("jobID").and_then(Value::as_str) {
+                    inner
+                        .submission
+                        .lock()
+                        .unadmitted
+                        .remove(&id.to_uppercase());
+                }
+            }
             match event.name.as_str() {
                 "jobState" => handle_job_state(&inner, &event.data),
                 "jobProgress" => handle_job_progress(&inner, &event.data),
                 "jobETA" => handle_job_eta(&inner, &event.data),
                 "jobResult" => handle_job_result(&inner, &event.data).await,
                 "jobError" => handle_job_error(&inner, &event.data),
+                "jobRetry" => handle_job_retry(&inner, &event.data),
                 "changeNetwork" => {
+                    if let Some(network) = event.data.get("network").and_then(Value::as_str) {
+                        match network {
+                            "fast" => *inner.runtime_network.write() = Some(Network::Fast),
+                            "relaxed" => *inner.runtime_network.write() = Some(Network::Relaxed),
+                            _ => {}
+                        }
+                    }
                     *inner.available_models.write() = Vec::new();
                     inner.events.emit("availableModels", json!([]));
                 }
@@ -56,6 +77,17 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
         }
     });
 }
+
+fn handle_job_retry(inner: &ProjectsInner, data: &Value) {
+    // Retry diagnostics describe the abandoned attempt. Keep them internal so
+    // public job consumers do not fail the render that is still being retried.
+    if let Some(project) = state::project_by_id(inner, data) {
+        project.retry_job(data);
+    }
+}
+
+#[cfg(test)]
+mod retry_tests;
 
 fn handle_swarm_models(inner: &Arc<ProjectsInner>, data: &Value) {
     let Some(workers) = data.as_object() else {

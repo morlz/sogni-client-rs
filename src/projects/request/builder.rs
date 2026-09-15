@@ -180,6 +180,15 @@ impl ProjectRequest {
         self.param("sam3Prompt", json!(value))
     }
 
+    /// Apply shared Pixal3D geometry and texture controls.
+    #[must_use]
+    pub fn pixal3d_options(mut self, value: Pixal3dGenerationOptions) -> Self {
+        if let Value::Object(options) = json!(value) {
+            self.params.extend(options);
+        }
+        self
+    }
+
     /// Request worker-attested hashes for a Sogni World generation stage.
     #[must_use]
     pub fn world_generation_receipt(self, value: WorldGenerationReceiptRequest) -> Self {
@@ -234,3 +243,6 @@ impl ProjectRequest {
         Value::Object(self.params.clone())
     }
 }
+
+#[cfg(test)]
+mod tests;

@@ -17,7 +17,7 @@ use crate::{
     event::EventBus,
 };
 
-fn active_chat(job_id: &str) -> (ActiveChat, ChatStream) {
+pub(super) fn active_chat(job_id: &str) -> (ActiveChat, ChatStream) {
     let (sender, receiver) = mpsc::unbounded_channel();
     let state = Arc::new(RwLock::new(ChatStreamState::default()));
     let changed = Arc::new(Notify::new());

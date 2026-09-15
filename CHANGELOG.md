@@ -8,7 +8,27 @@ wire contract is compatible.
 
 ## Unreleased
 
-- Port the public TypeScript 5.32.0 contract through upstream `18b43c9`.
+## [5.50.0] - 2026-09-15
+
+- Port the public TypeScript 5.50.0 contract through upstream `452e789`.
+- Publish new crate versions automatically after the default branch passes CI, using immutable version tags.
+- Record the exact upstream synchronization baseline for the weekly update task.
+- Extend SAM3 with cutouts, bounded instance selection, labeled boxes, and per-selection provenance; accept and omit explicit multimask false outside point prompts.
+- Add deterministic BiRefNet background removal and reject enhancement of masks, cutouts, and model artifacts before downloading results.
+- Add Pixal3D geometry/texture options, the current single-view graph selector, and multi-view orbit uploads with fixed named slots; suppress all artifact previews.
+- Add Qwen3-TTS speech and voice-clone request controls, audio uploads, and model-option mapping without invented music controls.
+- Add FlashVSR promptless video upscaling with optional verified source timing, fractional FPS, no client clip-length cap, and detail/speed/seed controls.
+- Add GPT Image 2.5 Sunburst/Flare quality, transparency, compression, ordered references, and uploaded/data-URI edit masks.
+- Support the final FastH3 two-stage and audio-guide model IDs, exact upload requirements, and an audio-duration frame helper; reject retired outputScale and 720p request IDs.
+- Add Seedance 2.5 MOV output and separately exported final frames, including signed URL refresh and persisted output-format metadata.
+- Reuse verified private subscriber uploads, expose the saved-upload API, and keep transfers and availability scoped to the current account.
+- Preserve logical Job handles across worker reassignment and ignore superseded attempt events.
+- Recover confirmed chat streams across socket restarts, surface retryable lost-turn errors, and reconcile explicit pre-admission project restart refusals.
+- Sync 27 hosted tools and model routing from Sogni Protocol alpha.42, including speech, video upscaling, GPT Image 2.5, and FastH3 audio-guide/two-stage selectors.
+- Expose model-selection helpers and preserve explicit workflow content-filter preferences.
+- Keep generation-receipt validation limited to public wire shape and hashes; service authorization and model eligibility remain authoritative.
+- Surface plain-text REST error explanations and omit unset query parameters.
+- Add reproducible upstream serializer, model-tier, hosted-tool, and model-routing parity fixtures.
 - Add SAM3 prompts and preflight validation with a single lossless PNG mask per source.
 - Deliver Pixal3D GLB artifacts through the media API, including recovered results.
 - Expose worker result provenance, Sogni World receipt requests, and typed model preparation phases.

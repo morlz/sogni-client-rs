@@ -139,6 +139,10 @@ impl SocketTransport {
         }
         self.inner.connected.send_replace(false);
         self.inner.authenticated.store(false, Ordering::Release);
+        self.inner.events.emit(
+            "disconnected",
+            json!({"code":1000,"reason":"Client disconnected"}),
+        );
     }
 
     pub(super) async fn start(&self) -> Result<()> {
@@ -179,15 +183,18 @@ impl SocketTransport {
         let envelope = json!({"type": message_type, "data": b64_json_encode(data)?});
         let text = serde_json::to_string(&envelope)?;
         let (response, waiter) = oneshot::channel();
-        self.inner
-            .commands
-            .send(SocketCommand::Send {
+        let deadline = tokio::time::Instant::now() + self.inner.connect_timeout;
+        tokio::time::timeout_at(
+            deadline,
+            self.inner.commands.send(SocketCommand::Send {
                 message: Message::Text(text.into()),
                 response,
-            })
-            .await
-            .map_err(|_| Error::Closed)?;
-        tokio::time::timeout(self.inner.connect_timeout, waiter)
+            }),
+        )
+        .await
+        .map_err(|_| Error::Timeout("waiting for WebSocket connection".into()))?
+        .map_err(|_| Error::Closed)?;
+        tokio::time::timeout_at(deadline, waiter)
             .await
             .map_err(|_| Error::Timeout("waiting for WebSocket connection".into()))?
             .map_err(|_| Error::Closed)??;

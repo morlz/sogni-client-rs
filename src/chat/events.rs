@@ -10,6 +10,8 @@ use super::{
     types::{ActiveChat, ChatChunk, completion_from_state},
 };
 use crate::{ChatError, event::EventBus};
+mod transport_recovery;
+pub(super) use transport_recovery::{TransportRecovery, submitted, transport_error};
 
 const CHAT_EVENT_LAG_CODE: &str = "CHAT_EVENT_STREAM_LAGGED";
 const CHAT_EVENT_LAG_TYPE: &str = "event_stream_lagged";
@@ -42,6 +44,9 @@ pub(super) fn listen_for_chat_events(inner: &Arc<ChatInner>) {
                 "llmJobResult" => handle_result(&inner, &event.data),
                 "llmJobError" => handle_error(&inner, &event.data),
                 "jobState" => handle_state(&inner, &event.data),
+                "connecting" => transport_recovery::lost(&inner),
+                "disconnected" => transport_recovery::closed(&inner, &event.data),
+                "authenticated" => transport_recovery::authenticated(&inner, &event.data),
                 _ => {}
             }
         }
@@ -117,6 +122,7 @@ fn handle_tokens(inner: &ChatInner, data: &Value) {
     let Some(job_id) = data.get("jobID").and_then(Value::as_str) else {
         return;
     };
+    transport_recovery::alive(inner, job_id);
     let mut active = inner.active.write();
     let Some(stream) = active.get_mut(job_id) else {
         return;
@@ -170,6 +176,7 @@ fn handle_result(inner: &ChatInner, data: &Value) {
     let Some(job_id) = data.get("jobID").and_then(Value::as_str) else {
         return;
     };
+    transport_recovery::alive(inner, job_id);
     let Some(stream) = inner.active.write().remove(job_id) else {
         return;
     };
@@ -199,6 +206,7 @@ fn handle_error(inner: &ChatInner, data: &Value) {
     let Some(job_id) = data.get("jobID").and_then(Value::as_str) else {
         return;
     };
+    transport_recovery::alive(inner, job_id);
     let Some(stream) = inner.active.write().remove(job_id) else {
         return;
     };
@@ -227,6 +235,7 @@ fn handle_state(inner: &ChatInner, data: &Value) {
     let Some(job_id) = data.get("jobID").and_then(Value::as_str) else {
         return;
     };
+    transport_recovery::alive(inner, job_id);
     let active = inner.active.read();
     let Some(stream) = active.get(job_id) else {
         return;

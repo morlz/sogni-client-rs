@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{collections::BTreeMap, net::SocketAddr, sync::Arc};
 
 use futures_util::{SinkExt, StreamExt};
@@ -32,18 +33,24 @@ pub(super) struct Fixture {
 
 impl Fixture {
     pub async fn start() -> Self {
+        Self::with_restart_count(0).await
+    }
+
+    pub async fn with_restart_count(restarts: usize) -> Self {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let http = Arc::new(Mutex::new(Vec::new()));
         let captured = http.clone();
         let (sender, wire) = mpsc::channel(4);
+        let restarts = Arc::new(AtomicUsize::new(restarts));
         let task = tokio::spawn(async move {
             loop {
                 let (stream, _) = listener.accept().await.unwrap();
                 let captured = captured.clone();
                 let sender = sender.clone();
+                let restarts = restarts.clone();
                 tokio::spawn(async move {
-                    serve_connection(stream, address, captured, sender).await;
+                    serve_connection(stream, address, captured, sender, restarts).await;
                 });
             }
         });
@@ -67,6 +74,7 @@ async fn serve_connection(
     address: SocketAddr,
     captured: Arc<Mutex<Vec<HttpCapture>>>,
     sender: mpsc::Sender<Value>,
+    restarts: Arc<AtomicUsize>,
 ) {
     let mut preview = [0_u8; 16384];
     let header = loop {
@@ -91,7 +99,7 @@ async fn serve_connection(
         .is_some_and(|value| value == "websocket")
     {
         assert_eq!(headers.get("api-key").map(String::as_str), Some(KEY));
-        serve_socket(stream, sender).await;
+        serve_socket(stream, sender, restarts).await;
         return;
     }
     let first = header
@@ -140,6 +148,7 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
         Some(KEY)
     );
     match request.path.as_str() {
+        "/v1/assets/capabilities" => json!({"data":{"enabled":false}}),
         "/v1/account/me" => {
             json!({"status":"success","data":{"username":"fixture","walletAddress":"fixture"}})
         }
@@ -175,7 +184,7 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
     }
 }
 
-async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>) {
+async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, restarts: Arc<AtomicUsize>) {
     let mut socket = tokio_tungstenite::accept_async(stream).await.unwrap();
     let payload = crate::utils::b64_json_encode(&json!({
         "username":"fixture", "address":"fixture", "subscriptionEntitlement":{}
@@ -197,6 +206,29 @@ async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>) {
                     let value =
                         crate::utils::b64_json_decode(envelope["data"].as_str().unwrap()).unwrap();
                     sender.send(value.clone()).await.unwrap();
+                    if restarts
+                        .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |count| {
+                            count.checked_sub(1)
+                        })
+                        .is_ok()
+                    {
+                        socket.send(Message::Text(json!({"type":"jobError","data":crate::utils::b64_json_encode(
+                            &json!({"jobID":value["jobID"],"error":1001,"error_message":"Server is restarting"})
+                        ).unwrap()}).to_string().into())).await.unwrap();
+                        socket.close(Some(tokio_tungstenite::tungstenite::protocol::CloseFrame {
+                            code:tokio_tungstenite::tungstenite::protocol::frame::coding::CloseCode::Away,
+                            reason:"Server is restarting".into()
+                        })).await.unwrap();
+                        // Finish the closing handshake before dropping TCP:
+                        // unread pings can otherwise reset the connection and
+                        // discard the refusal we just sent (notably on Windows).
+                        while let Some(Ok(message)) = socket.next().await {
+                            if matches!(message, Message::Close(_)) {
+                                break;
+                            }
+                        }
+                        return;
+                    }
                     if matches!(
                         value["keyFrames"][0]["modelID"].as_str(),
                         Some("sam3_image_segment_bf16" | "pixal3d_int8_i23d")

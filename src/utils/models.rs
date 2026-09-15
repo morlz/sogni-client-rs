@@ -1,5 +1,8 @@
 use crate::{Error, Result};
 
+mod generation;
+pub use generation::*;
+
 pub const LTX2_FRAME_STEP: i64 = 8;
 pub const MINIMAX_H3_FPS: f64 = 24.0;
 pub const MINIMAX_H3_FRAME_STEP: i64 = 17;
@@ -45,6 +48,15 @@ const MINIMAX_H3_MODELS: &[&str] = &[
     "minimax-h3-fastvideo-int8_t2v_turbo",
     "minimax-h3-fastvideo-int8_i2v_turbo",
     "minimax-h3-fastvideo-int8_flf2v_turbo",
+    "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+    "minimax-h3-fastvideo-int8_i2v_turbo_2stage",
+    "minimax-h3-fastvideo-int8_flf2v_turbo_2stage",
+    "minimax-h3-fastvideo-int8_ia2v_turbo",
+    "minimax-h3-fastvideo-int8_flfa2v_turbo",
+    "minimax-h3-fastvideo-int8_a2v_turbo",
+    "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+    "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+    "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
     "minimax-h3-ref2va-fp8_r2v_turbo",
     "minimax-h3-fl2va-fp8_t2v_balanced",
     "minimax-h3-fl2va-fp8_i2v_balanced",
@@ -101,7 +113,14 @@ pub fn is_minimax_h3_model(model_id: &str) -> bool {
 
 #[must_use]
 pub fn is_minimax_h3_turbo_model(model_id: &str) -> bool {
-    is_minimax_h3_model(model_id) && model_id.ends_with("_turbo")
+    is_minimax_h3_model(model_id)
+        && (model_id.ends_with("_turbo") || model_id.ends_with("_turbo_2stage"))
+        // Match upstream's historical sampling classification. These retired
+        // history IDs are not video-model IDs and cannot be submitted.
+        || matches!(model_id,
+            "minimax-h3-fastvideo-int8_t2v_turbo_2stage_720p"
+            | "minimax-h3-fastvideo-int8_i2v_turbo_2stage_720p"
+            | "minimax-h3-fastvideo-int8_flf2v_turbo_2stage_720p")
 }
 
 #[must_use]
@@ -127,6 +146,7 @@ pub fn is_video_model(model_id: &str) -> bool {
         || is_happyhorse_model(model_id)
         || is_wan3_model(model_id)
         || is_minimax_h3_model(model_id)
+        || is_video_upscale_model(model_id)
 }
 
 /// Whether a model produces a downloadable 3D artifact.
@@ -142,6 +162,9 @@ pub fn is_audio_model(model_id: &str) -> bool {
 
 #[must_use]
 pub fn get_video_workflow_type(model_id: &str) -> Option<&'static str> {
+    if is_video_upscale_model(model_id) {
+        return Some("upscale");
+    }
     if is_wan3_model(model_id) {
         return Some("t2v");
     }
@@ -151,7 +174,7 @@ pub fn get_video_workflow_type(model_id: &str) -> Option<&'static str> {
             .find(|kind| model_id.contains(&format!("-{kind}")));
     }
     if is_minimax_h3_model(model_id) {
-        return ["r2v", "flf2v", "i2v", "t2v"]
+        return ["r2v", "flfa2v", "ia2v", "a2v", "flf2v", "i2v", "t2v"]
             .into_iter()
             .find(|kind| model_id.contains(&format!("_{kind}")));
     }
@@ -193,7 +216,10 @@ pub fn calculate_video_frames(
         ));
     }
     let js_round = |value: f64| (value + 0.5).floor() as i64;
-    let mut frames = if is_wan_model(model_id) {
+    let mut frames = if is_video_upscale_model(model_id) {
+        // Upscaling preserves every source frame; never append or snap frames.
+        js_round(duration * fps)
+    } else if is_wan_model(model_id) {
         js_round(duration * 16.0) + 1
     } else if is_minimax_h3_model(model_id) {
         let requested = js_round(duration * MINIMAX_H3_FPS);

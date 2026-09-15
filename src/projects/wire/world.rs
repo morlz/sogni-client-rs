@@ -8,34 +8,18 @@ pub(super) fn normalize_world_receipt(params: &Map<String, Value>) -> Result<Opt
     else {
         return Ok(None);
     };
-    if params.get("appSource").and_then(Value::as_str) != Some("sogni-world") {
-        return Err(Error::InvalidInput(
-            "worldGenerationReceipt requires appSource \"sogni-world\".".into(),
-        ));
-    }
+    // Applications select their recipe; the service decides eligibility and
+    // authorization. The SDK only validates the existing receipt wire shape.
     let stage = receipt.get("stage").and_then(Value::as_str);
-    let (stage, model_id, fields) = match stage {
-        Some("target_still") => (
-            "target_still",
-            "krea2_identity_edit_sogni_v0_3_alpha",
-            ["sourceImageSha256", "selectionHash"],
-        ),
-        Some("transition") => (
-            "transition",
-            "minimax-h3-fastvideo-int8_flf2v_turbo",
-            ["firstFrameSha256", "lastFrameSha256"],
-        ),
+    let (stage, fields) = match stage {
+        Some("target_still") => ("target_still", ["sourceImageSha256", "selectionHash"]),
+        Some("transition") => ("transition", ["firstFrameSha256", "lastFrameSha256"]),
         _ => {
             return Err(Error::InvalidInput(
                 "worldGenerationReceipt.stage must be target_still or transition.".into(),
             ));
         }
     };
-    if params.get("modelId").and_then(Value::as_str) != Some(model_id) {
-        return Err(Error::InvalidInput(format!(
-            "The {stage} receipt requires {model_id}."
-        )));
-    }
     let mut normalized = json!({"stage": stage});
     for field in fields {
         let hash = receipt

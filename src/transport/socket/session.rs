@@ -83,32 +83,41 @@ pub(super) async fn socket_manager(
                     "connected",
                     json!({"network": inner.network.read().as_str()}),
                 );
-                while let Some(command) = pending.pop_front() {
-                    if let Err(command) = send_command(&mut socket, command).await {
-                        pending.push_front(command);
-                        break;
-                    }
-                }
-                let outcome = socket_session(&inner, &mut socket, &mut commands).await;
+                let outcome =
+                    socket_session(&inner, &mut socket, &mut commands, &mut pending).await;
                 inner.connected.send_replace(false);
                 inner.authenticated.store(false, Ordering::Release);
                 match outcome {
                     SocketOutcome::Closed => {
                         fail_pending(&mut pending, Error::Closed);
+                        inner.events.emit(
+                            "disconnected",
+                            json!({"code":1000,"reason":"Client disconnected"}),
+                        );
                         return;
                     }
                     SocketOutcome::AuthChanged => {
+                        fail_pending(&mut pending, Error::Closed);
+                        fail_queued(&mut commands);
+                        inner.events.emit(
+                            "disconnected",
+                            json!({"code":0,"reason":"Authentication changed"}),
+                        );
                         reconnect_attempt = 0;
                     }
                     SocketOutcome::Disconnected { code, reason } => {
                         match disconnect_disposition(code) {
                             DisconnectDisposition::Suspend => {
+                                fail_pending(&mut pending, Error::Closed);
+                                fail_queued(&mut commands);
                                 inner
                                     .events
                                     .emit("disconnected", json!({"code": code, "reason": reason}));
                                 suspended = true;
                             }
                             DisconnectDisposition::ClearAuthAndSuspend => {
+                                fail_pending(&mut pending, Error::Closed);
+                                fail_queued(&mut commands);
                                 inner.auth.clear();
                                 inner
                                     .events
@@ -116,6 +125,10 @@ pub(super) async fn socket_manager(
                                 suspended = true;
                             }
                             DisconnectDisposition::Reconnect => {
+                                inner.events.emit(
+                                    "connecting",
+                                    json!({"network":inner.network.read().as_str()}),
+                                );
                                 reconnect_attempt = reconnect_attempt.saturating_add(1);
                             }
                         }
@@ -222,14 +235,29 @@ async fn socket_session<S>(
     inner: &SocketInner,
     socket: &mut tokio_tungstenite::WebSocketStream<S>,
     commands: &mut mpsc::Receiver<SocketCommand>,
+    pending: &mut VecDeque<SocketCommand>,
 ) -> SocketOutcome
 where
     S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin,
 {
     let mut auth_updates = inner.auth.subscribe();
+    let fallback_at = tokio::time::Instant::now() + Duration::from_secs(10);
+    let mut legacy_ready = false;
     let mut ping = tokio::time::interval(Duration::from_secs(15));
     ping.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
     loop {
+        if inner.authenticated.load(Ordering::Acquire) || legacy_ready {
+            while let Some(command) = pending.pop_front() {
+                if let Err(SocketCommand::Send { response, .. }) =
+                    send_command(socket, command).await
+                {
+                    // A failed write may have reached the peer; only definitely
+                    // unsent queued work survives reconnect. Never replay it here.
+                    let _ = response.send(Err(Error::Transport("WebSocket send failed".into())));
+                    return transport_loss("WebSocket send failed");
+                }
+            }
+        }
         tokio::select! {
             () = inner.cancel.cancelled() => {
                 let _ = socket.send(Message::Close(Some(CloseFrame {
@@ -249,13 +277,12 @@ where
             }
             command = commands.recv() => match command {
                 Some(command) => {
-                    if let Err(command) = send_command(socket, command).await {
-                        let SocketCommand::Send { response, .. } = command;
-                        let _ = response.send(Err(Error::Transport("WebSocket send failed".into())));
-                        return transport_loss("WebSocket send failed");
-                    }
+                    pending.push_back(command);
                 }
                 None => return SocketOutcome::Closed,
+            },
+            () = tokio::time::sleep_until(fallback_at), if !legacy_ready => {
+                legacy_ready = true;
             },
             _ = ping.tick() => {
                 if socket.send(Message::Ping(Bytes::new())).await.is_err() {
@@ -360,6 +387,12 @@ fn fail_pending(pending: &mut VecDeque<SocketCommand>, error: Error) {
     let message = error.to_string();
     while let Some(SocketCommand::Send { response, .. }) = pending.pop_front() {
         let _ = response.send(Err(Error::Transport(message.clone())));
+    }
+}
+
+fn fail_queued(commands: &mut mpsc::Receiver<SocketCommand>) {
+    while let Ok(SocketCommand::Send { response, .. }) = commands.try_recv() {
+        let _ = response.send(Err(Error::Closed));
     }
 }
 

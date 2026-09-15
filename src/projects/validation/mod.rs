@@ -1,11 +1,22 @@
 use super::*;
 mod assets;
 mod external;
+mod gpt_image;
 mod h3;
 pub(super) use assets::{custom_image_size_bounds, video_asset_requirements};
 use external::{seedance_reference_limits, validate_seedance_task, validate_wan3_references};
+pub(super) use gpt_image::validate_gpt_image_options;
 pub(super) use h3::validate_h3_params;
 use h3::validate_h3_references;
+
+pub(in crate::projects) const RETIRED_OUTPUT_SCALE_MESSAGE: &str = "outputScale is no longer supported. For MiniMax H3 1080p or 2K output use the two-stage model ids minimax-h3-fastvideo-int8_t2v_turbo_2stage, minimax-h3-fastvideo-int8_i2v_turbo_2stage or minimax-h3-fastvideo-int8_flf2v_turbo_2stage.";
+
+pub(in crate::projects) fn reject_retired_output_scale(params: &Map<String, Value>) -> Result<()> {
+    if params.contains_key("outputScale") {
+        return Err(Error::InvalidInput(RETIRED_OUTPUT_SCALE_MESSAGE.into()));
+    }
+    Ok(())
+}
 pub(super) fn validate_project_params(params: &Map<String, Value>) -> Result<()> {
     for field in ["type", "modelId", "positivePrompt"] {
         required_str(params, field)?;
@@ -23,6 +34,28 @@ pub(super) fn validate_project_params(params: &Map<String, Value>) -> Result<()>
 }
 
 pub(super) fn validate_video_assets(params: &Map<String, Value>, model_id: &str) -> Result<()> {
+    if let Some(format) = params.get("outputFormat") {
+        if !matches!(format.as_str(), Some("mp4" | "mov")) {
+            return Err(Error::InvalidInput(
+                "Video outputFormat must be mp4 or mov.".into(),
+            ));
+        }
+        if format == "mov" && !is_seedance25_model(model_id) {
+            return Err(Error::InvalidInput(
+                "MOV output is supported only by Seedance 2.5.".into(),
+            ));
+        }
+    }
+    if let Some(value) = params.get("returnLastFrame") {
+        let value = value
+            .as_bool()
+            .ok_or_else(|| Error::InvalidInput("returnLastFrame must be a boolean.".into()))?;
+        if value && !is_seedance25_model(model_id) {
+            return Err(Error::InvalidInput(
+                "Last-frame export is supported only by Seedance 2.5.".into(),
+            ));
+        }
+    }
     for field in ["contextImages", "referenceVideos", "referenceAudios"] {
         if let Some(value) = params.get(field).filter(|value| !value.is_null()) {
             let values = value.as_array().ok_or_else(|| {

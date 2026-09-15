@@ -20,19 +20,24 @@ use crate::{
     event::EventBus,
     transport::ApiClient,
     utils::{
-        MINIMAX_H3_BASE_FRAMES, MINIMAX_H3_DIMENSION_STEP, MINIMAX_H3_FRAME_STEP,
-        MINIMAX_H3_MAX_DIMENSION, MINIMAX_H3_MAX_DURATION, MINIMAX_H3_MAX_FRAMES,
-        MINIMAX_H3_MAX_PIXELS, MINIMAX_H3_MIN_DURATION, MINIMAX_H3_MIN_FRAMES,
-        calculate_video_frames, detect_content_type, get_video_workflow_type, is_audio_model,
-        is_external_video_model, is_happyhorse_model, is_ltx_model, is_minimax_h3_balanced_model,
-        is_minimax_h3_model, is_minimax_h3_reference_model, is_minimax_h3_turbo_model,
-        is_model_artifact_model, is_seedance_model, is_seedance25_model, is_video_model,
-        is_wan3_enhanced_model, is_wan3_model, new_id, path_segment, scalar_string,
+        BIREFNET_BACKGROUND_REMOVAL_MODEL_ID, MINIMAX_H3_BASE_FRAMES, MINIMAX_H3_DIMENSION_STEP,
+        MINIMAX_H3_FRAME_STEP, MINIMAX_H3_MAX_DIMENSION, MINIMAX_H3_MAX_DURATION,
+        MINIMAX_H3_MAX_FRAMES, MINIMAX_H3_MAX_PIXELS, MINIMAX_H3_MIN_DURATION,
+        MINIMAX_H3_MIN_FRAMES, PIXAL3D_IMAGE_TO_3D_MODEL_ID,
+        PIXAL3D_MULTIVIEW_IMAGE_TO_3D_MODEL_ID, PIXAL3D_ORBIT_VIEW_SLOTS, calculate_video_frames,
+        detect_content_type, get_video_workflow_type, is_audio_model, is_external_video_model,
+        is_gpt_image_model, is_happyhorse_model, is_ltx_model, is_minimax_h3_audio_guide_model,
+        is_minimax_h3_balanced_model, is_minimax_h3_model, is_minimax_h3_reference_model,
+        is_minimax_h3_turbo_model, is_model_artifact_model, is_pixal3d_model,
+        is_pixal3d_multi_view_model, is_seedance_model, is_seedance25_model, is_segmentation_model,
+        is_video_model, is_video_upscale_model, is_wan3_enhanced_model, is_wan3_model, new_id,
+        path_segment, scalar_string,
     },
 };
 
 mod api;
 mod events;
+mod generation;
 mod helpers;
 mod job;
 mod mapping;
@@ -50,7 +55,8 @@ mod wire;
 #[cfg(test)]
 mod tests;
 
-pub use api::ProjectsApi;
+pub use api::{ProjectsApi, ReusableUploads, SavedUpload, SavedUploadBinding};
+pub use generation::{Pixal3dGenerationOptions, Pixal3dTemplateVariant};
 pub use job::Job;
 pub use preparation::{JobModelPhaseStep, JobPreparation};
 pub use project::Project;
@@ -61,7 +67,7 @@ pub use recovery::{
     is_project_lost_payload,
 };
 pub use request::{AssetRole, MediaSource, ProjectRequest};
-pub use sam3::{Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint};
+pub use sam3::{Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint, Sam3Selection};
 pub use snapshots::{
     CostEstimate, JobSnapshot, JobStatus, ModelOptions, PresignedPost, ProjectSnapshot,
     ProjectStatus,

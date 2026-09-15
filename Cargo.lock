@@ -2624,7 +2624,7 @@ dependencies = [
 
 [[package]]
 name = "sogni-client"
-version = "5.27.1"
+version = "5.50.0"
 dependencies = [
  "anyhow",
  "async-stream",

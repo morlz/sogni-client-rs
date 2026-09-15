@@ -11,6 +11,9 @@ pub const SUBSCRIPTION_ERROR_CODES: [(&str, i64); 4] = [
     ("SUBSCRIPTION_FEATURE_REQUIRES_UPGRADE", 4081),
 ];
 
+/// Public chat failures for which callers may submit a fresh request.
+pub const RETRYABLE_CHAT_ERROR_TYPES: &[&str] = &["server_restarting", "transport_lost"];
+
 #[derive(Clone, Debug)]
 pub struct ApiError {
     pub status: u16,
@@ -169,6 +172,19 @@ impl ChatError {
             .any(|(_, known)| *known == code)
             .then_some(code)
     }
+
+    /// Whether this request was interrupted by the transport and may be sent again.
+    #[must_use]
+    pub fn retryable(&self) -> bool {
+        self.error_type
+            .as_deref()
+            .is_some_and(|kind| RETRYABLE_CHAT_ERROR_TYPES.contains(&kind))
+    }
+}
+
+#[must_use]
+pub fn is_retryable_chat_error(error: &Error) -> bool {
+    matches!(error, Error::Chat(error) if error.retryable())
 }
 
 impl fmt::Display for ChatError {

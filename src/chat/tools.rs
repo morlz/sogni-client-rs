@@ -3,16 +3,18 @@ use std::{collections::HashMap, sync::OnceLock, time::Duration};
 use serde_json::{Map, Value, json};
 
 use super::api::ChatApi;
-use crate::{Error, ProjectRequest, Result};
+use crate::{Error, Result};
 
 pub const HOSTED_TOOL_NAMES: &[&str] = &[
     "generate_image",
     "generate_video",
     "generate_music",
+    "generate_speech",
     "edit_image",
     "apply_style",
     "restore_photo",
     "upscale_image",
+    "upscale_video",
     "refine_result",
     "animate_photo",
     "change_angle",
@@ -99,8 +101,12 @@ fn hosted_tool_index() -> &'static HashMap<String, Value> {
     })
 }
 
+mod request;
+mod wait;
+
 impl ChatApi {
-    /// Execute one direct Sogni media tool through the Supernet project API.
+    /// Execute one of the six direct media tools using upstream model routing.
+    /// Other hosted tools execute through hosted chat or durable chat runs.
     pub async fn execute_tool_call(
         &self,
         tool_call: &Value,
@@ -127,113 +133,51 @@ impl ChatApi {
             )));
         }
         let args = Value::Object(parse_tool_call_arguments(tool_call));
-        let media_type = if name == "generate_music" {
-            "audio"
-        } else if matches!(name, "generate_video" | "sound_to_video" | "video_to_video") {
-            "video"
-        } else {
-            "image"
-        };
+        let empty_options = Value::Null;
+        let options = options.unwrap_or(&empty_options);
         let models = self
             .inner
             .projects
             .wait_for_models(Duration::from_secs(10))
             .await?;
-        let requested = args
-            .get(if media_type == "video" {
-                "videoModel"
-            } else {
-                "model"
-            })
-            .and_then(Value::as_str);
-        let model_id = requested
-            .filter(|requested| {
-                models.iter().any(|model| {
-                    model.get("id").and_then(Value::as_str) == Some(*requested)
-                        && model
-                            .get("media")
-                            .and_then(Value::as_str)
-                            .unwrap_or("image")
-                            == media_type
-                })
-            })
-            .map(ToOwned::to_owned)
-            .or_else(|| {
-                models
-                    .iter()
-                    .filter(|model| {
-                        model
-                            .get("media")
-                            .and_then(Value::as_str)
-                            .unwrap_or("image")
-                            == media_type
-                    })
-                    .max_by_key(|model| {
-                        model
-                            .get("workerCount")
-                            .and_then(Value::as_u64)
-                            .unwrap_or(0)
-                    })
-                    .and_then(|model| model.get("id").and_then(Value::as_str))
-                    .map(ToOwned::to_owned)
-            })
-            .ok_or_else(|| Error::Protocol(format!("no {media_type} model is available")))?;
-        let mut request = ProjectRequest::new(
-            media_type,
-            model_id.clone(),
-            args.get("prompt").and_then(Value::as_str).unwrap_or(""),
-        );
-        for field in [
-            "negativePrompt",
-            "duration",
-            "width",
-            "height",
-            "seed",
-            "bpm",
-            "lyrics",
-            "keyscale",
-            "outputFormat",
-        ] {
-            if let Some(value) = args.get(field) {
-                request = request.param(field, value.clone());
-            }
-        }
-        if let Some(options) = options {
-            for field in ["tokenType", "network"] {
-                if let Some(value) = options.get(field) {
-                    request = request.param(field, value.clone());
-                }
-            }
-        }
-        if media_type == "video" {
-            request = request
-                .param("fps", args.get("fps").cloned().unwrap_or(json!(24)))
-                .param(
-                    "duration",
-                    args.get("duration").cloned().unwrap_or(json!(5)),
-                )
-                .param("width", args.get("width").cloned().unwrap_or(json!(768)))
-                .param("height", args.get("height").cloned().unwrap_or(json!(512)));
-        }
+        let plan = request::plan_tool_request(name, &args, options, &models)?;
+        let model_id = plan.params["modelId"].clone();
+        let media_type = plan.params["type"].clone();
+        let request = plan.into_request(&self.inner.client.rest).await?;
         let project = self.inner.projects.create(request).await?;
         let timeout = options
-            .and_then(|options| options.get("timeoutSeconds"))
+            .get("timeoutSeconds")
             .and_then(Value::as_u64)
             .map(Duration::from_secs)
-            .unwrap_or(Duration::from_secs(30 * 60));
-        let urls = project.wait_for_completion(Some(timeout)).await?;
+            .or_else(|| {
+                options
+                    .get("timeout")
+                    .and_then(Value::as_u64)
+                    .map(Duration::from_millis)
+            })
+            .unwrap_or(Duration::from_secs(90 * 60));
+        let urls = match wait::wait_for_tool_project(&project, timeout).await {
+            Ok(urls) => urls,
+            Err(error) => {
+                let _ = project.cancel().await;
+                return Err(error);
+            }
+        };
+        let mut content = json!({
+            "success": true, "media_type": media_type, "urls": urls, "model": model_id,
+            "prompt": args.get("prompt").and_then(Value::as_str).unwrap_or(""),
+        });
+        let last_frames: Vec<_> = project
+            .jobs()
+            .iter()
+            .map(|job| job.last_frame_url())
+            .collect();
+        if last_frames.iter().any(Option::is_some) {
+            content["lastFrameUrls"] = json!(last_frames);
+        }
         Ok(json!({
-            "toolCallId": tool_call.get("id"),
-            "toolName": name,
-            "success": true,
-            "resultUrls": urls,
-            "content": serde_json::to_string(&json!({
-                "success": true,
-                "media_type": media_type,
-                "urls": urls,
-                "model": model_id,
-                "prompt": args.get("prompt").and_then(Value::as_str).unwrap_or(""),
-            }))?,
+            "toolCallId": tool_call.get("id"), "toolName": name,
+            "success": true, "resultUrls": urls, "content": serde_json::to_string(&content)?,
         }))
     }
 }

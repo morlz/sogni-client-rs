@@ -1,6 +1,7 @@
-# sogni-client Rust SDK 5.27.1
+# sogni-client Rust SDK 5.50.0
 
-Unreleased compatibility includes TypeScript 5.32.0 (18b43c9).
+Compatibility: TypeScript 5.50.0 at 452e789; hosted protocol 1.0.0-alpha.42.
+Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.85.
@@ -25,7 +26,7 @@ socket startup still requires an ID.
 Namespaces:
 
 - `account`: auth, balances, rewards, wallet, subscriptions
-- `projects`: generation, uploads, models, estimates, LoRAs, recovery
+- `projects`: generation, `assets()` reusable uploads, models, estimates, LoRAs, recovery
 - `chat`: socket completion/stream, hosted completion/tools, durable runs
 - `workflows`: durable workflows and `workflows.templates`
 - `replay`: RunRecord write/list/get
@@ -46,13 +47,33 @@ Use `.param("wireName", serde_json::json!(value))` for any forward-compatible
 project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
 
 - SAM3: image model `sam3_image_segment_bf16`, starting image, and
-  `.sam3_prompt(Sam3ImagePrompt { ... })`; always one PNG mask, no previews.
-- Pixal3D: image request `pixal3d_int8_i23d` with a starting image; produces
-  GLB through the media endpoint and reports `job.media_type() == "model"`.
-- `job.provenance()` carries optional worker hashes from live/recovered jobs.
+  `.sam3_prompt(Sam3ImagePrompt { ... })`; one PNG mask/cutout, no previews.
+  `apply_mask` returns RGBA, `max_instances` selects 1–16 matches, labeled
+  boxes support exclusions; multimask is for point prompts only.
+- BiRefNet: `birefnet_image_background_removal_fp16`, empty prompt, starting
+  image; top-level `.param("applyMask", true)` returns a cutout.
+- Pixal3D: `pixal3d_int8_i23d` or `pixal3d_multiview_int8_i23d` with a starting
+  image; GLB/no previews. Multi-view roles: `Pixal3dLeftView`, `Pixal3dBackView`,
+  `Pixal3dRightView`, at fixed slots. `.pixal3d_options(...)` sets mesh/texture controls.
+- GPT Image 2.5 Sunburst/Flare: xhigh/max quality, transparent PNG/WebP,
+  JPEG/WebP compression, 16 references and `AssetRole::GptImageMask`.
+- Speech: `ProjectRequest::audio` with script prompt; `speaker`, `instruct`,
+  `referenceText`, and `AssetRole::ReferenceAudio` for Qwen3-TTS voice cloning.
+  Read model options for available controls; validation remains server-owned.
+- FlashVSR: video model `flashvsr_v1.1_tiny_long_bf16`, empty prompt, one
+  reference video, upscaleResolution 1080/1440. Timing can be server-probed;
+  optional detailPreference/processingSpeed/seed preserve source timing/audio.
+- FastH3: `_turbo_2stage` doubles the canvas; ia2v/flfa2v/a2v audio-guide modes
+  require driving audio and exact image anchors. Use
+  `get_minimax_h3_frames_for_audio_duration`; outputScale and retired720p IDs fail.
+- Seedance 2.5: outputFormat mov and returnLastFrame; `job.last_frame_url()`
+  and `job.get_last_frame_url()` expose the separate image export.
+- `job.provenance()` carries hashes, mask geometry, and `Sam3Selection` entries.
 - `.world_generation_receipt(...)` supports target still/transition hashes
-  for the Sogni World pipeline; see llms-full.txt for model and field contracts.
+  with application-selected recipes and service-owned eligibility.
 - `job.preparation()` exposes typed download/unload/load phases.
+- `projects.assets().upload/list/remove/bind` manages private saved files.
+  Normal `.asset(...)` requests automatically reuse eligible verified files.
 
 LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
 `1 + n*8`. WAN 2.2 generates internally at 16 FPS. Use
@@ -66,6 +87,10 @@ LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
 - `chat.execute_hosted_tool(&json)` -> direct hosted tool execution
 - `chat.create_run/get_run/cancel_run/confirm_run_cost/stream_run_events`
 - `chat.tools.get(name)` / `.all()` -> bundled hosted definitions
+- `chat.execute_tool_call`: six direct media tools; speech/upscale_video
+  execute via hosted chat or durable runs.
+- Model routing: `resolve_hosted_tool_model_selector`, `is_edit_image_model`,
+  `get_video_defaults`, `filter_video_models_by_workflow`, `select_backbone_model`.
 
 Vision socket/hosted chat supports PNG/JPEG data URIs, URLs, or local paths.
 Durable runs/workflows require HTTP(S) media URLs.
@@ -74,13 +99,18 @@ Durable runs/workflows require HTTP(S) media URLs.
 
 `workflows.start(WorkflowStart)`, `list`, `get`, `events`, `stream_events`,
 `confirm_cost`, `resume`, `reseed`, `cancel`. Templates: `list`, `get`,
-`create`, `update`, `delete`, `fork`.
+`create`, `update`, `delete`, `fork`. `WorkflowStart.safe_content_filter`
+preserves explicit false.
 
 ## Reliability
 
 The socket reconnects with capped exponential backoff. Project recovery is
 requested after authentication and internal event lag. Broadcast receiver lag
 is explicit. A local wait timeout does not cancel the remote project.
+Reassignment preserves the logical Job handle and job_index while the attempt
+ID changes. Chat streams survive confirmed reconnect recovery; unavailable
+requests return retryable server_restarting/transport_lost errors. Use
+`is_retryable_chat_error`; do not replay uncertain paid requests blindly.
 
 All errors use `sogni_client::Error`. Preserve `ApiError.payload`,
 `ProjectError.payload`, or `ChatError.payload` for structured application logic,

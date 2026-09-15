@@ -1,5 +1,6 @@
 use super::*;
 use crate::projects::api::ProjectsInner;
+mod attempts;
 
 #[derive(Clone)]
 pub struct Project {
@@ -27,6 +28,9 @@ pub(super) struct ProjectInner {
     pub(super) events: EventBus,
     pub(super) changed: Notify,
     pub(super) api: Weak<ProjectsInner>,
+    attempt_lock: parking_lot::Mutex<()>,
+    retired_attempts: RwLock<HashSet<String>>,
+    awaiting_reassignment: RwLock<HashSet<String>>,
 }
 
 impl std::fmt::Debug for Project {
@@ -68,6 +72,9 @@ impl Project {
                 events: EventBus::default(),
                 changed: Notify::new(),
                 api,
+                attempt_lock: parking_lot::Mutex::new(()),
+                retired_attempts: RwLock::new(HashSet::new()),
+                awaiting_reassignment: RwLock::new(HashSet::new()),
             }),
         }
     }
@@ -179,7 +186,15 @@ impl Project {
                             if snapshot.jobs.len() >= expected
                                 && snapshot.jobs.iter().all(|job| job.status.is_finished())
                             {
-                                return Ok(snapshot.result_urls);
+                                // REST can discover completed children without
+                                // inlining signed URLs. Resolve them before a
+                                // waiter observes an empty successful result.
+                                for job in self.jobs() {
+                                    if job.has_result_media() && job.result_url().is_none() {
+                                        job.get_result_url().await?;
+                                    }
+                                }
+                                return Ok(self.result_urls());
                             }
                         }
                         ProjectStatus::Failed => {
@@ -253,19 +268,19 @@ impl Project {
             .get("modelId")
             .and_then(Value::as_str)
             .unwrap_or_default();
-        let media_type = cached_model_media(&api.supported_models, model_id).unwrap_or_else(|| {
-            if is_model_artifact_model(model_id) {
-                "model".into()
-            } else {
-                state.media_type.clone()
-            }
-        });
+        let media_type = if is_model_artifact_model(model_id) {
+            "model".into()
+        } else {
+            cached_model_media(&api.supported_models, model_id)
+                .unwrap_or_else(|| state.media_type.clone())
+        };
         let job = Job::new(
             JobSnapshot::pending(canonical_id.clone(), state.id.clone(), step_count),
             api.client.clone(),
             Arc::downgrade(&self.inner),
             media_type,
             output_format,
+            &state.params,
         );
         drop(state);
         before_insert();
@@ -281,8 +296,22 @@ impl Project {
     }
 
     pub(super) fn update(&self, apply: impl FnOnce(&mut ProjectState), keys: &[&str]) {
-        apply(&mut self.inner.state.write());
+        {
+            let mut state = self.inner.state.write();
+            apply(&mut state);
+        }
         self.notify("updated", json!(keys));
+    }
+
+    pub(super) fn suspend_processing_deadlines(&self) {
+        // Only an explicit requeue retires these attempts. The generic
+        // aggregate `active` recovery status also maps to Queued and must not
+        // discard a running child's fixed budget.
+        for job in self.jobs() {
+            if !job.status().is_finished() {
+                job.suspend_processing_deadline();
+            }
+        }
     }
 
     pub(super) fn notify(&self, name: &str, data: Value) {

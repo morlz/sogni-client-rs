@@ -73,6 +73,12 @@ impl MediaSource {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub enum AssetRole {
     StartingImage,
+    /// Subject's own left side, uploaded in the fixed `contextImage1` slot.
+    Pixal3dLeftView,
+    /// Rear view, uploaded in the fixed `contextImage2` slot.
+    Pixal3dBackView,
+    /// Subject's own right side, uploaded in the fixed `contextImage3` slot.
+    Pixal3dRightView,
     ControlNetImage,
     ContextImage(u8),
     ReferenceImage,
@@ -85,6 +91,8 @@ pub enum AssetRole {
     /// Numbered MiniMax H3 r2v video-reference slot (1 through 3).
     ReferenceVideoSlot(u8),
     ReferenceMask,
+    /// PNG alpha edit mask for the first GPT Image reference image.
+    GptImageMask,
     Custom {
         name: String,
         media: bool,
@@ -95,6 +103,9 @@ impl AssetRole {
     pub(super) fn wire_name(&self) -> String {
         match self {
             Self::StartingImage => "startingImage".into(),
+            Self::Pixal3dLeftView => "contextImage1".into(),
+            Self::Pixal3dBackView => "contextImage2".into(),
+            Self::Pixal3dRightView => "contextImage3".into(),
             Self::ControlNetImage => "cnImage".into(),
             Self::ContextImage(index) => format!("contextImage{index}"),
             Self::ReferenceImage => "referenceImage".into(),
@@ -103,7 +114,7 @@ impl AssetRole {
             Self::ReferenceAudioSlot(index) => format!("referenceAudio{index}"),
             Self::ReferenceVideo => "referenceVideo".into(),
             Self::ReferenceVideoSlot(index) => format!("referenceVideo{index}"),
-            Self::ReferenceMask => "referenceMask".into(),
+            Self::ReferenceMask | Self::GptImageMask => "referenceMask".into(),
             Self::Custom { name, .. } => name.clone(),
         }
     }
@@ -111,6 +122,10 @@ impl AssetRole {
     pub(super) fn param_name(&self) -> Option<String> {
         match self {
             Self::ControlNetImage => None,
+            Self::Pixal3dLeftView => Some("leftViewImage".into()),
+            Self::Pixal3dBackView => Some("backViewImage".into()),
+            Self::Pixal3dRightView => Some("rightViewImage".into()),
+            Self::GptImageMask => Some("gptImageMask".into()),
             Self::ContextImage(index) => Some(format!("contextImage{index}")),
             Self::Custom { name, .. } => Some(name.clone()),
             Self::ReferenceAudioIdentity => Some("referenceAudioIdentity".into()),

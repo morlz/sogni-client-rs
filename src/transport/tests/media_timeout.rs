@@ -2,7 +2,7 @@ use super::*;
 
 #[tokio::test]
 async fn media_transfers_honor_configured_request_timeout() {
-    for method in ["put", "multipart", "get"] {
+    for method in ["put", "saved", "multipart", "get"] {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let server = tokio::spawn(async move {
@@ -17,6 +17,12 @@ async fn media_transfers_honor_configured_request_timeout() {
             match method {
                 "put" => {
                     rest.put_bytes(url, bytes::Bytes::from_static(b"fixture"), None)
+                        .await
+                }
+                "saved" => {
+                    let mut headers = HeaderMap::new();
+                    headers.insert("if-none-match", "*".parse().unwrap());
+                    rest.put_saved_asset(url, bytes::Bytes::from_static(b"fixture"), headers)
                         .await
                 }
                 "multipart" => {

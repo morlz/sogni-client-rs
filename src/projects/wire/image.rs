@@ -15,6 +15,8 @@ pub(super) fn build_image_keyframe(
         "ace_step",
         "rtx_vsr_",
         "minimax_music3",
+        "flashvsr_",
+        "qwen3_tts_",
     ]
     .iter()
     .any(|prefix| model_id.starts_with(prefix));
@@ -79,11 +81,6 @@ pub(super) fn build_image_keyframe(
             "sam3Prompt is only supported by {SAM3_MODEL_ID}"
         )));
     }
-    if model_id == PIXAL3D_MODEL_ID && !has_starting_image {
-        return Err(Error::InvalidInput(
-            "Pixal3D reconstruction requires startingImage".into(),
-        ));
-    }
     for index in 1_usize..=16 {
         let direct = truthy(params.get(&format!("contextImage{index}")));
         let array = params
@@ -92,6 +89,7 @@ pub(super) fn build_image_keyframe(
             .is_some_and(|images| images.get(index - 1).is_some_and(truthy_value));
         keyframe.insert(format!("hasContextImage{index}"), json!(direct || array));
     }
+    image_utilities::apply_utility_fields(params, model_id, keyframe)?;
     let mut size = params
         .get("sizePreset")
         .and_then(Value::as_str)
@@ -143,7 +141,18 @@ pub(super) fn build_image_keyframe(
         }
         keyframe.insert("currentControlNetsJob".into(), json!([raw]));
     }
-    copy_if_present(params, keyframe, "gptImageQuality", "gptImageQuality");
-    copy_if_present(params, keyframe, "gptImageBackground", "gptImageBackground");
+    validation::validate_gpt_image_options(params, model_id)?;
+    if truthy(params.get("gptImageMask")) {
+        keyframe.insert("hasReferenceMask".into(), json!(true));
+        keyframe.insert("referenceMaskContentType".into(), json!("image/png"));
+    }
+    for field in [
+        "gptImageMaskUrl",
+        "gptImageQuality",
+        "gptImageBackground",
+        "gptImageOutputCompression",
+    ] {
+        copy_if_present(params, keyframe, field, field);
+    }
     Ok(())
 }

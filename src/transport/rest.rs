@@ -142,20 +142,8 @@ impl RestClient {
             serde_json::from_str::<Value>(&text).ok()
         };
         if !status.is_success() {
-            let payload = parsed.unwrap_or_else(|| {
-                let excerpt = text
-                    .chars()
-                    .take(200)
-                    .collect::<String>()
-                    .split_whitespace()
-                    .collect::<Vec<_>>()
-                    .join(" ");
-                let base = status.canonical_reason().unwrap_or("HTTP request failed");
-                let message = if excerpt.is_empty() {
-                    base.to_owned()
-                } else {
-                    format!("{base}: {excerpt}")
-                };
+            let payload = parsed.filter(Value::is_object).unwrap_or_else(|| {
+                let message = non_json_error_message(status, &text);
                 json!({"status": "error", "message": message, "errorCode": status.as_u16()})
             });
             return Err(ApiError::new(status.as_u16(), payload)
@@ -208,6 +196,40 @@ impl RestClient {
         media_upload::put(self, url, data, content_type).await
     }
 
+    pub(crate) fn auth_updates(&self) -> tokio::sync::watch::Receiver<bool> {
+        self.auth.subscribe()
+    }
+
+    /// Transfer a write-once saved asset using only the server's signed headers.
+    pub(crate) async fn put_saved_asset(
+        &self,
+        url: Url,
+        data: Bytes,
+        headers: HeaderMap,
+    ) -> Result<()> {
+        let client = self.media_client_without_redirects(&url).await?;
+        let response = client
+            .put(url)
+            .headers(headers)
+            .body(data)
+            .timeout(self.timeout.min(Duration::from_secs(300)))
+            .send()
+            .await?;
+        let status = response.status();
+        if status.is_success() || status == StatusCode::PRECONDITION_FAILED {
+            Ok(())
+        } else {
+            Err(ApiError::new(
+                status.as_u16(),
+                json!({
+                    "status": "error", "errorCode": 0,
+                    "message": "Could not upload the selected file."
+                }),
+            )
+            .into())
+        }
+    }
+
     pub async fn post_multipart(
         &self,
         url: Url,
@@ -258,6 +280,57 @@ impl RestClient {
             .await?
             .error_for_status()?;
         Ok(response.bytes().await?)
+    }
+
+    /// Fetch tool media without forwarding credentials, following redirects or
+    /// buffering an unbounded response. Uses the client's configured proxy.
+    pub(crate) async fn get_tool_media(&self, url: Url, max_bytes: usize) -> Result<Bytes> {
+        let response = self
+            .media_client_without_redirects(&url)
+            .await?
+            .get(url)
+            .timeout(self.timeout)
+            .send()
+            .await?;
+        if !response.status().is_success() {
+            return Err(Error::Protocol(format!(
+                "tool media download failed (HTTP {})",
+                response.status().as_u16()
+            )));
+        }
+        if response
+            .content_length()
+            .is_some_and(|length| length > max_bytes as u64)
+        {
+            return Err(Error::InvalidInput(
+                "tool media exceeds the size limit".into(),
+            ));
+        }
+        let mut stream = response.bytes_stream();
+        let mut data = Vec::new();
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk?;
+            if chunk.len() > max_bytes.saturating_sub(data.len()) {
+                return Err(Error::InvalidInput(
+                    "tool media exceeds the size limit".into(),
+                ));
+            }
+            data.extend_from_slice(&chunk);
+        }
+        Ok(Bytes::from(data))
+    }
+
+    async fn media_client_without_redirects(&self, url: &Url) -> Result<reqwest::Client> {
+        if self.strict_media {
+            self.media_client(url).await
+        } else {
+            let mut builder =
+                reqwest::Client::builder().redirect(reqwest::redirect::Policy::none());
+            if let Some(proxy) = &self.media_proxy {
+                builder = builder.proxy(proxy.http_proxy()?);
+            }
+            Ok(builder.build()?)
+        }
     }
 
     async fn media_client(&self, url: &Url) -> Result<reqwest::Client> {
@@ -321,5 +394,52 @@ impl RestClient {
             }
         };
         Ok(Box::pin(stream))
+    }
+}
+
+fn non_json_error_message(status: StatusCode, text: &str) -> String {
+    let body = text.split_whitespace().collect::<Vec<_>>().join(" ");
+    let label = status
+        .canonical_reason()
+        .map(str::to_owned)
+        .unwrap_or_else(|| format!("HTTP {}", status.as_u16()));
+    if body.is_empty() {
+        label
+    } else if body.starts_with('<') {
+        format!("{label}: {}", body.chars().take(200).collect::<String>())
+    } else if body.chars().count() > 500 {
+        format!("{}…", body.chars().take(500).collect::<String>())
+    } else {
+        body
+    }
+}
+
+#[cfg(test)]
+mod error_message_tests {
+    use super::*;
+
+    #[test]
+    fn plain_text_explains_denial_and_html_retains_http_context() {
+        assert_eq!(
+            non_json_error_message(
+                StatusCode::BAD_REQUEST,
+                "  This model\n will be available soon. "
+            ),
+            "This model will be available soon."
+        );
+        assert_eq!(
+            non_json_error_message(StatusCode::BAD_GATEWAY, "<html> bad gateway"),
+            "Bad Gateway: <html> bad gateway"
+        );
+        assert_eq!(
+            non_json_error_message(StatusCode::BAD_REQUEST, " \n "),
+            "Bad Request"
+        );
+        assert_eq!(
+            non_json_error_message(StatusCode::BAD_REQUEST, &"я".repeat(501))
+                .chars()
+                .count(),
+            501
+        );
     }
 }

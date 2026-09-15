@@ -61,3 +61,66 @@ async fn detailed_submission_separates_local_preparation_assets_and_uncertain_se
     client.close().await.unwrap();
     assert!(fixture.wire.try_recv().is_err());
 }
+
+#[tokio::test]
+async fn explicit_unadmitted_restart_refusal_resubmits_the_identical_request_once() {
+    let mut fixture = Fixture::with_restart_count(1).await;
+    let client = SogniClient::builder()
+        .app_id("restart-parity")
+        .api_key(KEY)
+        .rest_endpoint(Url::parse(&format!("http://{}/", fixture.address)).unwrap())
+        .socket_endpoint(Url::parse(&format!("ws://{}/", fixture.address)).unwrap())
+        .defer_socket_start(true)
+        .request_timeout(Duration::from_secs(2))
+        .connect_timeout(Duration::from_secs(5))
+        .build()
+        .await
+        .unwrap();
+    let mut events = client.subscribe();
+    let project = client
+        .projects
+        .create(ProjectRequest::image("pixal3d_int8_i23d", "").asset(
+            AssetRole::StartingImage,
+            MediaSource::named_bytes(b"fixture".as_slice(), "source.png", "image/png"),
+        ))
+        .await
+        .unwrap();
+    let urls = project
+        .wait_for_completion(Some(Duration::from_secs(8)))
+        .await
+        .unwrap_or_else(|error| {
+            panic!(
+                "{error}; snapshot={:?}, request_count={}",
+                project.snapshot(),
+                fixture.wire.len()
+            )
+        });
+    assert_eq!(urls, ["https://example.test/utility-result"]);
+    let original = fixture.wire.recv().await.unwrap();
+    let resubmitted = fixture.wire.recv().await.unwrap();
+    assert_eq!(original, resubmitted);
+    assert_eq!(original["jobID"], project.id());
+    assert!(fixture.wire.try_recv().is_err());
+    assert_eq!(project.jobs().len(), 1);
+    {
+        let requests = fixture.http.lock();
+        for path in ["/v1/image/uploadUrl", "/fixture-upload"] {
+            assert_eq!(
+                requests
+                    .iter()
+                    .filter(|request| request.path == path)
+                    .count(),
+                1
+            );
+        }
+    }
+    let mut refusals = 0;
+    while let Ok(event) = events.try_recv() {
+        if event.name == "jobError" {
+            assert_eq!(event.data["error"], 1001);
+            refusals += 1;
+        }
+    }
+    assert_eq!(refusals, 1);
+    client.close().await.unwrap();
+}

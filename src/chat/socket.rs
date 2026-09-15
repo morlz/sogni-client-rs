@@ -120,6 +120,7 @@ impl ChatApi {
             ..ChatStreamState::default()
         }));
         let changed = Arc::new(Notify::new());
+        let terminal_epoch = self.inner.recovery.lock().submitting(job_id.clone());
         self.inner.active.write().insert(
             job_id.clone(),
             ActiveChat {
@@ -135,8 +136,13 @@ impl ChatApi {
             .await
         {
             self.inner.active.write().remove(&job_id);
-            return Err(error);
+            self.inner.recovery.lock().unsent.remove(&job_id);
+            if matches!(error, Error::InvalidInput(_)) {
+                return Err(error);
+            }
+            return Err(super::events::transport_error(&job_id, Some(&error)).into());
         }
+        super::events::submitted(&self.inner, &job_id, terminal_epoch);
         Ok(ChatStream {
             job_id,
             receiver,

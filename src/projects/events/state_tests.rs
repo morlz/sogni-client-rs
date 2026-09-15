@@ -2,6 +2,64 @@ use super::*;
 use crate::SogniClient;
 
 #[tokio::test]
+async fn same_attempt_loading_and_stale_recovery_preserve_processing_deadline() {
+    let client = SogniClient::builder()
+        .disable_socket(true)
+        .build()
+        .await
+        .unwrap();
+    let project = Project::new(
+        "PROJECT".into(),
+        json!({"type":"image", "network":"fast", "numberOfMedia":1}),
+        false,
+        Arc::downgrade(&client.projects.inner),
+    );
+    client
+        .projects
+        .inner
+        .projects
+        .write()
+        .insert(project.id(), project.clone());
+    tokio::time::pause();
+    let inner = &client.projects.inner;
+    handle_job_state(
+        inner,
+        &json!({"jobID":"PROJECT", "imgID":"JOB", "type":"jobStarted"}),
+    );
+    let job = project.job("JOB").unwrap();
+    let deadline = job.processing_deadline().unwrap();
+    tokio::time::advance(Duration::from_secs(100)).await;
+    handle_job_state(
+        inner,
+        &json!({"jobID":"PROJECT", "imgID":"JOB", "type":"initiatingModel"}),
+    );
+    assert_eq!(job.status(), JobStatus::Initiating);
+    tokio::time::advance(Duration::from_secs(100)).await;
+    handle_job_progress(inner, &json!({"jobID":"PROJECT", "imgID":"JOB", "step":1}));
+    assert_eq!(job.processing_deadline(), Some(deadline));
+
+    for parent_status in ["processing", "active", "pending"] {
+        for child_status in ["assigned", "pending"] {
+            tokio::time::advance(Duration::from_secs(100)).await;
+            replay_recovered(
+                &project,
+                &json!({
+                    "status":parent_status,
+                    "workerJobs":[{"imgID":"JOB", "status":child_status}]
+                }),
+                false,
+            );
+            assert_ne!(job.status(), JobStatus::Processing);
+            tokio::time::advance(Duration::from_secs(100)).await;
+            handle_job_progress(inner, &json!({"jobID":"PROJECT", "imgID":"JOB", "step":2}));
+            assert_eq!(project.status(), ProjectStatus::Processing);
+            assert_eq!(job.processing_deadline(), Some(deadline));
+        }
+    }
+    client.close().await.unwrap();
+}
+
+#[tokio::test]
 async fn model_loading_phases_have_typed_views_and_keep_raw_future_payloads() {
     let client = SogniClient::builder()
         .disable_socket(true)

@@ -1,9 +1,14 @@
 # sogni-client Rust SDK complete agent reference
 
-Crate version: 5.27.1. Unreleased compatibility includes TypeScript 5.32.0
-(upstream commit 18b43c9). Crate path: `sogni_client`.
+Crate version: 5.50.0. Compatible with TypeScript 5.50.0 at upstream commit
+452e78967a21ab80977c11f16517072d1836405a; hosted protocol 1.0.0-alpha.42.
+Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. All public network methods return
 `sogni_client::Result<T>`.
+
+Dependency: `sogni-client = "5.50.0"`; disable default features for clients
+that do not need wallet signing. Development Git dependency: repository above,
+branch dev. Release tags use v<crate-version>.
 
 ## Construction and authentication
 
@@ -11,7 +16,8 @@ Async runtime: Tokio. All public network methods return
 
 Builder methods: `app_id`, `app_source`, `attribution`, `network`, `api_key`,
 `tokens`, `cookie_auth`, `rest_endpoint`, `socket_endpoint`, `disable_socket`,
-`testnet`, `request_timeout`, `connect_timeout`,
+`testnet`, `request_timeout`, `connect_timeout`, `defer_socket_start`,
+`proxy_url`, `strict_media_destinations`,
 `socket_event_subscription`, and async `build`.
 
 Default REST endpoint: `https://api.sogni.ai`.
@@ -52,7 +58,7 @@ Construct requests with `ProjectRequest::image`, `video`, or `audio`. All set
 `type`, `modelId`, `positivePrompt`, and default `numberOfMedia=1`. Builder
 methods: `param`, `number_of_media`, `steps`, `guidance`, `dimensions`,
 `duration`, `fps`, `network`, `asset`, `sam3_prompt`,
-`world_generation_receipt`, and `attribution`.
+`pixal3d_options`, `world_generation_receipt`, and `attribution`.
 
 `MediaSource::Path` performs async file I/O. `MediaSource::bytes` and
 `named_bytes` accept memory. `AssetRole` includes starting/control/context
@@ -60,6 +66,9 @@ images and video/audio/mask roles. `ReferenceAudioSlot(1..=3)` and
 `ReferenceVideoSlot(1..=3)` map MiniMax H3 r2v's numbered, contiguous media
 slots. Adding any asset enables its matching wire flag. `Custom` carries a
 forward-compatible wire name and whether the media endpoint is required.
+`GptImageMask` marks a PNG alpha edit mask in the referenceMask slot.
+`Pixal3dLeftView`, `Pixal3dBackView`, and `Pixal3dRightView` use fixed context
+slots 1, 2, and 3; subsets retain the named view's slot.
 
 `projects.create(request)` uploads assets, submits `jobRequest`, and returns a
 cloneable `Project`. `Project` methods: `id`, `status`, `jobs`, `progress`,
@@ -67,7 +76,8 @@ cloneable `Project`. `Project` methods: `id`, `status`, `jobs`, `progress`,
 `Job` methods: `snapshot`, `id`, `status`, `progress`, `result_url`,
 `is_withheld`, `has_result_media`, `subscribe`, `get_result_url`,
 `get_result_data`, `enhance`, `enhancement_project`, `media_type`,
-`preparation`, and `provenance`.
+`preparation`, `provenance`, `job_index`, `last_frame_url`, and
+`get_last_frame_url`.
 
 SAM3: use `ProjectRequest::image("sam3_image_segment_bf16", "")` with
 `AssetRole::StartingImage` and `Sam3ImagePrompt`. It forces numberOfMedia=1,
@@ -75,15 +85,35 @@ numberOfPreviews=0, and outputFormat=png in both the request and project state.
 Points use x/y in [0,1] and Sam3PointLabel::Positive or Negative. Boxes use
 x0/y0/x1/y1 in [0,1], with x0<x1 and y0<y1. At least one point, box, or text
 prompt is required. Limits: 32 points, 16 boxes, 240 UTF-16 text code units.
-Text and points cannot be combined; points allow at most one box. Optional
-threshold defaults to 0.5 and multimask to true. Unknown prompt fields fail.
+Text and points cannot be combined; points allow at most one positive box.
+Optional box label defaults to Positive; Negative excludes a text-prompted
+instance. Threshold defaults to 0.5. Multimask defaults to true for points;
+without points, true fails and false is omitted. apply_mask=true returns an
+RGBA source cutout with the mask in alpha. max_instances keeps the top 1–16
+selections; omission retains all matches above threshold. Unknown fields fail.
 
-Pixal3D: `ProjectRequest::image("pixal3d_int8_i23d", prompt)` requires a
-starting image. Wire outputFormat is always glb. `job.media_type()` is model;
+BiRefNet: image model birefnet_image_background_removal_fp16, empty prompt,
+and StartingImage. It returns one PNG/no previews; top-level applyMask=true
+returns a cutout, default false a matte. SAM3's applyMask is nested instead.
+
+Pixal3D: `ProjectRequest::image("pixal3d_int8_i23d", "")` requires a
+starting image. Wire outputFormat is always glb and previews are zero. `job.media_type()` is model;
 result URL lookups and recovery use /v1/media/downloadUrl with
-contentType=model/gltf-binary. Model artifacts cannot use image enhancement.
+contentType=model/gltf-binary. Model artifacts and segmentation masks/cutouts
+cannot use image enhancement.
 `is_model_artifact_model` recognizes pixal3d_ IDs; the ProjectsApi method
-`is_model_artifact_model_id` prefers advertised model metadata.
+`is_model_artifact_model_id` also accepts advertised media=model for unknown
+models. Known pixal3d_ IDs remain artifacts if stale metadata says image.
+
+Multi-view model pixal3d_multiview_int8_i23d uses StartingImage as the front,
+plus any named orbit roles above. Left/right refer to the subject's own side.
+Both IDs reject generic contextImages. Single-view rejects orbit views;
+multi-view rejects templateVariant. Pixal3dGenerationOptions fields:
+template_variant (I23dBirefnet, single-view only), texture_size (1024–4096),
+mesh_target_faces (5000–700000), normal_map_size (512–2048),
+ambient_occlusion_size (256–1024), shape_resolution (1024–1536).
+Omit controls for service defaults; shape resolution 1536 is a priced increase
+from the default 1024. `.pixal3d_options(...)` emits camelCase wire fields.
 
 `JobProvenance` includes optional sha256, source_image_sha256,
 sam_prompt_sha256, mask_rle_sha256, mask_width, mask_height, sam_version,
@@ -91,12 +121,16 @@ selection_hash, first_frame_sha256, and last_frame_sha256. Live and recovered
 results normalize valid hashes to lowercase; malformed and unknown fields
 are omitted from this projection. `jobCompleted` events include provenance
 when present, and JobSnapshot serializes it as camelCase.
+Mask metadata also exposes mask_box, mask_coverage, mask_detected_count,
+mask_returned_count, and mask_selections. Sam3Selection includes optional
+score and bounds (wire box), coverage, and included. Bounds use source-normalized
+coordinates.
 
 `WorldGenerationReceiptRequest::TargetStill` carries source_image_sha256 and
-selection_hash for krea2_identity_edit_sogni_v0_3_alpha. `Transition` carries
-first_frame_sha256 and last_frame_sha256 for
-minimax-h3-fastvideo-int8_flf2v_turbo. Both require appSource=sogni-world;
-receipts serialize inside keyFrames[0]. The service verifies uploaded inputs.
+selection_hash. `Transition` carries first_frame_sha256 and last_frame_sha256.
+Receipts serialize inside keyFrames[0]. Applications choose the recipe; the
+SDK validates shape/hashes, and the service decides model eligibility and
+authorization. No hard-coded model or appSource gate remains in the client.
 
 `JobPreparation` variants: DownloadingAssets, UnloadingModel, LoadingModel.
 Model phases carry model, JobModelPhaseStep::{Start,End}, and optional
@@ -118,12 +152,51 @@ URLs/uploads: v1 `upload_url`, `download_url`, `media_upload_url`,
 `media_download_url`; v2 `image_upload_post`, `media_upload_post`, and
 `upload_presigned`.
 
+projects.assets() returns ReusableUploads with upload(&MediaSource), list(),
+remove(id), and bind(id, &SavedUploadBinding). upload returns SavedUpload:
+id, name, bytes, content_type, state, created_at, expires_at. Binding fields:
+project_id, asset_type (wire type), optional id. Normal project creation can
+reuse eligible verified private uploads automatically. Continue passing real
+files through .asset(); a saved ID is not a replacement file parameter.
+Eligibility and verification remain server-owned; account changes invalidate
+cached availability. Unavailable saved uploads can fall back before preparation;
+transfer/finalization/binding failures surface instead of silently falling back.
+
 Recovery: `sync(reason)` fetches the app-scoped durable snapshot and replays
 media project state. `list_projects_elsewhere` is read-only. The SDK invokes
 recovery after socket authentication and after an internal receiver lag.
 Terminal failed/canceled recovery settles outstanding waiters and unfinished
 jobs, preserving existing errors or the server's reason. Completed jobs remain
 unchanged. Local timeouts never imply server cancellation.
+Worker reassignment retains the same logical Job handle/job_index while its
+attempt ID changes. Old-attempt events cannot overwrite new progress/results.
+Only explicit restart admission refusals can automatically resend the original
+project request; uncertain writes require reconciliation.
+
+## GPT Image and speech controls
+
+GPT IDs: gpt-image-2, gpt-image-2.5-sunburst, gpt-image-2.5-flare.
+Custom width/height: 256–3840. Up to 16 ordered context references. A PNG alpha
+mask uses AssetRole::GptImageMask or gptImageMaskUrl (URL/PNG data URI), requires
+the first reference, and cannot combine both inputs. Data-URI masks are uploaded
+as bytes for durable recovery. gptImageQuality accepts low/medium/high and
+legacy standard/hd; 2.5 adds xhigh/max. auto quality is rejected.
+gptImageBackground accepts opaque/auto; 2.5 adds transparent for PNG/WebP.
+gptImageOutputCompression accepts integer 0–100 only with jpg/webp outputFormat.
+Set these exact wire names through .param().
+
+Qwen3-TTS IDs: qwen3_tts_1.7b_custom_voice_bf16,
+qwen3_tts_1.7b_voice_design_bf16, qwen3_tts_1.7b_voice_clone_bf16.
+Use ProjectRequest::audio with the spoken script as prompt. speaker selects a
+preset, instruct describes delivery or a designed voice, referenceText is the
+exact transcript of referenceAudio. Upload clone audio with AssetRole::ReferenceAudio.
+Speech duration follows the script. The serializer preserves speech controls
+for service validation rather than maintaining a model allowlist.
+Audio ModelOptions.raw includes only advertised controls: speaker options,
+instruct {maxLength,required}, referenceText {maxLength}, acceptsReferenceAudio,
+requiresReferenceAudio. Speech tiers can omit sampler/scheduler/duration/BPM.
+No sampler/scheduler choices means corresponding null wire fields. Discover
+individual model capabilities at runtime.
 
 ## Video frame behavior
 
@@ -133,6 +206,7 @@ Call `calculate_video_frames(model_id, duration, fps, min, max)`.
   interpolation. Frames = rounded(duration * 16) + 1.
 - LTX families: generate at requested FPS, then snap to `1 + n*8`.
 - MiniMax H3: fixed 24 FPS and `124 + n*17`, clamped to supported limits.
+- FlashVSR: rounded(duration * fps), retaining the exact source frame count.
 - Other video families: rounded(duration * fps) + 1.
 
 Project creation performs local preflight validation for the current MiniMax
@@ -140,6 +214,41 @@ H3, Wan 3, Seedance, and HappyHorse asset/task/duration contracts before any
 generation request is submitted.
 Wan 3 rejects the retired smartDuration field whenever present, including
 false or null. Supply an explicit duration from 2 to 30 seconds.
+
+FastH3 IDs: minimax-h3-fastvideo-int8_{mode}_turbo, with t2v/i2v/flf2v/ia2v/
+flfa2v/a2v. Append _2stage for twice the canvas width/height with unchanged
+timing and audio. Send a normal H3 canvas (e.g. 672x384, 960x544, 1344x768),
+and estimate that canvas with the selected _2stage ID. outputScale is retired
+and rejected whenever present, including false/null. _turbo_2stage_720p IDs
+are retired and cannot be submitted.
+
+Audio-guide ia2v requires referenceImage + referenceAudio; flfa2v also requires
+referenceImageEnd; a2v requires only referenceAudio. Each rejects other upload
+roles. Fixed 24fps, 4 steps, guidance 1, and 124+n*17 frames in 124–362, on the
+existing H3 32px canvas grid. get_minimax_h3_frames_for_audio_duration(seconds)
+returns the smallest covering valid count, clamped to the supported range.
+audioStart is a nonnegative offset. Uploaded audio always accompanies output;
+generateAudio=false, audioDuration, loras and loraStrengths are rejected.
+Empty LoRA arrays are harmless and omitted. Other H3 IDs reject audioStart;
+all H3 IDs reject audioDuration.
+
+FlashVSR: FLASHVSR_VIDEO_UPSCALE_MODEL_ID = flashvsr_v1.1_tiny_long_bf16.
+Use one video project, empty prompt, ReferenceVideo, upscaleResolution 1080/1440.
+It preserves the whole source, its exact frame rate, and audio. Frames/FPS/size
+may be omitted for server probing; values supplied must describe the source.
+Explicit frames win over duration; duration without frames requires exact FPS.
+Fractional rates remain intact. The SDK imposes no clip-length maximum.
+detailPreference=stable|sharper; processingSpeed=stable|faster; seed=-1 or an
+integer 0–4294967295. Defaults stable/stable/0; steps=1, no interpolation.
+Prompts, trims, generation controls, other references, and audio removal fail.
+Catalog fields: task=video-upscale, outputResolutions, preservesSourceTiming,
+requiresReferenceVideo. Estimates accept sourceWidth/sourceHeight with output
+dimensions and exact source timing; the service verifies the uploaded video.
+
+Seedance 2.5 accepts outputFormat=mp4|mov and returnLastFrame=true. Other video
+models cannot request MOV or a last-frame export. JobSnapshot exposes
+last_frame_url, last_frame_key, output_format. job.last_frame_url() reads the
+cached export; job.get_last_frame_url().await refreshes it through artifact=lastFrame.
 
 Use runtime model metadata where possible. Model IDs in docs are illustrative.
 
@@ -171,19 +280,40 @@ prefer function tools plus required tool choice. Helpers:
 `is_sogni_tool_call` and `parse_tool_call_arguments`.
 
 Hosted REST: `create_hosted_completion`. Direct synchronous hosted tools:
-`execute_hosted_tool`. The hosted tool manifest has 25 version-pinned entries;
+`execute_hosted_tool`. The hosted tool manifest has 27 version-pinned entries;
 read through `HostedTools` rather than copying schemas.
+
+Current hosted definitions include generate_speech and upscale_video, plus
+FastH3 audio-guide/two-stage and GPT Image 2.5 selectors. These definitions
+come from protocol alpha.42. chat.execute_tool_call directly executes six
+media tools: generate_image, edit_image, generate_video, sound_to_video,
+video_to_video, generate_music. Other tools use hosted chat or durable runs.
+
+Routing helpers: resolve_hosted_tool_model_selector(tool_name, &args),
+is_edit_image_model(model_id), get_video_defaults(model_id),
+filter_video_models_by_workflow(&models, &workflows), and
+select_backbone_model(&models, &BackboneModelOptions). BackboneModelOptions
+contains media_type, requested_model, workflows, preferred_model_ids, filter.
+Selection uses a compatible explicit model, then preference order, then worker
+availability; equal worker counts preserve catalog order. SelectedBackboneModel
+exposes model_id, model, selected_by. VideoDefaults contains width/height/fps.
 
 Durable chat: `create_run`, `get_run`, `cancel_run`, `confirm_run_cost`, and
 `stream_run_events`. `Idempotency-Key` and workload attribution are propagated.
 SSE resume uses `Last-Event-ID`.
+
+Socket chat preserves streams confirmed alive after reconnection. A lost turn
+returns a structured retryable error instead of being automatically replayed.
+ChatError.retryable() and is_retryable_chat_error(&Error) recognize the public
+server_restarting and transport_lost types, also listed in RETRYABLE_CHAT_ERROR_TYPES.
 
 ## CreativeWorkflowsApi
 
 `WorkflowStart` accepts exactly one of inline `input` or saved `workflow_id`.
 Other fields: `inputs`, `token_type`, `billing_mode`, `app_source`,
 `max_estimated_capacity_units`, `confirm_cost`, `media_references`,
-`idempotency_key`, and attribution.
+`idempotency_key`, `safe_content_filter`, and attribution. Explicit false is
+preserved in safe_content_filter on the wire.
 
 Methods: `start`, `list`, `get`, `events`, `stream_events`, `confirm_cost`,
 `resume`, `reseed`, `cancel`. Terminal statuses include `completed`, `failed`,

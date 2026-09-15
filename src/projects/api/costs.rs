@@ -126,6 +126,9 @@ impl ProjectsApi {
     }
 
     pub async fn estimate_video_cost(&self, params: &Value) -> Result<CostEstimate> {
+        if let Some(params) = params.as_object() {
+            validation::reject_retired_output_scale(params)?;
+        }
         let token_type = required_value(params, "tokenType")?;
         let model = required_str_value(params, "model")?;
         let width = required_value(params, "width")?;
@@ -157,12 +160,27 @@ impl ProjectsApi {
             .map(|segment| path_segment(segment))
             .collect::<Vec<_>>()
             .join("/");
-        let query = json!({
+        let mut query = json!({
             "hasVideoInput": params.get("hasVideoInput").and_then(Value::as_bool).filter(|v| *v).map(|_| 1),
             "referenceImageCount": params.get("referenceImageCount"),
             "referenceVideoCount": params.get("referenceVideoCount"),
             "referenceVideoDurationSeconds": params.get("referenceVideoDurationSeconds"),
         });
+        if params
+            .get("referenceVideo")
+            .is_some_and(|value| !value.is_null() && value != false)
+            || params
+                .get("referenceVideoUrls")
+                .and_then(Value::as_array)
+                .is_some_and(|v| !v.is_empty())
+        {
+            query["hasVideoInput"] = json!(1);
+        }
+        if let (Some(width), Some(height)) = (params.get("sourceWidth"), params.get("sourceHeight"))
+        {
+            query["sourceWidth"] = width.clone();
+            query["sourceHeight"] = height.clone();
+        }
         self.estimate(
             &format!("/api/v1/job-video/estimate/{encoded}"),
             Some(&query),

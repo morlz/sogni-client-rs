@@ -1,5 +1,6 @@
 use super::*;
 use crate::projects::project::ProjectInner;
+mod runtime;
 
 #[derive(Clone)]
 pub struct Job {
@@ -14,6 +15,7 @@ struct JobInner {
     enhancement_project: RwLock<Option<Project>>,
     project_media_type: String,
     output_format: Option<String>,
+    runtime: parking_lot::Mutex<runtime::ProcessingRuntime>,
 }
 
 impl std::fmt::Debug for Job {
@@ -31,6 +33,7 @@ impl Job {
         project: Weak<ProjectInner>,
         project_media_type: String,
         output_format: Option<String>,
+        params: &Value,
     ) -> Self {
         Self {
             inner: Arc::new(JobInner {
@@ -41,6 +44,7 @@ impl Job {
                 enhancement_project: RwLock::new(None),
                 project_media_type,
                 output_format,
+                runtime: parking_lot::Mutex::new(runtime::ProcessingRuntime::new(params)),
             }),
         }
     }
@@ -68,6 +72,42 @@ impl Job {
     #[must_use]
     pub fn result_url(&self) -> Option<String> {
         self.inner.state.read().result_url.clone()
+    }
+
+    /// Logical position retained when a worker attempt receives a new job id.
+    #[must_use]
+    pub fn job_index(&self) -> Option<u64> {
+        self.inner
+            .state
+            .read()
+            .extra
+            .get("jobIndex")
+            .and_then(Value::as_u64)
+    }
+
+    #[must_use]
+    pub fn last_frame_url(&self) -> Option<String> {
+        self.inner.state.read().last_frame_url.clone()
+    }
+
+    /// Refresh the signed URL of a requested final-frame export.
+    pub async fn get_last_frame_url(&self) -> Result<String> {
+        let state = self.snapshot();
+        let response = self.inner.client.rest.get("/v1/media/downloadUrl", Some(&json!({
+            "jobId":state.project_id, "id":state.id, "type":"complete", "artifact":"lastFrame"
+        }))).await?;
+        let url = response
+            .pointer("/data/downloadUrl")
+            .and_then(Value::as_str)
+            .ok_or_else(|| {
+                Error::Protocol("download URL response missing data.downloadUrl".into())
+            })?
+            .to_owned();
+        self.update(
+            |state| state.last_frame_url = Some(url.clone()),
+            &["lastFrameUrl"],
+        );
+        Ok(url)
     }
 
     /// Media produced by the model, which may differ from the request type.
@@ -115,12 +155,16 @@ impl Job {
         }
         let content_type = match (
             self.inner.project_media_type.as_str(),
-            self.inner.output_format.as_deref(),
+            state
+                .output_format
+                .as_deref()
+                .or(self.inner.output_format.as_deref()),
         ) {
             ("audio", Some("flac")) => Some("audio/flac"),
             ("audio", Some("wav")) => Some("audio/wav"),
             ("audio", _) => Some("audio/mpeg"),
             ("model", _) => Some("model/gltf-binary"),
+            ("video", Some("webm")) => Some("video/webm"),
             ("image", Some("jpg" | "jpeg")) => Some("image/jpeg"),
             ("image", Some("webp")) => Some("image/webp"),
             ("image", Some("png")) => Some("image/png"),
@@ -186,6 +230,15 @@ impl Job {
         {
             return Err(Error::InvalidInput(
                 "enhancement is only available for images".into(),
+            ));
+        }
+        if parent_params
+            .get("modelId")
+            .and_then(Value::as_str)
+            .is_some_and(crate::projects::is_segmentation_model)
+        {
+            return Err(Error::InvalidInput(
+                "Enhancement is not available for segmentation masks".into(),
             ));
         }
         if self.status() != JobStatus::Completed {
@@ -276,7 +329,31 @@ impl Job {
     }
 
     pub(super) fn update(&self, apply: impl FnOnce(&mut JobSnapshot), keys: &[&str]) {
-        apply(&mut self.inner.state.write());
+        let network = self
+            .inner
+            .project
+            .upgrade()
+            .and_then(|project| project.api.upgrade())
+            .and_then(|api| *api.runtime_network.read());
+        {
+            let mut state = self.inner.state.write();
+            apply(&mut state);
+            self.inner.runtime.lock().observe(
+                &state,
+                keys.contains(&"status"),
+                network,
+                tokio::time::Instant::now(),
+            );
+        }
         self.inner.events.emit("updated", json!(keys));
+    }
+
+    pub(crate) fn processing_deadline(&self) -> Option<tokio::time::Instant> {
+        let state = self.inner.state.read();
+        self.inner.runtime.lock().deadline(&state)
+    }
+
+    pub(super) fn suspend_processing_deadline(&self) {
+        self.inner.runtime.lock().suspend();
     }
 }

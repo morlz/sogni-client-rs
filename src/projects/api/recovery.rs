@@ -179,10 +179,12 @@ impl ProjectsApi {
             if is_llm_recovery(raw) || !seen.insert(id.clone()) {
                 continue;
             }
+            self.inner.submission.lock().unadmitted.remove(&id);
             let tracked = { self.inner.projects.read().get(&id).cloned() };
             if let Some(project) = tracked {
                 if !project.status().is_finished() {
                     replay_recovered(&project, raw, false);
+                    self.resolve_recovered_urls(&project).await;
                     active.push(json!(id));
                 }
             } else {
@@ -194,6 +196,7 @@ impl ProjectsApi {
                 );
                 self.inner.projects.write().insert(id, project.clone());
                 replay_recovered(&project, raw, false);
+                self.resolve_recovered_urls(&project).await;
                 recovered_active.push(raw.clone());
             }
         }
@@ -240,6 +243,7 @@ impl ProjectsApi {
         let cutoff = requested_at
             - chrono::Duration::from_std(RECENTLY_CREATED_GRACE)
                 .expect("recovery grace duration is representable");
+        let mut deferred_until = None;
         let missing = self
             .inner
             .projects
@@ -247,12 +251,36 @@ impl ProjectsApi {
             .values()
             .filter(|project| {
                 let snapshot = project.snapshot();
-                (!snapshot.status.is_finished() || incomplete_results(project))
-                    && !seen.contains(&snapshot.id)
-                    && snapshot.started_at <= cutoff
+                if (snapshot.status.is_finished() && !incomplete_results(project))
+                    || seen.contains(&snapshot.id)
+                {
+                    return false;
+                }
+                let submission = self.inner.submission.lock();
+                if submission.awaiting.contains(&snapshot.id) {
+                    return false;
+                }
+                let submitted_at = submission
+                    .submitted_at
+                    .get(&snapshot.id)
+                    .copied()
+                    .unwrap_or(snapshot.started_at);
+                if submitted_at > cutoff {
+                    let until =
+                        submitted_at + chrono::Duration::from_std(RECENTLY_CREATED_GRACE).unwrap();
+                    deferred_until = Some(
+                        deferred_until.map_or(until, |current: DateTime<Utc>| current.max(until)),
+                    );
+                    false
+                } else {
+                    true
+                }
             })
             .cloned()
             .collect::<Vec<_>>();
+        if let Some(until) = deferred_until {
+            self.schedule_recheck((until - Utc::now()).to_std().unwrap_or_default());
+        }
 
         if !missing.is_empty() {
             let ids = missing.iter().map(Project::id).collect::<Vec<_>>();

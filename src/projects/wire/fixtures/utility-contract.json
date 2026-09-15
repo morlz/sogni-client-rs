@@ -1,5 +1,5 @@
 {
-  "upstream": "Sogni-AI/sogni-client@18b43c9 (5.32.0)",
+  "upstream": "Sogni-AI/sogni-client@452e789 (5.50.0)",
   "cases": [
     {
       "name": "sam3-points-box",
@@ -136,11 +136,13 @@
                   "x0": 0.1,
                   "y0": 0.2,
                   "x1": 0.9,
-                  "y1": 0.8
+                  "y1": 0.8,
+                  "label": "positive"
                 }
               ],
               "threshold": 0.5,
-              "multimask": true
+              "multimask": true,
+              "applyMask": false
             }
           }
         ],
@@ -274,7 +276,7 @@
               "boxes": [],
               "text": "teapot",
               "threshold": 0,
-              "multimask": false
+              "applyMask": false
             }
           }
         ],
@@ -400,7 +402,7 @@
             "hasStartingImage": true
           }
         ],
-        "previews": 5,
+        "previews": 0,
         "frameRate": 24,
         "generatedVideoSeconds": 10,
         "canvasIsOn": false,

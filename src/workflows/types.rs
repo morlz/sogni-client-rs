@@ -38,6 +38,10 @@ pub struct WorkflowStart {
     pub max_estimated_capacity_units: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub confirm_cost: Option<bool>,
+    /// Content-filter preference captured when this run starts. The service
+    /// defaults it to true; resume and reseed preserve the original preference.
+    #[serde(skip_serializing_if = "Option::is_none", alias = "safeContentFilter")]
+    pub safe_content_filter: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub media_references: Option<Vec<Value>>,
     #[serde(skip)]
@@ -85,4 +89,28 @@ pub struct ReseedWorkflowResult {
 pub struct WorkflowTemplatePage {
     pub templates: Vec<Value>,
     pub next_cursor: Option<f64>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn workflow_start_preserves_explicit_false_content_filter() {
+        let start: WorkflowStart = serde_json::from_value(json!({
+            "input": {}, "safeContentFilter": false
+        }))
+        .unwrap();
+        assert_eq!(
+            serde_json::to_value(start).unwrap()["safe_content_filter"],
+            false
+        );
+        assert!(
+            serde_json::to_value(WorkflowStart::default())
+                .unwrap()
+                .get("safe_content_filter")
+                .is_none()
+        );
+    }
 }

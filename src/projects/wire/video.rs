@@ -6,12 +6,21 @@ pub(super) fn build_video_keyframe(
     keyframe: &mut Map<String, Value>,
 ) -> Result<()> {
     let model_id = required_str(params, "modelId")?;
+    if model_id.starts_with("minimax-h3-") && model_id.ends_with("_turbo_2stage_720p") {
+        return Err(Error::InvalidInput(
+            "Video generation is only supported for video models.".into(),
+        ));
+    }
     if !is_video_model(model_id) && options.media_type != "video" {
         return Err(Error::InvalidInput(
             "video generation requires a video model".into(),
         ));
     }
     validate_video_assets(params, model_id)?;
+    if is_video_upscale_model(model_id) {
+        upscale::validate_upscale_params(params)?;
+    }
+    validation::reject_retired_output_scale(params)?;
     validate_h3_params(params, model_id)?;
     for (field, target) in [
         ("referenceImage", "hasReferenceImage"),
@@ -91,6 +100,7 @@ pub(super) fn build_video_keyframe(
         ("watermark", "watermark"),
         ("ratio", "ratio"),
         ("seedanceTaskType", "seedanceTaskType"),
+        ("returnLastFrame", "returnLastFrame"),
         ("generateAudio", "generateAudio"),
         ("audioIdentityStrength", "identityGuidanceScale"),
         ("frames", "frames"),
@@ -130,10 +140,14 @@ pub(super) fn build_video_keyframe(
     } else {
         24.0
     };
-    if let Some(value) = params.get("duration").filter(|value| !value.is_null()) {
+    if let Some(value) = params.get("duration").filter(|value| {
+        !(value.is_null() || is_video_upscale_model(model_id) && params.contains_key("frames"))
+    }) {
         let duration = number(Some(value))
             .ok_or_else(|| Error::InvalidInput("video duration must be a finite number".into()))?;
-        let minimum = if is_minimax_h3_model(model_id) {
+        let minimum = if is_video_upscale_model(model_id) {
+            1.0 / fps
+        } else if is_minimax_h3_model(model_id) {
             MINIMAX_H3_MIN_DURATION
         } else if is_wan3_model(model_id) {
             2.0
@@ -144,7 +158,9 @@ pub(super) fn build_video_keyframe(
         } else {
             1.0
         };
-        let maximum = if is_minimax_h3_model(model_id) {
+        let maximum = if is_video_upscale_model(model_id) {
+            f64::INFINITY
+        } else if is_minimax_h3_model(model_id) {
             MINIMAX_H3_MAX_DURATION
         } else if is_seedance25_model(model_id) || is_wan3_model(model_id) {
             30.0
@@ -214,6 +230,27 @@ pub(super) fn build_video_keyframe(
         keyframe.insert("comfyScheduler".into(), value);
     } else {
         keyframe.insert("comfyScheduler".into(), Value::Null);
+    }
+    if is_video_upscale_model(model_id) {
+        let resolution = upscale::upscale_resolution(params)?;
+        keyframe.insert("upscaleResolution".into(), json!(resolution));
+        keyframe.insert("steps".into(), json!(1));
+        for (field, fallback) in [
+            ("seed", json!(0)),
+            ("detailPreference", json!("stable")),
+            ("processingSpeed", json!("stable")),
+        ] {
+            keyframe.insert(
+                field.into(),
+                params
+                    .get(field)
+                    .filter(|value| !value.is_null())
+                    .cloned()
+                    .unwrap_or(fallback),
+            );
+        }
+        keyframe.insert("generateAudio".into(), json!(true));
+        keyframe.insert("interpolation".into(), json!("none"));
     }
     Ok(())
 }

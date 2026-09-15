@@ -1,0 +1,4542 @@
+{
+  "version": "5.50.0",
+  "commit": "452e78967a21ab80977c11f16517072d1836405a",
+  "selectors": [
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "chatgpt"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  CHATGPT  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "chatgpt-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  CHATGPT_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "chat-gpt"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  CHAT_GPT  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "chat-gpt-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  CHAT_GPT_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "openai"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  OPENAI  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "openai-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  OPENAI_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "open-ai"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  OPEN_AI  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "open-ai-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  OPEN_AI_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt2"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT2  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt-2"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT_2  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt2-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT2_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt-2-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT_2_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gptimage2"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPTIMAGE2  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt-image2"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT_IMAGE2  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt-image-2.0"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT_IMAGE_2.0  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt-image-2"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT_IMAGE_2  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt-image-2.5-sunburst"
+      },
+      "expected": "gpt-image-2.5-sunburst"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT_IMAGE_2.5_SUNBURST  "
+      },
+      "expected": "gpt-image-2.5-sunburst"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt-image-2.5-flare"
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT_IMAGE_2.5_FLARE  "
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt-image-2.5"
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT_IMAGE_2.5  "
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "gpt-image2.5"
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  GPT_IMAGE2.5  "
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "sunburst"
+      },
+      "expected": "gpt-image-2.5-sunburst"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  SUNBURST  "
+      },
+      "expected": "gpt-image-2.5-sunburst"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "flare"
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  FLARE  "
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "z-turbo"
+      },
+      "expected": "z_image_turbo_bf16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  Z_TURBO  "
+      },
+      "expected": "z_image_turbo_bf16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "krea-2-turbo"
+      },
+      "expected": "krea2_turbo_fp8_scaled"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  KREA_2_TURBO  "
+      },
+      "expected": "krea2_turbo_fp8_scaled"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "krea2-turbo"
+      },
+      "expected": "krea2_turbo_fp8_scaled"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  KREA2_TURBO  "
+      },
+      "expected": "krea2_turbo_fp8_scaled"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "z-image"
+      },
+      "expected": "z_image_bf16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  Z_IMAGE  "
+      },
+      "expected": "z_image_bf16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "chroma-v46-flash"
+      },
+      "expected": "chroma-v.46-flash_fp8"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  CHROMA_V46_FLASH  "
+      },
+      "expected": "chroma-v.46-flash_fp8"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "chroma-detail"
+      },
+      "expected": "chroma-v48-detail-svd_fp8"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  CHROMA_DETAIL  "
+      },
+      "expected": "chroma-v48-detail-svd_fp8"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "chroma-hd"
+      },
+      "expected": "chroma1-hd_fp8_scaled"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  CHROMA_HD  "
+      },
+      "expected": "chroma1-hd_fp8_scaled"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "chroma1-hd"
+      },
+      "expected": "chroma1-hd_fp8_scaled"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  CHROMA1_HD  "
+      },
+      "expected": "chroma1-hd_fp8_scaled"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "dark-beast-z-image-turbo"
+      },
+      "expected": "dark_beast_z_image_turbo_v9_bf16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  DARK_BEAST_Z_IMAGE_TURBO  "
+      },
+      "expected": "dark_beast_z_image_turbo_v9_bf16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "dark-beast-z-turbo"
+      },
+      "expected": "dark_beast_z_image_turbo_v9_bf16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  DARK_BEAST_Z_TURBO  "
+      },
+      "expected": "dark_beast_z_image_turbo_v9_bf16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "dark-beast-krea-2"
+      },
+      "expected": "dark_beast_krea2_fp8"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  DARK_BEAST_KREA_2  "
+      },
+      "expected": "dark_beast_krea2_fp8"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "dark-beast-krea2"
+      },
+      "expected": "dark_beast_krea2_fp8"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  DARK_BEAST_KREA2  "
+      },
+      "expected": "dark_beast_krea2_fp8"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "one-obsession-v22"
+      },
+      "expected": "one_obsession_v22_fp16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  ONE_OBSESSION_V22  "
+      },
+      "expected": "one_obsession_v22_fp16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "one-obsession"
+      },
+      "expected": "one_obsession_v22_fp16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  ONE_OBSESSION  "
+      },
+      "expected": "one_obsession_v22_fp16"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "pony-v7"
+      },
+      "expected": "coreml-cyberrealisticPony_v7"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  PONY_V7  "
+      },
+      "expected": "coreml-cyberrealisticPony_v7"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "qwen-2512"
+      },
+      "expected": "qwen_image_2512_fp8"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  QWEN_2512  "
+      },
+      "expected": "qwen_image_2512_fp8"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "qwen-2512-lightning"
+      },
+      "expected": "qwen_image_2512_fp8_lightning"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  QWEN_2512_LIGHTNING  "
+      },
+      "expected": "qwen_image_2512_fp8_lightning"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "albedo-xl"
+      },
+      "expected": "coreml-albedobaseXL_v31Large"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  ALBEDO_XL  "
+      },
+      "expected": "coreml-albedobaseXL_v31Large"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "animagine-xl"
+      },
+      "expected": "coreml-animagineXL40_v4Opt"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  ANIMAGINE_XL  "
+      },
+      "expected": "coreml-animagineXL40_v4Opt"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "anima-pencil-xl"
+      },
+      "expected": "coreml-animaPencilXL_v500"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  ANIMA_PENCIL_XL  "
+      },
+      "expected": "coreml-animaPencilXL_v500"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "art-universe-xl"
+      },
+      "expected": "coreml-artUniverse_sdxlV60"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  ART_UNIVERSE_XL  "
+      },
+      "expected": "coreml-artUniverse_sdxlV60"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "hyphoria-real"
+      },
+      "expected": "coreml-hyphoriaRealIllu_v05"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  HYPHORIA_REAL  "
+      },
+      "expected": "coreml-hyphoriaRealIllu_v05"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "analog-madness-xl"
+      },
+      "expected": "coreml-analogMadnessSDXL_xl2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  ANALOG_MADNESS_XL  "
+      },
+      "expected": "coreml-analogMadnessSDXL_xl2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "cyberrealistic-xl"
+      },
+      "expected": "coreml-cyberrealisticXL_v60"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  CYBERREALISTIC_XL  "
+      },
+      "expected": "coreml-cyberrealisticXL_v60"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "real-dream-xl"
+      },
+      "expected": "coreml-realDream_sdxlPony11"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  REAL_DREAM_XL  "
+      },
+      "expected": "coreml-realDream_sdxlPony11"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "faetastic-xl"
+      },
+      "expected": "coreml-sdxlFaetastic_v24"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  FAETASTIC_XL  "
+      },
+      "expected": "coreml-sdxlFaetastic_v24"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "zavychroma-xl"
+      },
+      "expected": "coreml-zavychromaxl_v80"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  ZAVYCHROMA_XL  "
+      },
+      "expected": "coreml-zavychromaxl_v80"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "pony-faetality"
+      },
+      "expected": "coreml-ponyFaetality_v11"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  PONY_FAETALITY  "
+      },
+      "expected": "coreml-ponyFaetality_v11"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "dreamshaper-xl"
+      },
+      "expected": "coreml-DreamShaper-XL1-Alpha2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  DREAMSHAPER_XL  "
+      },
+      "expected": "coreml-DreamShaper-XL1-Alpha2"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "unknown-model"
+      },
+      "expected": "unknown-model"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  UNKNOWN_MODEL  "
+      },
+      "expected": "  UNKNOWN_MODEL  "
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "chatgpt"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  CHATGPT  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "chatgpt-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  CHATGPT_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "chat-gpt"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  CHAT_GPT  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "chat-gpt-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  CHAT_GPT_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "openai"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  OPENAI  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "openai-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  OPENAI_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "open-ai"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  OPEN_AI  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "open-ai-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  OPEN_AI_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt2"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT2  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt-2"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT_2  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt2-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT2_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt-2-image"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT_2_IMAGE  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gptimage2"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPTIMAGE2  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt-image2"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT_IMAGE2  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt-image-2.0"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT_IMAGE_2.0  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt-image-2"
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT_IMAGE_2  "
+      },
+      "expected": "gpt-image-2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt-image-2.5-sunburst"
+      },
+      "expected": "gpt-image-2.5-sunburst"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT_IMAGE_2.5_SUNBURST  "
+      },
+      "expected": "gpt-image-2.5-sunburst"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt-image-2.5-flare"
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT_IMAGE_2.5_FLARE  "
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt-image-2.5"
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT_IMAGE_2.5  "
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "gpt-image2.5"
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  GPT_IMAGE2.5  "
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "sunburst"
+      },
+      "expected": "gpt-image-2.5-sunburst"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  SUNBURST  "
+      },
+      "expected": "gpt-image-2.5-sunburst"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "flare"
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  FLARE  "
+      },
+      "expected": "gpt-image-2.5-flare"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "qwen-lightning"
+      },
+      "expected": "qwen_image_edit_2511_fp8_lightning"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  QWEN_LIGHTNING  "
+      },
+      "expected": "qwen_image_edit_2511_fp8_lightning"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "qwen"
+      },
+      "expected": "qwen_image_edit_2511_fp8"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  QWEN  "
+      },
+      "expected": "qwen_image_edit_2511_fp8"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "krea-2-identity-edit"
+      },
+      "expected": "krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  KREA_2_IDENTITY_EDIT  "
+      },
+      "expected": "krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "krea2-identity-edit"
+      },
+      "expected": "krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  KREA2_IDENTITY_EDIT  "
+      },
+      "expected": "krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "krea-identity-edit"
+      },
+      "expected": "krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  KREA_IDENTITY_EDIT  "
+      },
+      "expected": "krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "krea-2-identity-edit-lora"
+      },
+      "expected": "krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  KREA_2_IDENTITY_EDIT_LORA  "
+      },
+      "expected": "krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "krea-2-identity-edit-lora-v1-2"
+      },
+      "expected": "krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  KREA_2_IDENTITY_EDIT_LORA_V1_2  "
+      },
+      "expected": "krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "dark-beast-krea-2-identity-edit"
+      },
+      "expected": "dark_beast_krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  DARK_BEAST_KREA_2_IDENTITY_EDIT  "
+      },
+      "expected": "dark_beast_krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "dark-beast-krea2-identity-edit"
+      },
+      "expected": "dark_beast_krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  DARK_BEAST_KREA2_IDENTITY_EDIT  "
+      },
+      "expected": "dark_beast_krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "dark-beast-krea-2-identity-edit-lora"
+      },
+      "expected": "dark_beast_krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  DARK_BEAST_KREA_2_IDENTITY_EDIT_LORA  "
+      },
+      "expected": "dark_beast_krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "dark-beast-krea-2-identity-edit-lora-v1-2"
+      },
+      "expected": "dark_beast_krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  DARK_BEAST_KREA_2_IDENTITY_EDIT_LORA_V1_2  "
+      },
+      "expected": "dark_beast_krea2_identity_edit_v1_2"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "unknown-model"
+      },
+      "expected": "unknown-model"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  UNKNOWN_MODEL  "
+      },
+      "expected": "  UNKNOWN_MODEL  "
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "ltx25"
+      },
+      "expected": "ltx25-22b-int8_t2v_distilled"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  LTX25  "
+      },
+      "expected": "ltx25-22b-int8_t2v_distilled"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "ltx23"
+      },
+      "expected": "ltx23-22b-fp8_t2v_distilled"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  LTX23  "
+      },
+      "expected": "ltx23-22b-fp8_t2v_distilled"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "wan22"
+      },
+      "expected": "wan_v2.2-14b-fp8_t2v_lightx2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  WAN22  "
+      },
+      "expected": "wan_v2.2-14b-fp8_t2v_lightx2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "seedance2"
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  SEEDANCE2  "
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "seedance2-mini"
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_MINI  "
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "seedance2-fast"
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_FAST  "
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "seedance2-5"
+      },
+      "expected": "seedance-2-5"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_5  "
+      },
+      "expected": "seedance-2-5"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3"
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-t2v"
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_T2V  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-turbo"
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_TURBO  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-t2v-turbo"
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_T2V_TURBO  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_t2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_t2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-t2v-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_t2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_T2V_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_t2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_t2v_turbo_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_t2v_turbo_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-t2v-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_t2v_turbo_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_T2V_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_t2v_turbo_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-balanced"
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_BALANCED  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-t2v-balanced"
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_T2V_BALANCED  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_t2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-r2v"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_R2V  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-r2v-turbo"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_R2V_TURBO  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-r2v-balanced"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_R2V_BALANCED  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "happyhorse"
+      },
+      "expected": "happyhorse-1.1-t2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  HAPPYHORSE  "
+      },
+      "expected": "happyhorse-1.1-t2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "happyhorse1.1"
+      },
+      "expected": "happyhorse-1.1-t2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  HAPPYHORSE1.1  "
+      },
+      "expected": "happyhorse-1.1-t2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "wan3"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  WAN3  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "wan3.0"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  WAN3.0  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "wan3-video"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  WAN3_VIDEO  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "unknown-model"
+      },
+      "expected": "unknown-model"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  UNKNOWN_MODEL  "
+      },
+      "expected": "  UNKNOWN_MODEL  "
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "ltx25"
+      },
+      "expected": "ltx25-22b-int8_i2v_distilled"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  LTX25  "
+      },
+      "expected": "ltx25-22b-int8_i2v_distilled"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "ltx23"
+      },
+      "expected": "ltx23-22b-fp8_i2v_distilled"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  LTX23  "
+      },
+      "expected": "ltx23-22b-fp8_i2v_distilled"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "wan22"
+      },
+      "expected": "wan_v2.2-14b-fp8_i2v_lightx2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  WAN22  "
+      },
+      "expected": "wan_v2.2-14b-fp8_i2v_lightx2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "seedance2"
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  SEEDANCE2  "
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "seedance2-mini"
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  SEEDANCE2_MINI  "
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "seedance2-fast"
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  SEEDANCE2_FAST  "
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "seedance2-5"
+      },
+      "expected": "seedance-2-5"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  SEEDANCE2_5  "
+      },
+      "expected": "seedance-2-5"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-i2v"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_I2V  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-flf2v"
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_FLF2V  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-turbo"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_TURBO  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-i2v-turbo"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_I2V_TURBO  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-flf2v-turbo"
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_FLF2V_TURBO  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-fasth3-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_FASTH3_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-fasth3-i2v-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_FASTH3_I2V_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-fasth3-flf2v-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_flf2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_FASTH3_FLF2V_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_flf2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-fasth3-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_FASTH3_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-fasth3-i2v-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_FASTH3_I2V_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-fasth3-flf2v-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_FASTH3_FLF2V_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-balanced"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_BALANCED  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-i2v-balanced"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_I2V_BALANCED  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-flf2v-balanced"
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_FLF2V_BALANCED  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-r2v"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_R2V  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-r2v-turbo"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_R2V_TURBO  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_turbo"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-r2v-balanced"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_R2V_BALANCED  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "happyhorse"
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  HAPPYHORSE  "
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "happyhorse1.1"
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  HAPPYHORSE1.1  "
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "happyhorse-1.1-i2v"
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  HAPPYHORSE_1.1_I2V  "
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "happyhorse-1.1-r2v"
+      },
+      "expected": "happyhorse-1.1-r2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  HAPPYHORSE_1.1_R2V  "
+      },
+      "expected": "happyhorse-1.1-r2v"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "wan3"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  WAN3  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "wan3.0"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  WAN3.0  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "wan3-video"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  WAN3_VIDEO  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "unknown-model"
+      },
+      "expected": "unknown-model"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  UNKNOWN_MODEL  "
+      },
+      "expected": "  UNKNOWN_MODEL  "
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "ltx25"
+      },
+      "expected": "ltx25-22b-int8_i2v_distilled"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  LTX25  "
+      },
+      "expected": "ltx25-22b-int8_i2v_distilled"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "ltx23"
+      },
+      "expected": "ltx23-22b-fp8_i2v_distilled"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  LTX23  "
+      },
+      "expected": "ltx23-22b-fp8_i2v_distilled"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "wan22"
+      },
+      "expected": "wan_v2.2-14b-fp8_i2v_lightx2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  WAN22  "
+      },
+      "expected": "wan_v2.2-14b-fp8_i2v_lightx2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "seedance2"
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  SEEDANCE2  "
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "seedance2-mini"
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  SEEDANCE2_MINI  "
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "seedance2-fast"
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  SEEDANCE2_FAST  "
+      },
+      "expected": "seedance-2-0-mini"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "seedance2-5"
+      },
+      "expected": "seedance-2-5"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  SEEDANCE2_5  "
+      },
+      "expected": "seedance-2-5"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-i2v"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_I2V  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-flf2v"
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FLF2V  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-turbo"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_TURBO  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-i2v-turbo"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_I2V_TURBO  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-flf2v-turbo"
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FLF2V_TURBO  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-i2v-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_I2V_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-flf2v-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_flf2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_FLF2V_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_flf2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo_2stage"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo_2stage"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-i2v-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo_2stage"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_I2V_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_i2v_turbo_2stage"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-flf2v-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_FLF2V_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-balanced"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_balanced"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_BALANCED  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_balanced"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-i2v-balanced"
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_balanced"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_I2V_BALANCED  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_i2v_balanced"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-flf2v-balanced"
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v_balanced"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FLF2V_BALANCED  "
+      },
+      "expected": "minimax-h3-fl2va-fp8_flf2v_balanced"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-r2v"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_R2V  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-r2v-turbo"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_R2V_TURBO  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_turbo"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-r2v-balanced"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_R2V_BALANCED  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "happyhorse"
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  HAPPYHORSE  "
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "happyhorse1.1"
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  HAPPYHORSE1.1  "
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "happyhorse-1.1-i2v"
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  HAPPYHORSE_1.1_I2V  "
+      },
+      "expected": "happyhorse-1.1-i2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "happyhorse-1.1-r2v"
+      },
+      "expected": "happyhorse-1.1-r2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  HAPPYHORSE_1.1_R2V  "
+      },
+      "expected": "happyhorse-1.1-r2v"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "wan3"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  WAN3  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "wan3.0"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  WAN3.0  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "wan3-video"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  WAN3_VIDEO  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "unknown-model"
+      },
+      "expected": "unknown-model"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  UNKNOWN_MODEL  "
+      },
+      "expected": "  UNKNOWN_MODEL  "
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "ltx25"
+      },
+      "expected": "ltx25-22b-int8_v2v_distilled"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "  LTX25  "
+      },
+      "expected": "ltx25-22b-int8_v2v_distilled"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "ltx25-v2v"
+      },
+      "expected": "ltx25-22b-int8_v2v_distilled"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "  LTX25_V2V  "
+      },
+      "expected": "ltx25-22b-int8_v2v_distilled"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "ltx23"
+      },
+      "expected": "ltx23-22b-fp8_v2v_distilled"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "  LTX23  "
+      },
+      "expected": "ltx23-22b-fp8_v2v_distilled"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "ltx23-v2v"
+      },
+      "expected": "ltx23-22b-fp8_v2v_distilled"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "  LTX23_V2V  "
+      },
+      "expected": "ltx23-22b-fp8_v2v_distilled"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "seedance2"
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "  SEEDANCE2  "
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "seedance2-5"
+      },
+      "expected": "seedance-2-5"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_5  "
+      },
+      "expected": "seedance-2-5"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "unknown-model"
+      },
+      "expected": null
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "  UNKNOWN_MODEL  "
+      },
+      "expected": null
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "wan-s2v"
+      },
+      "expected": "wan_v2.2-14b-fp8_s2v_lightx2v"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  WAN_S2V  "
+      },
+      "expected": "wan_v2.2-14b-fp8_s2v_lightx2v"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "seedance2-mini"
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_MINI  "
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "seedance2-fast"
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_FAST  "
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "seedance2-5"
+      },
+      "expected": "seedance-2-5"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_5  "
+      },
+      "expected": "seedance-2-5"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "seedance2"
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  SEEDANCE2  "
+      },
+      "expected": "seedance-2-0"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "ltx25-ia2v"
+      },
+      "expected": "ltx25-22b-int8_ia2v_distilled"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  LTX25_IA2V  "
+      },
+      "expected": "ltx25-22b-int8_ia2v_distilled"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "ltx25-a2v"
+      },
+      "expected": "ltx25-22b-int8_a2v_distilled"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  LTX25_A2V  "
+      },
+      "expected": "ltx25-22b-int8_a2v_distilled"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "ltx23-ia2v"
+      },
+      "expected": "ltx23-22b-fp8_ia2v_distilled"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  LTX23_IA2V  "
+      },
+      "expected": "ltx23-22b-fp8_ia2v_distilled"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "ltx23-a2v"
+      },
+      "expected": "ltx23-22b-fp8_a2v_distilled"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  LTX23_A2V  "
+      },
+      "expected": "ltx23-22b-fp8_a2v_distilled"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-ia2v-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_ia2v_turbo"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_IA2V_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_ia2v_turbo"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-flfa2v-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_flfa2v_turbo"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_FLFA2V_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_flfa2v_turbo"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-a2v-turbo"
+      },
+      "expected": "minimax-h3-fastvideo-int8_a2v_turbo"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_A2V_TURBO  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_a2v_turbo"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-ia2v-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_IA2V_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-flfa2v-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_FLFA2V_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "minimax-h3-fasth3-a2v-turbo-2stage"
+      },
+      "expected": "minimax-h3-fastvideo-int8_a2v_turbo_2stage"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_FASTH3_A2V_TURBO_2STAGE  "
+      },
+      "expected": "minimax-h3-fastvideo-int8_a2v_turbo_2stage"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "wan3"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  WAN3  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "wan3.0"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  WAN3.0  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "wan3-video"
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  WAN3_VIDEO  "
+      },
+      "expected": "wan3.0-video"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "unknown-model"
+      },
+      "expected": "unknown-model"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  UNKNOWN_MODEL  "
+      },
+      "expected": "  UNKNOWN_MODEL  "
+    }
+  ],
+  "models": [
+    {
+      "id": "gpt-image-2",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "gpt-image-2.5-sunburst",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "gpt-image-2.5-flare",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "flux1-schnell-fp8",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "chroma-v.46-flash_fp8",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "z_image_turbo_bf16",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "krea2_turbo_fp8_scaled",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "krea2_identity_edit_v1_2",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "dark_beast_krea2_identity_edit_v1_2",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "rtx_vsr_pro",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_t2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_i2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_a2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_ia2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_v2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_t2v_dev",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_i2v_dev",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_a2v_dev",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_ia2v_dev",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_v2v_dev",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx23-22b-fp8_t2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx23-22b-fp8_i2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx23-22b-fp8_a2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx23-22b-fp8_ia2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_s2v_lightx2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx23-22b-fp8_v2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "seedance-2-0",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "seedance-2-0-mini",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "seedance-2-5",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "happyhorse-1.1-t2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "happyhorse-1.1-i2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "happyhorse-1.1-r2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "wan3.0-video",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "wan3.0-spicy-video",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_t2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_i2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flf2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_ia2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flfa2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_a2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_i2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v_balanced",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v_balanced",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v_balanced",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_balanced",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_animate-move_lightx2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_animate-replace_lightx2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ace_step_1.5_xl_turbo",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "ace_step_1.5_xl_sft",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "ace_step_1.5_turbo",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "ace_step_1.5_sft",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax_music3",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "qwen3_tts_1.7b_custom_voice_bf16",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "qwen3_tts_1.7b_voice_clone_bf16",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "qwen3_tts_1.7b_voice_design_bf16",
+      "media": "audio",
+      "workerCount": 1
+    }
+  ],
+  "workflows": [
+    {
+      "workflow": "upscale",
+      "expected": []
+    },
+    {
+      "workflow": "t2v",
+      "expected": [
+        "ltx25-22b-int8_t2v_distilled",
+        "ltx25-22b-int8_t2v_dev",
+        "ltx23-22b-fp8_t2v_distilled",
+        "seedance-2-0",
+        "seedance-2-0-mini",
+        "seedance-2-5",
+        "happyhorse-1.1-t2v",
+        "wan3.0-video",
+        "wan3.0-spicy-video",
+        "minimax-h3-fl2va-fp8_t2v",
+        "minimax-h3-fl2va-fp8_t2v_turbo",
+        "minimax-h3-fastvideo-int8_t2v_turbo",
+        "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+        "minimax-h3-fl2va-fp8_t2v_balanced"
+      ]
+    },
+    {
+      "workflow": "i2v",
+      "expected": [
+        "ltx25-22b-int8_i2v_distilled",
+        "ltx25-22b-int8_i2v_dev",
+        "ltx23-22b-fp8_i2v_distilled",
+        "seedance-2-0",
+        "seedance-2-0-mini",
+        "seedance-2-5",
+        "happyhorse-1.1-i2v",
+        "wan3.0-video",
+        "wan3.0-spicy-video",
+        "minimax-h3-fl2va-fp8_i2v",
+        "minimax-h3-fl2va-fp8_i2v_turbo",
+        "minimax-h3-fastvideo-int8_i2v_turbo",
+        "minimax-h3-fastvideo-int8_i2v_turbo_2stage",
+        "minimax-h3-fl2va-fp8_i2v_balanced"
+      ]
+    },
+    {
+      "workflow": "flf2v",
+      "expected": [
+        "seedance-2-5",
+        "wan3.0-video",
+        "wan3.0-spicy-video",
+        "minimax-h3-fl2va-fp8_flf2v",
+        "minimax-h3-fl2va-fp8_flf2v_turbo",
+        "minimax-h3-fastvideo-int8_flf2v_turbo",
+        "minimax-h3-fastvideo-int8_flf2v_turbo_2stage",
+        "minimax-h3-fl2va-fp8_flf2v_balanced"
+      ]
+    },
+    {
+      "workflow": "r2v",
+      "expected": [
+        "seedance-2-5",
+        "happyhorse-1.1-r2v",
+        "wan3.0-video",
+        "wan3.0-spicy-video",
+        "minimax-h3-ref2va-fp8_r2v",
+        "minimax-h3-ref2va-fp8_r2v_turbo",
+        "minimax-h3-ref2va-fp8_r2v_balanced"
+      ]
+    },
+    {
+      "workflow": "ia2v",
+      "expected": [
+        "ltx25-22b-int8_ia2v_distilled",
+        "ltx25-22b-int8_ia2v_dev",
+        "ltx23-22b-fp8_ia2v_distilled",
+        "seedance-2-0",
+        "seedance-2-0-mini",
+        "seedance-2-5",
+        "wan3.0-video",
+        "wan3.0-spicy-video",
+        "minimax-h3-fastvideo-int8_ia2v_turbo",
+        "minimax-h3-fastvideo-int8_ia2v_turbo_2stage"
+      ]
+    },
+    {
+      "workflow": "a2v",
+      "expected": [
+        "ltx25-22b-int8_a2v_distilled",
+        "ltx25-22b-int8_a2v_dev",
+        "ltx23-22b-fp8_a2v_distilled",
+        "wan3.0-video",
+        "wan3.0-spicy-video",
+        "minimax-h3-fastvideo-int8_a2v_turbo",
+        "minimax-h3-fastvideo-int8_a2v_turbo_2stage"
+      ]
+    },
+    {
+      "workflow": "flfa2v",
+      "expected": [
+        "minimax-h3-fastvideo-int8_flfa2v_turbo",
+        "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage"
+      ]
+    },
+    {
+      "workflow": "s2v",
+      "expected": [
+        "wan_v2.2-14b-fp8_s2v_lightx2v"
+      ]
+    },
+    {
+      "workflow": "v2v",
+      "expected": [
+        "ltx25-22b-int8_v2v_distilled",
+        "ltx25-22b-int8_v2v_dev",
+        "ltx23-22b-fp8_v2v_distilled",
+        "seedance-2-0",
+        "seedance-2-0-mini",
+        "seedance-2-5"
+      ]
+    },
+    {
+      "workflow": "animate-move",
+      "expected": [
+        "wan_v2.2-14b-fp8_animate-move_lightx2v"
+      ]
+    }
+  ],
+  "defaults": [
+    {
+      "id": "gpt-image-2",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "gpt-image-2.5-sunburst",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "gpt-image-2.5-flare",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "flux1-schnell-fp8",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "chroma-v.46-flash_fp8",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "z_image_turbo_bf16",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "krea2_turbo_fp8_scaled",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "krea2_identity_edit_v1_2",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "dark_beast_krea2_identity_edit_v1_2",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "rtx_vsr_pro",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "ltx25-22b-int8_t2v_distilled",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx25-22b-int8_i2v_distilled",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx25-22b-int8_a2v_distilled",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx25-22b-int8_ia2v_distilled",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx25-22b-int8_v2v_distilled",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx25-22b-int8_t2v_dev",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx25-22b-int8_i2v_dev",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx25-22b-int8_a2v_dev",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx25-22b-int8_ia2v_dev",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx25-22b-int8_v2v_dev",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx23-22b-fp8_t2v_distilled",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx23-22b-fp8_i2v_distilled",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx23-22b-fp8_a2v_distilled",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "ltx23-22b-fp8_ia2v_distilled",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_s2v_lightx2v",
+      "expected": {
+        "width": 832,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "ltx23-22b-fp8_v2v_distilled",
+      "expected": {
+        "width": 1920,
+        "height": 1088,
+        "fps": 24
+      }
+    },
+    {
+      "id": "seedance-2-0",
+      "expected": {
+        "width": 1920,
+        "height": 1080,
+        "fps": 24
+      }
+    },
+    {
+      "id": "seedance-2-0-mini",
+      "expected": {
+        "width": 1280,
+        "height": 720,
+        "fps": 24
+      }
+    },
+    {
+      "id": "seedance-2-5",
+      "expected": {
+        "width": 1280,
+        "height": 720,
+        "fps": 24
+      }
+    },
+    {
+      "id": "happyhorse-1.1-t2v",
+      "expected": {
+        "width": 1920,
+        "height": 1080,
+        "fps": 24
+      }
+    },
+    {
+      "id": "happyhorse-1.1-i2v",
+      "expected": {
+        "width": 1920,
+        "height": 1080,
+        "fps": 24
+      }
+    },
+    {
+      "id": "happyhorse-1.1-r2v",
+      "expected": {
+        "width": 1920,
+        "height": 1080,
+        "fps": 24
+      }
+    },
+    {
+      "id": "wan3.0-video",
+      "expected": {
+        "width": 1920,
+        "height": 1080,
+        "fps": 30
+      }
+    },
+    {
+      "id": "wan3.0-spicy-video",
+      "expected": {
+        "width": 1920,
+        "height": 1080,
+        "fps": 30
+      }
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v_turbo",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v_turbo",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v_turbo",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_turbo",
+      "expected": {
+        "width": 960,
+        "height": 544,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_t2v_turbo",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_i2v_turbo",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flf2v_turbo",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_ia2v_turbo",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flfa2v_turbo",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_a2v_turbo",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_i2v_turbo_2stage",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v_balanced",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v_balanced",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v_balanced",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_balanced",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_animate-move_lightx2v",
+      "expected": {
+        "width": 832,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_animate-replace_lightx2v",
+      "expected": {
+        "width": 832,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "ace_step_1.5_xl_turbo",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "ace_step_1.5_xl_sft",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "ace_step_1.5_turbo",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "ace_step_1.5_sft",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "minimax_music3",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "qwen3_tts_1.7b_custom_voice_bf16",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "qwen3_tts_1.7b_voice_clone_bf16",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "qwen3_tts_1.7b_voice_design_bf16",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "seedance-2-0-fast",
+      "expected": {
+        "width": 1280,
+        "height": 720,
+        "fps": 24
+      }
+    },
+    {
+      "id": "unknown-model",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    }
+  ],
+  "editModels": [
+    {
+      "id": "gpt-image-2",
+      "expected": true
+    },
+    {
+      "id": "gpt-image-2.5-sunburst",
+      "expected": true
+    },
+    {
+      "id": "gpt-image-2.5-flare",
+      "expected": true
+    },
+    {
+      "id": "flux1-schnell-fp8",
+      "expected": false
+    },
+    {
+      "id": "chroma-v.46-flash_fp8",
+      "expected": false
+    },
+    {
+      "id": "z_image_turbo_bf16",
+      "expected": false
+    },
+    {
+      "id": "krea2_turbo_fp8_scaled",
+      "expected": false
+    },
+    {
+      "id": "krea2_identity_edit_v1_2",
+      "expected": true
+    },
+    {
+      "id": "dark_beast_krea2_identity_edit_v1_2",
+      "expected": true
+    },
+    {
+      "id": "rtx_vsr_pro",
+      "expected": false
+    },
+    {
+      "id": "ltx25-22b-int8_t2v_distilled",
+      "expected": false
+    },
+    {
+      "id": "ltx25-22b-int8_i2v_distilled",
+      "expected": false
+    },
+    {
+      "id": "ltx25-22b-int8_a2v_distilled",
+      "expected": false
+    },
+    {
+      "id": "ltx25-22b-int8_ia2v_distilled",
+      "expected": false
+    },
+    {
+      "id": "ltx25-22b-int8_v2v_distilled",
+      "expected": false
+    },
+    {
+      "id": "ltx25-22b-int8_t2v_dev",
+      "expected": false
+    },
+    {
+      "id": "ltx25-22b-int8_i2v_dev",
+      "expected": false
+    },
+    {
+      "id": "ltx25-22b-int8_a2v_dev",
+      "expected": false
+    },
+    {
+      "id": "ltx25-22b-int8_ia2v_dev",
+      "expected": false
+    },
+    {
+      "id": "ltx25-22b-int8_v2v_dev",
+      "expected": false
+    },
+    {
+      "id": "ltx23-22b-fp8_t2v_distilled",
+      "expected": false
+    },
+    {
+      "id": "ltx23-22b-fp8_i2v_distilled",
+      "expected": false
+    },
+    {
+      "id": "ltx23-22b-fp8_a2v_distilled",
+      "expected": false
+    },
+    {
+      "id": "ltx23-22b-fp8_ia2v_distilled",
+      "expected": false
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_s2v_lightx2v",
+      "expected": false
+    },
+    {
+      "id": "ltx23-22b-fp8_v2v_distilled",
+      "expected": false
+    },
+    {
+      "id": "seedance-2-0",
+      "expected": false
+    },
+    {
+      "id": "seedance-2-0-mini",
+      "expected": false
+    },
+    {
+      "id": "seedance-2-5",
+      "expected": false
+    },
+    {
+      "id": "happyhorse-1.1-t2v",
+      "expected": false
+    },
+    {
+      "id": "happyhorse-1.1-i2v",
+      "expected": false
+    },
+    {
+      "id": "happyhorse-1.1-r2v",
+      "expected": false
+    },
+    {
+      "id": "wan3.0-video",
+      "expected": false
+    },
+    {
+      "id": "wan3.0-spicy-video",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v_turbo",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v_turbo",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v_turbo",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_turbo",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_t2v_turbo",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_i2v_turbo",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flf2v_turbo",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_ia2v_turbo",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flfa2v_turbo",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_a2v_turbo",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_i2v_turbo_2stage",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v_balanced",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v_balanced",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v_balanced",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_balanced",
+      "expected": false
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_animate-move_lightx2v",
+      "expected": false
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_animate-replace_lightx2v",
+      "expected": false
+    },
+    {
+      "id": "ace_step_1.5_xl_turbo",
+      "expected": false
+    },
+    {
+      "id": "ace_step_1.5_xl_sft",
+      "expected": false
+    },
+    {
+      "id": "ace_step_1.5_turbo",
+      "expected": false
+    },
+    {
+      "id": "ace_step_1.5_sft",
+      "expected": false
+    },
+    {
+      "id": "minimax_music3",
+      "expected": false
+    },
+    {
+      "id": "qwen3_tts_1.7b_custom_voice_bf16",
+      "expected": false
+    },
+    {
+      "id": "qwen3_tts_1.7b_voice_clone_bf16",
+      "expected": false
+    },
+    {
+      "id": "qwen3_tts_1.7b_voice_design_bf16",
+      "expected": false
+    },
+    {
+      "id": "qwen_image_edit_2511_fp8",
+      "expected": true
+    },
+    {
+      "id": "qwen_image_edit_2511_fp8_lightning",
+      "expected": true
+    },
+    {
+      "id": "unknown-model",
+      "expected": false
+    }
+  ],
+  "schemas": [
+    {
+      "name": "generate_image",
+      "sha256": "ae8e82d776f8777d2a209ef1e299757f6df82531e8ad3b2f873f8f7962726e7b"
+    },
+    {
+      "name": "generate_video",
+      "sha256": "e91546e2bd3c344c3d7746c98d5503535fd8c4aabdd595f3a8f2493d9aa21428"
+    },
+    {
+      "name": "generate_music",
+      "sha256": "7f326053f68a47c2f2d4fa05f474f9aa5b54329e1556df715d2a5d08afdae90e"
+    },
+    {
+      "name": "generate_speech",
+      "sha256": "6471f6fbfa12c54519c4b95a5fbfcbc20de6708b4ad75fcecf10974fbc512f4e"
+    },
+    {
+      "name": "edit_image",
+      "sha256": "800f058886fe2a43f6de70c98e4bdd03320263bdc1845a1dd5975aa8e93d381f"
+    },
+    {
+      "name": "apply_style",
+      "sha256": "d0e98ea4d14450c7fa103bef5a3be7e539b6efe9590e647fc4ac3437f0847c04"
+    },
+    {
+      "name": "restore_photo",
+      "sha256": "3a03f245cf16f03b3adf5ddbdb724fe6ebb6247e885a53cfa1d78808a7ec4b6d"
+    },
+    {
+      "name": "upscale_image",
+      "sha256": "c60d7b014b879909f1c7219e06241b38f352c1758aecc2603befe82d69b55cf9"
+    },
+    {
+      "name": "upscale_video",
+      "sha256": "02f9efb9266069c9a5a25a30a0f018ba584051e060a1cf5ec7f62d50bb42d3f9"
+    },
+    {
+      "name": "refine_result",
+      "sha256": "b5943caaec32401c15f3aed175931b38ea0abf1f8e6d04fb2e183ae950ce1b50"
+    },
+    {
+      "name": "animate_photo",
+      "sha256": "b40b0503ebcfc1e6d03e9aa531549a22129db7398278bb437f877562cbc71407"
+    },
+    {
+      "name": "change_angle",
+      "sha256": "44876ab5ba12d28ca44bfde443af6a4ce379be5c7d603756975e0982a6d1531d"
+    },
+    {
+      "name": "video_to_video",
+      "sha256": "49687ae273ff7a125b2991575eb924077107a676f20cee27e1e4715fd4f44fa1"
+    },
+    {
+      "name": "stitch_video",
+      "sha256": "aed10e461007a40ccfa95d48af27f75ae9f60a8addce7ee157b215b105f82fd5"
+    },
+    {
+      "name": "orbit_video",
+      "sha256": "0f8b2048a8ccb369dba6920ece070bc63124848d9830291290a4667b4db96c62"
+    },
+    {
+      "name": "dance_montage",
+      "sha256": "ad9ef87342bdf33d5bf7b460bb7934aebe6151c1a1fa6a74c4828c324526d842"
+    },
+    {
+      "name": "sound_to_video",
+      "sha256": "179f0e4563b935747d5e7213b9b5f1057a5aa9607f6311d67afd69fefc7ab4a8"
+    },
+    {
+      "name": "extend_video",
+      "sha256": "73467dc49c9ca9bfdeb9e69cb1870becd62ecb29e4017ee0181be4064d5c87d5"
+    },
+    {
+      "name": "replace_video_segment",
+      "sha256": "736635d0bec92396900308408a3acb188eed882e4c14ac4908d9eca57e38aecc"
+    },
+    {
+      "name": "overlay_video",
+      "sha256": "9a0c8450f29be3ca59ab93c16ef976ce0d6c96143a82e9af1c03177ffdecc76a"
+    },
+    {
+      "name": "add_subtitles",
+      "sha256": "487721732b6d9439da844a8558fde4c08321bc09277a61c0dbf72a50c3bfe628"
+    },
+    {
+      "name": "enhance_prompt",
+      "sha256": "d858aaa573e8765767d9ccff5ee860e974017e1c76565bf14cb5a1399b25a24b"
+    },
+    {
+      "name": "compose_lyrics",
+      "sha256": "ebc0d9b58ba9a71ba87f337083435bc719ae51ffe92c2eba330a1e4789db5bbe"
+    },
+    {
+      "name": "compose_instrumental",
+      "sha256": "6088a8cec9c6fab74d50d1ca6cc561b691e60caae80b74af1d2c45c4ab5016b0"
+    },
+    {
+      "name": "compose_script",
+      "sha256": "a23ae008c35661f4019e519ec672f7f6fa13deff2f25115357390f26b472381c"
+    },
+    {
+      "name": "compose_workflow",
+      "sha256": "99152fca36feeb71e4adad2d0ceb4ee83ca0e72fbbbf380773c0f527f2e45690"
+    },
+    {
+      "name": "compose_workflow_template",
+      "sha256": "a8de2ca0205ddbbe9ae8f55b584fa5001f99b24c2d29cc30ad84a133999e0cf7"
+    }
+  ]
+}

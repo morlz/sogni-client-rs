@@ -160,16 +160,27 @@ impl ProjectsApi {
                     "duplicate project asset role {wire_role}"
                 )));
             }
-            if matches!(role, AssetRole::StartingImage) {
-                self.upload_guide_image(project_id, &new_id(), source)
-                    .await?;
-                continue;
-            }
             let media = source.read().await?;
+            let (resource_type, resource_id) = if role.is_media() {
+                ["referenceAudio", "referenceVideo"]
+                    .into_iter()
+                    .find_map(|kind| {
+                        wire_role
+                            .strip_prefix(kind)
+                            .filter(|slot| {
+                                !slot.is_empty() && slot.bytes().all(|b| b.is_ascii_digit())
+                            })
+                            .map(|_| (kind, Some(wire_role.as_str())))
+                    })
+                    .unwrap_or((&wire_role, None))
+            } else {
+                (wire_role.as_str(), None)
+            };
             let query = if role.is_media() {
                 json!({
                     "jobId": project_id,
-                    "type": wire_role,
+                    "type": resource_type,
+                    "id": resource_id,
                     "contentType": media.content_type,
                 })
             } else {
@@ -180,18 +191,34 @@ impl ProjectsApi {
                     "contentType": media.content_type,
                 })
             };
-            let upload = if role.is_media() {
-                self.media_upload_url(&query).await?
-            } else {
-                self.upload_url(&query).await?
-            };
-            self.inner
-                .client
-                .rest
-                .put_bytes(upload, media.data, media.content_type.as_deref())
+            let reused = self
+                .inner
+                .assets
+                .try_bind(
+                    media.data.clone(),
+                    media.content_type.as_deref(),
+                    &media.file_name,
+                    &SavedUploadBinding {
+                        project_id: project_id.to_owned(),
+                        asset_type: resource_type.to_owned(),
+                        id: resource_id.map(str::to_owned),
+                    },
+                )
                 .await?;
+            if !reused {
+                let upload = if role.is_media() {
+                    self.media_upload_url(&query).await?
+                } else {
+                    self.upload_url(&query).await?
+                };
+                self.inner
+                    .client
+                    .rest
+                    .put_bytes(upload, media.data, media.content_type.as_deref())
+                    .await?;
+            }
             // Image uploads advertise their MIME in the resource registration
-            // and PUT only. The worker payload annotates video assets alone.
+            // and PUT only. Video and voice-clone audio inputs annotate the wire.
             if let (Some(keyframe), Some(content_type)) = (
                 request
                     .pointer_mut("/keyFrames/0")

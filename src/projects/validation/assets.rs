@@ -23,6 +23,14 @@ pub(in crate::projects) fn video_asset_requirements(
         ]
     } else {
         match workflow {
+            "upscale" => [
+                ("referenceImage", "forbidden"),
+                ("referenceImageEnd", "forbidden"),
+                ("referenceAudio", "forbidden"),
+                ("referenceAudioIdentity", "forbidden"),
+                ("referenceVideo", "required"),
+                ("referenceMask", "forbidden"),
+            ],
             "t2v" => [
                 ("referenceImage", "forbidden"),
                 ("referenceImageEnd", "forbidden"),
@@ -43,6 +51,14 @@ pub(in crate::projects) fn video_asset_requirements(
                 ("referenceImage", "required"),
                 ("referenceImageEnd", "required"),
                 ("referenceAudio", "forbidden"),
+                ("referenceAudioIdentity", "forbidden"),
+                ("referenceVideo", "forbidden"),
+                ("referenceMask", "forbidden"),
+            ],
+            "flfa2v" => [
+                ("referenceImage", "required"),
+                ("referenceImageEnd", "required"),
+                ("referenceAudio", "required"),
                 ("referenceAudioIdentity", "forbidden"),
                 ("referenceVideo", "forbidden"),
                 ("referenceMask", "forbidden"),
@@ -104,7 +120,7 @@ pub(in crate::projects) fn custom_image_size_bounds(model_id: &str) -> (f64, f64
         "krea2_identity_edit_v1_2" | "dark_beast_krea2_identity_edit_v1_2"
     ) {
         (512.0, 2_048.0)
-    } else if model_id == "gpt-image-2" {
+    } else if is_gpt_image_model(model_id) {
         (256.0, 3_840.0)
     } else if matches!(
         model_id,

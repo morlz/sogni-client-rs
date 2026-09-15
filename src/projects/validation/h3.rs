@@ -84,6 +84,39 @@ pub(in crate::projects) fn validate_h3_params(
             ));
         }
     }
+    // The worker derives the uploaded-audio window from frames/24.
+    if params.contains_key("audioDuration") {
+        return Err(Error::InvalidInput("MiniMax H3 has no audioDuration input. Set frames or duration; the uploaded audio is trimmed to the video length.".into()));
+    }
+    if is_minimax_h3_audio_guide_model(model_id) {
+        let workflow = get_video_workflow_type(model_id).unwrap_or("audio-guide");
+        if params.get("generateAudio") == Some(&json!(false)) {
+            return Err(Error::InvalidInput(format!(
+                "MiniMax H3 {workflow} output always carries the uploaded audio. Omit generateAudio or set it to true."
+            )));
+        }
+        if let Some(value) = params.get("audioStart") {
+            if !value
+                .as_f64()
+                .is_some_and(|value| value.is_finite() && value >= 0.0)
+            {
+                return Err(Error::InvalidInput(format!(
+                    "MiniMax H3 {workflow} audioStart must be a number of seconds, 0 or greater."
+                )));
+            }
+        }
+        if ["loras", "loraStrengths"].iter().any(|field| {
+            params
+                .get(*field)
+                .is_some_and(|value| !value.as_array().is_some_and(Vec::is_empty))
+        }) {
+            return Err(Error::InvalidInput(format!(
+                "MiniMax H3 {workflow} does not support LoRAs. Remove loras and loraStrengths."
+            )));
+        }
+    } else if params.contains_key("audioStart") {
+        return Err(Error::InvalidInput("audioStart is supported only by the MiniMax H3 FastH3 audio-guide workflows (minimax-h3-fastvideo-int8_ia2v_turbo, minimax-h3-fastvideo-int8_flfa2v_turbo, minimax-h3-fastvideo-int8_a2v_turbo and their _2stage ids).".into()));
+    }
     Ok(())
 }
 

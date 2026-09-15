@@ -8,7 +8,10 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
     let Some(job_id) = data.get("imgID").and_then(Value::as_str) else {
         return;
     };
-    let job = project.ensure_job(&job_id.to_uppercase());
+    let Some(job) = project.job_for_attempt(job_id, data.get("jobIndex").and_then(Value::as_u64))
+    else {
+        return;
+    };
     let nsfw = data
         .get("triggeredNSFWFilter")
         .and_then(Value::as_bool)
@@ -30,6 +33,7 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
             if provenance.is_some() {
                 state.provenance.clone_from(&provenance);
             }
+            copy_export_metadata(state, data);
         },
         &[
             "status",
@@ -72,6 +76,15 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
     );
     let mut completed = json!({"jobId": job_id});
     let mut event = data.clone();
+    let snapshot = job.snapshot();
+    for target in [&mut completed, &mut event] {
+        if let Some(url) = &snapshot.last_frame_url {
+            target["lastFrameUrl"] = json!(url);
+        }
+        if let Some(format) = &snapshot.output_format {
+            target["outputFormat"] = json!(format);
+        }
+    }
     if let Some(provenance) = provenance {
         completed["provenance"] = json!(provenance);
         event["provenance"] = json!(provenance);
@@ -80,10 +93,29 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
     inner.events.emit("job", event);
 }
 
+pub(in crate::projects) fn copy_export_metadata(state: &mut JobSnapshot, data: &Value) {
+    let string = |field| {
+        data.get(field)
+            .or_else(|| data.get("result")?.get(field))
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+    };
+    state.last_frame_url = string("lastFrameUrl").or_else(|| state.last_frame_url.clone());
+    state.last_frame_key = string("lastFrameKey").or_else(|| state.last_frame_key.clone());
+    state.output_format = string("outputFormat").or_else(|| state.output_format.clone());
+}
+
 pub(super) fn handle_job_error(inner: &Arc<ProjectsInner>, data: &Value) {
+    let api = ProjectsApi {
+        inner: inner.clone(),
+    };
+    if api.resubmit_if_restarting(data) {
+        return;
+    }
     let Some(project) = project_by_id(inner, data) else {
         return;
     };
+    inner.submission.lock().unadmitted.remove(&project.id());
     let raw_code = data.get("error").cloned().unwrap_or(json!(5000));
     let code = raw_code
         .as_i64()
@@ -114,7 +146,11 @@ pub(super) fn handle_job_error(inner: &Arc<ProjectsInner>, data: &Value) {
         }
     }
     if let Some(job_id) = data.get("imgID").and_then(Value::as_str) {
-        let job = project.ensure_job(&job_id.to_uppercase());
+        let Some(job) =
+            project.job_for_attempt(job_id, data.get("jobIndex").and_then(Value::as_u64))
+        else {
+            return;
+        };
         job.update(
             |state| {
                 state.status = JobStatus::Failed;

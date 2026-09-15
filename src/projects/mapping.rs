@@ -11,6 +11,11 @@ pub(super) fn validate_option(
     let allowed = options
         .and_then(|value| value.get("allowed"))
         .and_then(Value::as_array);
+    // A model with no choices has no sampler/scheduler input. In particular,
+    // speech tiers omit these entirely; do not forward a meaningless value.
+    if allowed.is_none_or(Vec::is_empty) || selected.as_str() == Some("") {
+        return Ok(None);
+    }
     if let Some(allowed) = allowed {
         if !allowed.is_empty() && !allowed.contains(selected) {
             return Err(Error::InvalidInput(format!(
@@ -60,7 +65,9 @@ pub(super) fn map_model_options(tier: &Value, media_type: &str) -> Value {
         } else {
             tier.get("comfyScheduler").or_else(|| tier.get("scheduler"))
         };
-        output.insert(name.into(), map_options(source, &aliases));
+        if media_type != "audio" || source.is_some_and(|value| !value.is_null()) {
+            output.insert(name.into(), map_options(source, &aliases));
+        }
     }
     for field in [
         "steps",
@@ -77,9 +84,54 @@ pub(super) fn map_model_options(tier: &Value, media_type: &str) -> Value {
             output.insert(field.into(), map_range(value));
         }
     }
-    for field in ["fps", "timesignature", "language", "keyscale", "vae"] {
+    for field in [
+        "fps",
+        "timesignature",
+        "language",
+        "keyscale",
+        "vae",
+        "speaker",
+    ] {
         if let Some(value) = tier.get(field) {
-            output.insert(field.into(), map_options(Some(value), &BTreeMap::new()));
+            // Video FPS can be a numeric range (including fractional rates),
+            // whereas image/audio options are enumerations.
+            let mapped = if field == "fps" && media_type == "video" {
+                value.clone()
+            } else {
+                map_options(Some(value), &BTreeMap::new())
+            };
+            output.insert(field.into(), mapped);
+        }
+    }
+    for field in [
+        "task",
+        "outputResolutions",
+        "preservesSourceTiming",
+        "requiresReferenceVideo",
+    ] {
+        if media_type == "video" {
+            if let Some(value) = tier.get(field) {
+                output.insert(field.into(), value.clone());
+            }
+        }
+    }
+    if media_type == "audio" {
+        if let Some(value) = tier.get("instruct") {
+            output.insert("instruct".into(), json!({"maxLength": value.get("maxLength"), "required": value.get("required") == Some(&json!(true))}));
+        }
+        if let Some(value) = tier.get("referenceText") {
+            output.insert(
+                "referenceText".into(),
+                json!({"maxLength": value.get("maxLength")}),
+            );
+        }
+        if tier.get("acceptInputAudio") == Some(&json!(true))
+            || tier.get("requiresReferenceAudio") == Some(&json!(true))
+        {
+            output.insert("acceptsReferenceAudio".into(), json!(true));
+        }
+        if tier.get("requiresReferenceAudio") == Some(&json!(true)) {
+            output.insert("requiresReferenceAudio".into(), json!(true));
         }
     }
     if let Some(value) = tier.pointer("/composerMode/default") {

@@ -1,11 +1,15 @@
 use super::*;
 mod image;
+mod image_utilities;
 mod sam3;
+mod upscale;
 mod video;
 mod world;
 use image::build_image_keyframe;
+#[cfg(test)]
+use sam3::PIXAL3D_MODEL_ID;
 pub(super) use sam3::normalize_utility_params;
-use sam3::{PIXAL3D_MODEL_ID, SAM3_MODEL_ID, normalize_sam3_prompt};
+use sam3::{SAM3_MODEL_ID, normalize_sam3_prompt};
 use video::build_video_keyframe;
 
 #[cfg(test)]
@@ -52,8 +56,14 @@ pub(super) fn build_job_request(
     copy_if_present(params, keyframe, "guidance", "guidanceScale");
     copy_if_present(params, keyframe, "seed", "seed");
     copy_if_present(params, keyframe, "stylePrompt", "stylePrompt");
-    copy_if_present(params, keyframe, "loras", "loras");
-    copy_if_present(params, keyframe, "loraStrengths", "loraStrengths");
+    for field in ["loras", "loraStrengths"] {
+        if params
+            .get(field)
+            .is_some_and(|value| value.as_array().is_some_and(|values| !values.is_empty()))
+        {
+            copy_if_present(params, keyframe, field, field);
+        }
+    }
     if let Some(receipt) = receipt {
         keyframe.insert("worldGenerationReceipt".into(), receipt);
     }
@@ -68,7 +78,11 @@ pub(super) fn build_job_request(
         {
             keyframe.insert("negativePrompt".into(), json!(prompt));
         }
-    } else if media_type != "image" {
+    }
+    if media_type == "audio"
+        || media_type == "video"
+            && (is_external_video_model(model_id) || is_minimax_h3_model(model_id))
+    {
         keyframe.remove("negativePrompt");
     }
 
@@ -84,7 +98,8 @@ pub(super) fn build_job_request(
         .expect("static request template is an object");
     object.insert(
         "previews".into(),
-        if media_type == "image" && model_id != SAM3_MODEL_ID {
+        if media_type == "image" && !is_segmentation_model(model_id) && !is_pixal3d_model(model_id)
+        {
             params.get("numberOfPreviews").cloned().unwrap_or(json!(0))
         } else {
             json!(0)
@@ -92,7 +107,7 @@ pub(super) fn build_job_request(
     );
     object.insert(
         "numberOfImages".into(),
-        if model_id == SAM3_MODEL_ID {
+        if is_segmentation_model(model_id) {
             json!(1)
         } else {
             params.get("numberOfMedia").cloned().unwrap_or(json!(1))
@@ -110,9 +125,9 @@ pub(super) fn build_job_request(
     );
     object.insert(
         "outputFormat".into(),
-        if model_id == PIXAL3D_MODEL_ID {
+        if is_pixal3d_model(model_id) {
             json!("glb")
-        } else if model_id == SAM3_MODEL_ID {
+        } else if is_segmentation_model(model_id) {
             json!("png")
         } else {
             params.get("outputFormat").cloned().unwrap_or_else(|| {
@@ -155,8 +170,16 @@ fn build_audio_keyframe(
         "promptStrength",
         "creativity",
         "shift",
+        "speaker",
+        "instruct",
+        "referenceText",
     ] {
         copy_if_present(params, keyframe, field, field);
+    }
+    // Speech fields remain model-agnostic. The service rejects controls a model
+    // cannot consume, so a new speech model does not need a client allowlist.
+    if truthy(params.get("referenceAudio")) {
+        keyframe.insert("hasReferenceAudio".into(), json!(true));
     }
     if let Some(value) =
         validate_option(params.get("sampler"), options.raw.get("sampler"), "sampler")?

@@ -1,0 +1,6408 @@
+{
+  "upstream": "Sogni-AI/sogni-client@452e789 (5.50.0)",
+  "cases": [
+    {
+      "name": "sam-0",
+      "params": {
+        "type": "image",
+        "modelId": "sam3_image_segment_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "sam3Prompt": {
+          "text": "dogs",
+          "multimask": false,
+          "applyMask": true,
+          "maxInstances": 1,
+          "boxes": [
+            {
+              "x0": 0,
+              "y0": 0,
+              "x1": 0.5,
+              "y1": 0.5,
+              "label": "negative"
+            }
+          ]
+        }
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "sam3_image_segment_bf16",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false,
+            "hasStartingImage": true,
+            "sam3Prompt": {
+              "points": [],
+              "boxes": [
+                {
+                  "x0": 0,
+                  "y0": 0,
+                  "x1": 0.5,
+                  "y1": 0.5,
+                  "label": "negative"
+                }
+              ],
+              "text": "dogs",
+              "threshold": 0.5,
+              "applyMask": true,
+              "maxInstances": 1
+            }
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "png"
+      }
+    },
+    {
+      "name": "sam-1",
+      "params": {
+        "type": "image",
+        "modelId": "sam3_image_segment_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "sam3Prompt": {
+          "boxes": [
+            {
+              "x0": 0,
+              "y0": 0,
+              "x1": 1,
+              "y1": 1
+            }
+          ]
+        }
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "sam3_image_segment_bf16",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false,
+            "hasStartingImage": true,
+            "sam3Prompt": {
+              "points": [],
+              "boxes": [
+                {
+                  "x0": 0,
+                  "y0": 0,
+                  "x1": 1,
+                  "y1": 1,
+                  "label": "positive"
+                }
+              ],
+              "threshold": 0.5,
+              "applyMask": false
+            }
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "png"
+      }
+    },
+    {
+      "name": "sam-2",
+      "params": {
+        "type": "image",
+        "modelId": "sam3_image_segment_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "sam3Prompt": {
+          "points": [
+            {
+              "x": 0.5,
+              "y": 0.5,
+              "label": "positive"
+            }
+          ],
+          "multimask": false,
+          "maxInstances": 16
+        }
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "sam3_image_segment_bf16",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false,
+            "hasStartingImage": true,
+            "sam3Prompt": {
+              "points": [
+                {
+                  "x": 0.5,
+                  "y": 0.5,
+                  "label": "positive"
+                }
+              ],
+              "boxes": [],
+              "threshold": 0.5,
+              "multimask": false,
+              "applyMask": false,
+              "maxInstances": 16
+            }
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "png"
+      }
+    },
+    {
+      "name": "biref-matte",
+      "params": {
+        "type": "image",
+        "modelId": "birefnet_image_background_removal_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 4,
+        "startingImage": true,
+        "numberOfPreviews": 6,
+        "outputFormat": "jpg"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "birefnet_image_background_removal_fp16",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false,
+            "hasStartingImage": true,
+            "applyMask": false
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "png"
+      }
+    },
+    {
+      "name": "biref-cutout",
+      "params": {
+        "type": "image",
+        "modelId": "birefnet_image_background_removal_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 4,
+        "startingImage": true,
+        "numberOfPreviews": 6,
+        "outputFormat": "jpg",
+        "applyMask": true
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "birefnet_image_background_removal_fp16",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false,
+            "hasStartingImage": true,
+            "applyMask": true
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "png"
+      }
+    },
+    {
+      "name": "pixal-single-options",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "templateVariant": "i23d-birefnet",
+        "textureSize": 1024,
+        "meshTargetFaces": 5000,
+        "normalMapSize": 512,
+        "ambientOcclusionSize": 256,
+        "shapeResolution": 1536
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "pixal3d_int8_i23d",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false,
+            "hasStartingImage": true,
+            "templateVariant": "i23d-birefnet",
+            "textureSize": 1024,
+            "meshTargetFaces": 5000,
+            "normalMapSize": 512,
+            "ambientOcclusionSize": 256,
+            "shapeResolution": 1536
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "glb"
+      }
+    },
+    {
+      "name": "pixal-right-only",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_multiview_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "rightViewImage": true
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "pixal3d_multiview_int8_i23d",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": true,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false,
+            "hasStartingImage": true
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "glb"
+      }
+    },
+    {
+      "name": "pixal-all-views",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_multiview_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "leftViewImage": true,
+        "backViewImage": true,
+        "rightViewImage": true,
+        "meshTargetFaces": 60000
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "pixal3d_multiview_int8_i23d",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": true,
+            "hasContextImage2": true,
+            "hasContextImage3": true,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false,
+            "hasStartingImage": true,
+            "meshTargetFaces": 60000
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "glb"
+      }
+    },
+    {
+      "name": "speech-custom_voice",
+      "params": {
+        "type": "audio",
+        "modelId": "qwen3_tts_1.7b_custom_voice_bf16",
+        "positivePrompt": "Hello there.",
+        "numberOfMedia": 1,
+        "language": "en",
+        "steps": 1,
+        "speaker": "ryan",
+        "instruct": "Speak quietly."
+      },
+      "options": {
+        "type": "audio",
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 1,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "qwen3_tts_1.7b_custom_voice_bf16",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "Hello there.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "language": "en",
+            "speaker": "ryan",
+            "instruct": "Speak quietly.",
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp3"
+      }
+    },
+    {
+      "name": "speech-voice_design",
+      "params": {
+        "type": "audio",
+        "modelId": "qwen3_tts_1.7b_voice_design_bf16",
+        "positivePrompt": "Hello there.",
+        "numberOfMedia": 1,
+        "language": "en",
+        "steps": 1,
+        "instruct": "A calm adult voice."
+      },
+      "options": {
+        "type": "audio",
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 1,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "qwen3_tts_1.7b_voice_design_bf16",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "Hello there.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "language": "en",
+            "instruct": "A calm adult voice.",
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp3"
+      }
+    },
+    {
+      "name": "speech-voice_clone",
+      "params": {
+        "type": "audio",
+        "modelId": "qwen3_tts_1.7b_voice_clone_bf16",
+        "positivePrompt": "Hello there.",
+        "numberOfMedia": 1,
+        "language": "en",
+        "steps": 1,
+        "referenceAudio": true,
+        "referenceText": "A short reference."
+      },
+      "options": {
+        "type": "audio",
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 1,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "qwen3_tts_1.7b_voice_clone_bf16",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "Hello there.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "language": "en",
+            "referenceText": "A short reference.",
+            "hasReferenceAudio": true,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp3"
+      }
+    },
+    {
+      "name": "speech-no-sampler",
+      "params": {
+        "type": "audio",
+        "modelId": "qwen3_tts_1.7b_custom_voice_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "sampler": "unused",
+        "scheduler": "unused"
+      },
+      "options": {
+        "type": "audio"
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "qwen3_tts_1.7b_custom_voice_bf16",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp3"
+      }
+    },
+    {
+      "name": "gpt-gpt-image-2",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "sizePreset": "custom",
+        "width": 3840,
+        "height": 256,
+        "contextImages": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "gptImageQuality": "high",
+        "gptImageBackground": "opaque",
+        "gptImageOutputCompression": 80,
+        "outputFormat": "webp",
+        "gptImageMask": true
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "gpt-image-2",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "sizePreset": "custom",
+            "hasContextImage1": true,
+            "hasContextImage2": true,
+            "hasContextImage3": true,
+            "hasContextImage4": true,
+            "hasContextImage5": true,
+            "hasContextImage6": true,
+            "hasContextImage7": true,
+            "hasContextImage8": true,
+            "hasContextImage9": true,
+            "hasContextImage10": true,
+            "hasContextImage11": true,
+            "hasContextImage12": true,
+            "hasContextImage13": true,
+            "hasContextImage14": true,
+            "hasContextImage15": true,
+            "hasContextImage16": true,
+            "width": 3840,
+            "height": 256,
+            "hasReferenceMask": true,
+            "referenceMaskContentType": "image/png",
+            "gptImageQuality": "high",
+            "gptImageBackground": "opaque",
+            "gptImageOutputCompression": 80
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "webp"
+      }
+    },
+    {
+      "name": "gpt-gpt-image-2.5-sunburst",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-sunburst",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "sizePreset": "custom",
+        "width": 3840,
+        "height": 256,
+        "contextImages": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "gptImageQuality": "max",
+        "gptImageBackground": "transparent",
+        "gptImageOutputCompression": 80,
+        "outputFormat": "webp",
+        "gptImageMask": true
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "gpt-image-2.5-sunburst",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "sizePreset": "custom",
+            "hasContextImage1": true,
+            "hasContextImage2": true,
+            "hasContextImage3": true,
+            "hasContextImage4": true,
+            "hasContextImage5": true,
+            "hasContextImage6": true,
+            "hasContextImage7": true,
+            "hasContextImage8": true,
+            "hasContextImage9": true,
+            "hasContextImage10": true,
+            "hasContextImage11": true,
+            "hasContextImage12": true,
+            "hasContextImage13": true,
+            "hasContextImage14": true,
+            "hasContextImage15": true,
+            "hasContextImage16": true,
+            "width": 3840,
+            "height": 256,
+            "hasReferenceMask": true,
+            "referenceMaskContentType": "image/png",
+            "gptImageQuality": "max",
+            "gptImageBackground": "transparent",
+            "gptImageOutputCompression": 80
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "webp"
+      }
+    },
+    {
+      "name": "gpt-gpt-image-2.5-flare",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "sizePreset": "custom",
+        "width": 3840,
+        "height": 256,
+        "contextImages": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "gptImageQuality": "max",
+        "gptImageBackground": "transparent",
+        "gptImageOutputCompression": 80,
+        "outputFormat": "webp",
+        "gptImageMask": true
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "gpt-image-2.5-flare",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "sizePreset": "custom",
+            "hasContextImage1": true,
+            "hasContextImage2": true,
+            "hasContextImage3": true,
+            "hasContextImage4": true,
+            "hasContextImage5": true,
+            "hasContextImage6": true,
+            "hasContextImage7": true,
+            "hasContextImage8": true,
+            "hasContextImage9": true,
+            "hasContextImage10": true,
+            "hasContextImage11": true,
+            "hasContextImage12": true,
+            "hasContextImage13": true,
+            "hasContextImage14": true,
+            "hasContextImage15": true,
+            "hasContextImage16": true,
+            "width": 3840,
+            "height": 256,
+            "hasReferenceMask": true,
+            "referenceMaskContentType": "image/png",
+            "gptImageQuality": "max",
+            "gptImageBackground": "transparent",
+            "gptImageOutputCompression": 80
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "webp"
+      }
+    },
+    {
+      "name": "flash-minimal",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 1,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "flashvsr_v1.1_tiny_long_bf16",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "seed": 0,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo": true,
+            "comfySampler": null,
+            "comfyScheduler": null,
+            "upscaleResolution": 1440,
+            "detailPreference": "stable",
+            "processingSpeed": "stable",
+            "generateAudio": true,
+            "interpolation": "none"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "flash-exact-count",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "frames": 158,
+        "fps": 23.976023976023978,
+        "duration": 5,
+        "width": 2520,
+        "height": 1440
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 1,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "flashvsr_v1.1_tiny_long_bf16",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "seed": 0,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo": true,
+            "fps": 23.976023976023978,
+            "frames": 158,
+            "width": 2520,
+            "height": 1440,
+            "comfySampler": null,
+            "comfyScheduler": null,
+            "upscaleResolution": 1440,
+            "detailPreference": "stable",
+            "processingSpeed": "stable",
+            "generateAudio": true,
+            "interpolation": "none"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "flash-long-source",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "duration": 120,
+        "fps": 60,
+        "detailPreference": "sharper",
+        "processingSpeed": "faster",
+        "seed": -1
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 1,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "flashvsr_v1.1_tiny_long_bf16",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "seed": -1,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo": true,
+            "fps": 60,
+            "frames": 7200,
+            "comfySampler": null,
+            "comfyScheduler": null,
+            "upscaleResolution": 1440,
+            "detailPreference": "sharper",
+            "processingSpeed": "faster",
+            "generateAudio": true,
+            "interpolation": "none"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-t2v",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_t2v_turbo",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_t2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-t2v_2stage",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-i2v",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_i2v_turbo",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_i2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceImage": true,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-i2v_2stage",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_i2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_i2v_turbo_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceImage": true,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-flf2v",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flf2v_turbo",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_flf2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceImage": true,
+            "hasReferenceImageEnd": true,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-flf2v_2stage",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceImage": true,
+            "hasReferenceImageEnd": true,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-ia2v",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_ia2v_turbo",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceAudio": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_ia2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceImage": true,
+            "hasReferenceAudio": true,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-ia2v_2stage",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceAudio": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceImage": true,
+            "hasReferenceAudio": true,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-flfa2v",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "referenceAudio": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_flfa2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceImage": true,
+            "hasReferenceImageEnd": true,
+            "hasReferenceAudio": true,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-flfa2v_2stage",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "referenceAudio": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceImage": true,
+            "hasReferenceImageEnd": true,
+            "hasReferenceAudio": true,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-a2v",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceAudio": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_a2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceAudio": true,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-a2v_2stage",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceAudio": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceAudio": true,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-audio-offset",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceAudio": true,
+        "audioStart": 2.5,
+        "generateAudio": true,
+        "loras": [],
+        "loraStrengths": []
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceAudio": true,
+            "generateAudio": true,
+            "fps": 24,
+            "frames": 243,
+            "audioStart": 2.5,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "seedance-export",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5",
+        "positivePrompt": "A kite.",
+        "numberOfMedia": 1,
+        "duration": 5,
+        "outputFormat": "mov",
+        "returnLastFrame": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "seedance-2-5",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A kite.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "returnLastFrame": true,
+            "fps": 24,
+            "frames": 121,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mov"
+      }
+    },
+    {
+      "name": "receipt-application-chosen",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "appSource": "custom-application",
+        "worldGenerationReceipt": {
+          "stage": "target_still",
+          "sourceImageSha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "selectionHash": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+        }
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "gpt-image-2.5-flare",
+            "cnRotationIsEnabled": true,
+            "negativePrompt": "",
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "worldGenerationReceipt": {
+              "stage": "target_still",
+              "sourceImageSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "selectionHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+            },
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "png",
+        "appSource": "custom-application"
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "sam-invalid-0",
+      "params": {
+        "type": "image",
+        "modelId": "sam3_image_segment_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "sam3Prompt": {
+          "text": "dogs",
+          "multimask": true
+        }
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "sam3Prompt.multimask requires point prompts"
+    },
+    {
+      "name": "sam-invalid-1",
+      "params": {
+        "type": "image",
+        "modelId": "sam3_image_segment_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "sam3Prompt": {
+          "text": "dogs",
+          "applyMask": 1
+        }
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "sam3Prompt.applyMask must be a boolean"
+    },
+    {
+      "name": "sam-invalid-2",
+      "params": {
+        "type": "image",
+        "modelId": "sam3_image_segment_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "sam3Prompt": {
+          "text": "dogs",
+          "maxInstances": 17
+        }
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "sam3Prompt.maxInstances must be an integer from 1 to 16"
+    },
+    {
+      "name": "sam-invalid-3",
+      "params": {
+        "type": "image",
+        "modelId": "sam3_image_segment_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "sam3Prompt": {
+          "text": "dogs",
+          "maxInstances": 1.5
+        }
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "sam3Prompt.maxInstances must be an integer from 1 to 16"
+    },
+    {
+      "name": "sam-invalid-4",
+      "params": {
+        "type": "image",
+        "modelId": "sam3_image_segment_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "sam3Prompt": {
+          "boxes": [
+            {
+              "x0": 0,
+              "y0": 0,
+              "x1": 1,
+              "y1": 1,
+              "label": "other"
+            }
+          ]
+        }
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "sam3Prompt.boxes[0].label must be \"positive\" or \"negative\""
+    },
+    {
+      "name": "sam-invalid-5",
+      "params": {
+        "type": "image",
+        "modelId": "sam3_image_segment_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "sam3Prompt": {
+          "points": [
+            {
+              "x": 0.5,
+              "y": 0.5,
+              "label": "positive"
+            }
+          ],
+          "boxes": [
+            {
+              "x0": 0,
+              "y0": 0,
+              "x1": 1,
+              "y1": 1,
+              "label": "negative"
+            }
+          ]
+        }
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "sam3Prompt negative boxes require a text prompt"
+    },
+    {
+      "name": "biref-no-source",
+      "params": {
+        "type": "image",
+        "modelId": "birefnet_image_background_removal_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 4,
+        "startingImage": false,
+        "numberOfPreviews": 6,
+        "outputFormat": "jpg"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "BiRefNet background removal requires startingImage"
+    },
+    {
+      "name": "biref-invalid-mask",
+      "params": {
+        "type": "image",
+        "modelId": "birefnet_image_background_removal_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 4,
+        "startingImage": true,
+        "numberOfPreviews": 6,
+        "outputFormat": "jpg",
+        "applyMask": null
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "applyMask must be a boolean"
+    },
+    {
+      "name": "biref-field-other-model",
+      "params": {
+        "type": "image",
+        "modelId": "flux1-schnell-fp8",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "applyMask": false
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "applyMask is only supported by birefnet_image_background_removal_fp16"
+    },
+    {
+      "name": "pixal-invalid-9",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "templateVariant": "i23d"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "templateVariant must be one of: i23d-birefnet"
+    },
+    {
+      "name": "pixal-invalid-10",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "leftViewImage": true
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "pixal3d_int8_i23d reconstructs from startingImage alone and ignores leftViewImage; use pixal3d_multiview_int8_i23d for orbit views"
+    },
+    {
+      "name": "pixal-invalid-11",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "contextImages": [
+          true
+        ]
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "pixal3d_int8_i23d reconstructs from startingImage alone and does not support contextImages; use pixal3d_multiview_int8_i23d for more views"
+    },
+    {
+      "name": "pixal-invalid-12",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "meshTargetFaces": 4999
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "meshTargetFaces must be an integer from 5000 to 700000"
+    },
+    {
+      "name": "pixal-invalid-13",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "shapeResolution": 1537
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "shapeResolution must be an integer from 1024 to 1536"
+    },
+    {
+      "name": "pixal-invalid-14",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "textureSize": 1024.5
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "textureSize must be an integer from 1024 to 4096"
+    },
+    {
+      "name": "pixal-multi-invalid-15",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_multiview_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": false,
+        "numberOfPreviews": 4
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Pixal3D multi-view reconstruction requires startingImage (the front view)"
+    },
+    {
+      "name": "pixal-multi-invalid-16",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_multiview_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "rightViewImage": false
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "rightViewImage must be an image; leave it unset to omit that view"
+    },
+    {
+      "name": "pixal-multi-invalid-17",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_multiview_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "templateVariant": "i23d-birefnet"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "templateVariant is only supported by pixal3d_int8_i23d"
+    },
+    {
+      "name": "pixal-multi-invalid-18",
+      "params": {
+        "type": "image",
+        "modelId": "pixal3d_multiview_int8_i23d",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "startingImage": true,
+        "numberOfPreviews": 4,
+        "contextImages": [
+          true
+        ]
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "pixal3d_multiview_int8_i23d takes its orbit views as leftViewImage, backViewImage and rightViewImage, not contextImages"
+    },
+    {
+      "name": "gpt-gpt-image-2-auto",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageQuality": "auto"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Unsupported quality for gpt-image-2: auto. Choose low, medium or high."
+    },
+    {
+      "name": "gpt-gpt-image-2.5-sunburst-auto",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-sunburst",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageQuality": "auto"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Unsupported quality for gpt-image-2.5-sunburst: auto. Choose low, medium or high, xhigh or max."
+    },
+    {
+      "name": "gpt-gpt-image-2.5-flare-auto",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageQuality": "auto"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Unsupported quality for gpt-image-2.5-flare: auto. Choose low, medium or high, xhigh or max."
+    },
+    {
+      "name": "gpt-invalid-22",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageMask": true
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "GPT Image mask requires a first reference image"
+    },
+    {
+      "name": "gpt-invalid-23",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageMaskUrl": "",
+        "contextImages": [
+          true
+        ]
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "GPT Image mask requires a mask URL and a first reference image"
+    },
+    {
+      "name": "gpt-invalid-24",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageMask": true,
+        "gptImageMaskUrl": "https://example.com/mask.png",
+        "contextImages": [
+          true
+        ]
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Provide one GPT Image mask"
+    },
+    {
+      "name": "gpt-invalid-25",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "contextImages": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "GPT Image accepts up to 16 non-empty references in source order"
+    },
+    {
+      "name": "gpt-invalid-26",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "contextImages": [
+          false
+        ]
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "GPT Image accepts up to 16 non-empty references in source order"
+    },
+    {
+      "name": "gpt-invalid-27",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageBackground": "transparent",
+        "outputFormat": "jpg"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Transparent GPT Image output requires PNG or WebP"
+    },
+    {
+      "name": "gpt-invalid-28",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageOutputCompression": 1.5,
+        "outputFormat": "webp"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "GPT Image output compression must be an integer from 0 to 100"
+    },
+    {
+      "name": "gpt-invalid-29",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageOutputCompression": 80,
+        "outputFormat": "png"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "GPT Image output compression requires JPEG or WebP"
+    },
+    {
+      "name": "gpt-2-max",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageQuality": "max"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Unsupported quality for gpt-image-2: max"
+    },
+    {
+      "name": "gpt-mask-wrong-model",
+      "params": {
+        "type": "image",
+        "modelId": "flux1-schnell-fp8",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "gptImageMask": true
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "GPT Image masks require a GPT Image model"
+    },
+    {
+      "name": "flash-invalid-32",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "fps": 120
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Omit the source timing, or supply the source video’s exact frame count and frame rate."
+    },
+    {
+      "name": "flash-invalid-33",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "frames": 0
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Omit the source timing, or supply the source video’s exact frame count and frame rate."
+    },
+    {
+      "name": "flash-invalid-34",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "frames": 158.5
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Omit the source timing, or supply the source video’s exact frame count and frame rate."
+    },
+    {
+      "name": "flash-invalid-35",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "duration": 5
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Omit the source timing, or supply the source video’s exact frame count and frame rate."
+    },
+    {
+      "name": "flash-invalid-36",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "repaint",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "FlashVSR is promptless."
+    },
+    {
+      "name": "flash-invalid-37",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "negativePrompt": "blurry"
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "FlashVSR is promptless."
+    },
+    {
+      "name": "flash-invalid-38",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "teacacheThreshold": 0
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Video upscaling preserves the complete source video and its audio; generation controls are unsupported."
+    },
+    {
+      "name": "flash-invalid-39",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "generateAudio": false
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Video upscaling preserves the complete source video and its audio; generation controls are unsupported."
+    },
+    {
+      "name": "flash-invalid-40",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 2,
+        "referenceVideo": true,
+        "upscaleResolution": 1440
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Upscale one source video per project."
+    },
+    {
+      "name": "flash-invalid-41",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "detailPreference": "auto"
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "FlashVSR detailPreference must be stable or sharper."
+    },
+    {
+      "name": "flash-invalid-42",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "processingSpeed": "auto"
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "FlashVSR processingSpeed must be stable or faster."
+    },
+    {
+      "name": "flash-invalid-43",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "seed": "42"
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "FlashVSR seed must be -1 (random) or an integer from 0 through 4294967295."
+    },
+    {
+      "name": "flash-invalid-44",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "seed": -2
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "FlashVSR seed must be -1 (random) or an integer from 0 through 4294967295."
+    },
+    {
+      "name": "flash-invalid-45",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "seed": 4294967296
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "FlashVSR seed must be -1 (random) or an integer from 0 through 4294967295."
+    },
+    {
+      "name": "flash-invalid-46",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 1440,
+        "referenceImage": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "upscale workflow does not support referenceImage. Please remove this asset."
+    },
+    {
+      "name": "flash-invalid-47",
+      "params": {
+        "type": "video",
+        "modelId": "flashvsr_v1.1_tiny_long_bf16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "upscaleResolution": 2160
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Choose 1080p or 1440p for video upscaling."
+    },
+    {
+      "name": "h3-audio-invalid-48",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceAudio": false
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "ia2v workflow requires referenceAudio. Please provide this asset."
+    },
+    {
+      "name": "h3-audio-invalid-49",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceAudio": true,
+        "generateAudio": false
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 ia2v output always carries the uploaded audio. Omit generateAudio or set it to true."
+    },
+    {
+      "name": "h3-audio-invalid-50",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceAudio": true,
+        "audioDuration": 2
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 has no audioDuration input. Set frames or duration; the uploaded audio is trimmed to the video length."
+    },
+    {
+      "name": "h3-audio-invalid-51",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceAudio": true,
+        "audioStart": "1"
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 ia2v audioStart must be a number of seconds, 0 or greater."
+    },
+    {
+      "name": "h3-audio-invalid-52",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceAudio": true,
+        "audioStart": -1
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 ia2v audioStart must be a number of seconds, 0 or greater."
+    },
+    {
+      "name": "h3-audio-invalid-53",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceAudio": true,
+        "loras": [
+          "test"
+        ]
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 ia2v does not support LoRAs. Remove loras and loraStrengths."
+    },
+    {
+      "name": "h3-audio-invalid-54",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceAudio": true,
+        "loraStrengths": [
+          1
+        ]
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 ia2v does not support LoRAs. Remove loras and loraStrengths."
+    },
+    {
+      "name": "h3-audio-invalid-55",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 8,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceAudio": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 Turbo steps are fixed at 4."
+    },
+    {
+      "name": "h3-audio-invalid-56",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "referenceAudio": false
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "flfa2v workflow requires referenceAudio. Please provide this asset."
+    },
+    {
+      "name": "h3-audio-invalid-57",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "referenceAudio": true,
+        "generateAudio": false
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 flfa2v output always carries the uploaded audio. Omit generateAudio or set it to true."
+    },
+    {
+      "name": "h3-audio-invalid-58",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "referenceAudio": true,
+        "audioDuration": 2
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 has no audioDuration input. Set frames or duration; the uploaded audio is trimmed to the video length."
+    },
+    {
+      "name": "h3-audio-invalid-59",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "referenceAudio": true,
+        "audioStart": "1"
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 flfa2v audioStart must be a number of seconds, 0 or greater."
+    },
+    {
+      "name": "h3-audio-invalid-60",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "referenceAudio": true,
+        "audioStart": -1
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 flfa2v audioStart must be a number of seconds, 0 or greater."
+    },
+    {
+      "name": "h3-audio-invalid-61",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "referenceAudio": true,
+        "loras": [
+          "test"
+        ]
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 flfa2v does not support LoRAs. Remove loras and loraStrengths."
+    },
+    {
+      "name": "h3-audio-invalid-62",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "referenceAudio": true,
+        "loraStrengths": [
+          1
+        ]
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 flfa2v does not support LoRAs. Remove loras and loraStrengths."
+    },
+    {
+      "name": "h3-audio-invalid-63",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 8,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "referenceAudio": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 Turbo steps are fixed at 4."
+    },
+    {
+      "name": "h3-audio-invalid-64",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceAudio": false
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "a2v workflow requires referenceAudio. Please provide this asset."
+    },
+    {
+      "name": "h3-audio-invalid-65",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceAudio": true,
+        "generateAudio": false
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 a2v output always carries the uploaded audio. Omit generateAudio or set it to true."
+    },
+    {
+      "name": "h3-audio-invalid-66",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceAudio": true,
+        "audioDuration": 2
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 has no audioDuration input. Set frames or duration; the uploaded audio is trimmed to the video length."
+    },
+    {
+      "name": "h3-audio-invalid-67",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceAudio": true,
+        "audioStart": "1"
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 a2v audioStart must be a number of seconds, 0 or greater."
+    },
+    {
+      "name": "h3-audio-invalid-68",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceAudio": true,
+        "audioStart": -1
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 a2v audioStart must be a number of seconds, 0 or greater."
+    },
+    {
+      "name": "h3-audio-invalid-69",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceAudio": true,
+        "loras": [
+          "test"
+        ]
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 a2v does not support LoRAs. Remove loras and loraStrengths."
+    },
+    {
+      "name": "h3-audio-invalid-70",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceAudio": true,
+        "loraStrengths": [
+          1
+        ]
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 a2v does not support LoRAs. Remove loras and loraStrengths."
+    },
+    {
+      "name": "h3-audio-invalid-71",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 8,
+        "guidance": 1,
+        "referenceAudio": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 Turbo steps are fixed at 4."
+    },
+    {
+      "name": "h3-output-scale-72",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "outputScale": null
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "outputScale is no longer supported. For MiniMax H3 1080p or 2K output use the two-stage model ids minimax-h3-fastvideo-int8_t2v_turbo_2stage, minimax-h3-fastvideo-int8_i2v_turbo_2stage or minimax-h3-fastvideo-int8_flf2v_turbo_2stage."
+    },
+    {
+      "name": "h3-output-scale-73",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "outputScale": false
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "outputScale is no longer supported. For MiniMax H3 1080p or 2K output use the two-stage model ids minimax-h3-fastvideo-int8_t2v_turbo_2stage, minimax-h3-fastvideo-int8_i2v_turbo_2stage or minimax-h3-fastvideo-int8_flf2v_turbo_2stage."
+    },
+    {
+      "name": "h3-output-scale-74",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "outputScale": 1
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "outputScale is no longer supported. For MiniMax H3 1080p or 2K output use the two-stage model ids minimax-h3-fastvideo-int8_t2v_turbo_2stage, minimax-h3-fastvideo-int8_i2v_turbo_2stage or minimax-h3-fastvideo-int8_flf2v_turbo_2stage."
+    },
+    {
+      "name": "h3-output-scale-75",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "outputScale": "2"
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "outputScale is no longer supported. For MiniMax H3 1080p or 2K output use the two-stage model ids minimax-h3-fastvideo-int8_t2v_turbo_2stage, minimax-h3-fastvideo-int8_i2v_turbo_2stage or minimax-h3-fastvideo-int8_flf2v_turbo_2stage."
+    },
+    {
+      "name": "h3-retired-720-t2v",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_t2v_turbo_2stage_720p",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Video generation is only supported for video models."
+    },
+    {
+      "name": "h3-retired-720-i2v",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_i2v_turbo_2stage_720p",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Video generation is only supported for video models."
+    },
+    {
+      "name": "h3-retired-720-flf2v",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage_720p",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "referenceImageEnd": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Video generation is only supported for video models."
+    },
+    {
+      "name": "h3-non-audio-offset",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-int8_t2v_turbo",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "audioStart": 0
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "audioStart is supported only by the MiniMax H3 FastH3 audio-guide workflows (minimax-h3-fastvideo-int8_ia2v_turbo, minimax-h3-fastvideo-int8_flfa2v_turbo, minimax-h3-fastvideo-int8_a2v_turbo and their _2stage ids)."
+    },
+    {
+      "name": "export-invalid-80",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-0",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "outputFormat": "webm"
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Video outputFormat must be mp4 or mov."
+    },
+    {
+      "name": "export-invalid-81",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-0",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "outputFormat": "mov"
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MOV output is supported only by Seedance 2.5."
+    },
+    {
+      "name": "export-invalid-82",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-0",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "returnLastFrame": true
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "Last-frame export is supported only by Seedance 2.5."
+    },
+    {
+      "name": "export-invalid-83",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-0",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "returnLastFrame": null
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "returnLastFrame must be a boolean."
+    }
+  ],
+  "tiers": [
+    {
+      "name": "speech-custom",
+      "media": "audio",
+      "tier": {
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "default": 1
+        },
+        "speaker": {
+          "allowed": [
+            "ryan"
+          ],
+          "default": "ryan"
+        },
+        "instruct": {
+          "maxLength": 4000
+        },
+        "language": {
+          "allowed": [
+            "en"
+          ],
+          "default": "en"
+        }
+      },
+      "options": {
+        "type": "audio",
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "speaker": {
+          "allowed": [
+            "ryan"
+          ],
+          "default": "ryan"
+        },
+        "instruct": {
+          "maxLength": 4000,
+          "required": false
+        },
+        "language": {
+          "allowed": [
+            "en"
+          ],
+          "default": "en"
+        }
+      }
+    },
+    {
+      "name": "speech-clone",
+      "media": "audio",
+      "tier": {
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "default": 1
+        },
+        "referenceText": {
+          "maxLength": 6000
+        },
+        "requiresReferenceAudio": true
+      },
+      "options": {
+        "type": "audio",
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "referenceText": {
+          "maxLength": 6000
+        },
+        "acceptsReferenceAudio": true,
+        "requiresReferenceAudio": true
+      }
+    },
+    {
+      "name": "speech-design",
+      "media": "audio",
+      "tier": {
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "default": 1
+        },
+        "instruct": {
+          "maxLength": 4000,
+          "required": true
+        }
+      },
+      "options": {
+        "type": "audio",
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "instruct": {
+          "maxLength": 4000,
+          "required": true
+        }
+      }
+    },
+    {
+      "name": "flash",
+      "media": "video",
+      "tier": {
+        "type": "video",
+        "task": "video-upscale",
+        "outputResolutions": [
+          1080,
+          1440
+        ],
+        "preservesSourceTiming": true,
+        "requiresReferenceVideo": true,
+        "width": {
+          "min": 2,
+          "max": 2560,
+          "step": 2,
+          "default": 2520
+        },
+        "height": {
+          "min": 2,
+          "max": 2560,
+          "step": 2,
+          "default": 1440
+        },
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "default": 1
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "default": 1
+        },
+        "fps": {
+          "min": 1,
+          "max": 60,
+          "default": 24
+        },
+        "comfySampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "comfyScheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "options": {
+        "type": "video",
+        "width": {
+          "min": 2,
+          "max": 2560,
+          "step": 2,
+          "default": 2520
+        },
+        "height": {
+          "min": 2,
+          "max": 2560,
+          "step": 2,
+          "default": 1440
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        },
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "task": "video-upscale",
+        "outputResolutions": [
+          1080,
+          1440
+        ],
+        "preservesSourceTiming": true,
+        "requiresReferenceVideo": true,
+        "steps": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "min": 1,
+          "max": 60,
+          "default": 24
+        }
+      }
+    }
+  ]
+}

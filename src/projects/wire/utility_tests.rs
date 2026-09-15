@@ -37,7 +37,7 @@ fn sam3_defaults_and_single_mask_wire_override_conflicting_options() {
         wire["keyFrames"][0]["sam3Prompt"],
         json!({
             "points":[{"x":0.42,"y":0.61,"label":"positive"}],
-            "boxes":[], "threshold":0.5, "multimask":true,
+            "boxes":[], "threshold":0.5, "multimask":true,"applyMask":false,
         })
     );
     let request = sam3_request(json!({"text":"  teapot  ","threshold":0,"multimask":false}));
@@ -45,7 +45,7 @@ fn sam3_defaults_and_single_mask_wire_override_conflicting_options() {
     assert_eq!(
         wire["keyFrames"][0]["sam3Prompt"],
         json!({
-            "points":[], "boxes":[], "text":"teapot", "threshold":0.0, "multimask":false,
+            "points":[], "boxes":[], "text":"teapot", "threshold":0.0, "applyMask":false,
         })
     );
 }
@@ -167,7 +167,7 @@ fn image_utilities_require_sources_and_the_canonical_sam3_model() {
 }
 
 #[test]
-fn world_receipts_validate_stages_models_hashes_and_keyframe_placement() {
+fn world_receipts_validate_stages_hashes_and_keyframe_placement() {
     let request = ProjectRequest::image("krea2_identity_edit_sogni_v0_3_alpha", "edit")
         .param("appSource", "sogni-world")
         .world_generation_receipt(WorldGenerationReceiptRequest::TargetStill {
@@ -197,14 +197,6 @@ fn world_receipts_validate_stages_models_hashes_and_keyframe_placement() {
         "c".repeat(64)
     );
     for (invalid, message) in [
-        (
-            request.clone().param("appSource", "other"),
-            "requires appSource \"sogni-world\"",
-        ),
-        (
-            request.clone().param("modelId", "other"),
-            "The target_still receipt requires",
-        ),
         (
             request.clone().param("worldGenerationReceipt", json!({})),
             "stage must be target_still or transition",

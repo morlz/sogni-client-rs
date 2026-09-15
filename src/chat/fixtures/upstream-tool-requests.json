@@ -1,0 +1,624 @@
+{
+  "version": "5.50.0",
+  "commit": "452e78967a21ab80977c11f16517072d1836405a",
+  "models": [
+    {
+      "id": "gpt-image-2",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "gpt-image-2.5-sunburst",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "gpt-image-2.5-flare",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "flux1-schnell-fp8",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "chroma-v.46-flash_fp8",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "z_image_turbo_bf16",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "krea2_turbo_fp8_scaled",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "krea2_identity_edit_v1_2",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "dark_beast_krea2_identity_edit_v1_2",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "rtx_vsr_pro",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_t2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_i2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_a2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_ia2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_v2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_t2v_dev",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_i2v_dev",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_a2v_dev",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_ia2v_dev",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx25-22b-int8_v2v_dev",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx23-22b-fp8_t2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx23-22b-fp8_i2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx23-22b-fp8_a2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx23-22b-fp8_ia2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_s2v_lightx2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ltx23-22b-fp8_v2v_distilled",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "seedance-2-0",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "seedance-2-0-mini",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "seedance-2-5",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "happyhorse-1.1-t2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "happyhorse-1.1-i2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "happyhorse-1.1-r2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "wan3.0-video",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "wan3.0-spicy-video",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_t2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_i2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flf2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_ia2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flfa2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_a2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_i2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flf2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_ia2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-int8_a2v_turbo_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_t2v_balanced",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_i2v_balanced",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fl2va-fp8_flf2v_balanced",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_balanced",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_animate-move_lightx2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "wan_v2.2-14b-fp8_animate-replace_lightx2v",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "ace_step_1.5_xl_turbo",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "ace_step_1.5_xl_sft",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "ace_step_1.5_turbo",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "ace_step_1.5_sft",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax_music3",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "qwen3_tts_1.7b_custom_voice_bf16",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "qwen3_tts_1.7b_voice_clone_bf16",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "qwen3_tts_1.7b_voice_design_bf16",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
+      "id": "qwen_image_edit_2511_fp8",
+      "media": "image",
+      "workerCount": 2
+    }
+  ],
+  "requests": [
+    {
+      "tool": "generate_image",
+      "args": {
+        "prompt": "a lighthouse",
+        "model": "sunburst",
+        "gpt_image_quality": " HIGH ",
+        "gpt_image_background": "TRANSPARENT",
+        "gpt_image_output_compression": 0,
+        "output_format": "jpeg",
+        "width": 1024,
+        "height": 1024,
+        "numberOfVariations": 3,
+        "seed": 0
+      },
+      "options": {},
+      "expected": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-sunburst",
+        "positivePrompt": "a lighthouse",
+        "numberOfMedia": 3,
+        "width": 1024,
+        "height": 1024,
+        "sizePreset": "custom",
+        "seed": 0,
+        "gptImageQuality": "high",
+        "gptImageBackground": "transparent",
+        "gptImageOutputCompression": 0,
+        "outputFormat": "jpg"
+      }
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "prompt": "a portrait",
+        "model": "flare",
+        "source_image_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+        "mask_image_url": "https://cdn.sogni.ai/mask.png",
+        "outputFormat": "webp",
+        "gptImageBackground": "opaque",
+        "gptImageOutputCompression": 90
+      },
+      "options": {},
+      "expected": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "a portrait",
+        "numberOfMedia": 1,
+        "contextImages": [
+          true
+        ],
+        "gptImageMaskUrl": "https://cdn.sogni.ai/mask.png",
+        "gptImageBackground": "opaque",
+        "gptImageOutputCompression": 90,
+        "outputFormat": "webp"
+      }
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "prompt": "ocean",
+        "videoModel": "seedance2-5",
+        "duration": 4,
+        "outputFormat": "webm",
+        "returnLastFrame": true,
+        "generateAudio": false
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "outputFormat": "webm",
+        "returnLastFrame": true,
+        "modelId": "seedance-2-5",
+        "positivePrompt": "ocean",
+        "numberOfMedia": 1,
+        "width": 1280,
+        "height": 720,
+        "fps": 24,
+        "duration": 4,
+        "generateAudio": false
+      }
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "prompt": "walk",
+        "videoModel": "minimax-h3-fasth3-turbo-2stage",
+        "reference_image_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+        "duration": 6,
+        "outputFormat": "mp4",
+        "returnLastFrame": false
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "outputFormat": "mp4",
+        "returnLastFrame": false,
+        "modelId": "minimax-h3-fastvideo-int8_i2v_turbo_2stage",
+        "positivePrompt": "walk",
+        "numberOfMedia": 1,
+        "width": 1344,
+        "height": 768,
+        "fps": 24,
+        "frames": 141,
+        "referenceImage": true
+      }
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "prompt": "scene",
+        "videoModel": "seedance2-5",
+        "referenceImageIndices": [
+          -1
+        ],
+        "referenceVideoIndices": [
+          0
+        ],
+        "referenceAudioIndices": [
+          0
+        ],
+        "returnLastFrame": true
+      },
+      "options": {
+        "mediaContext": {
+          "uploadedImages": [
+            "https://cdn.sogni.ai/a.png"
+          ],
+          "videos": [
+            "https://cdn.sogni.ai/a.mp4"
+          ],
+          "audio": [
+            "https://cdn.sogni.ai/a.wav"
+          ]
+        }
+      },
+      "expected": {
+        "type": "video",
+        "returnLastFrame": true,
+        "modelId": "seedance-2-5",
+        "positivePrompt": "scene",
+        "numberOfMedia": 1,
+        "width": 1280,
+        "height": 720,
+        "fps": 24,
+        "referenceImageUrls": [
+          "https://cdn.sogni.ai/a.png"
+        ],
+        "referenceVideoUrls": [
+          "https://cdn.sogni.ai/a.mp4"
+        ],
+        "referenceAudioUrls": [
+          "https://cdn.sogni.ai/a.wav"
+        ]
+      }
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "prompt": "sing",
+        "videoModel": "minimax-h3-fasth3-flfa2v-turbo-2stage",
+        "reference_audio_url": "data:audio/wav;base64,UklGRgAAAABXQVZF",
+        "reference_image_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+        "reference_image_end_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+        "duration": 7,
+        "audio_start": 2,
+        "outputFormat": "webm",
+        "returnLastFrame": true
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "outputFormat": "webm",
+        "returnLastFrame": true,
+        "modelId": "minimax-h3-fastvideo-int8_flfa2v_turbo_2stage",
+        "positivePrompt": "sing",
+        "numberOfMedia": 1,
+        "referenceAudio": true,
+        "width": 1344,
+        "height": 768,
+        "fps": 24,
+        "frames": 175,
+        "audioStart": 2,
+        "referenceImage": true,
+        "referenceImageEnd": true
+      }
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "prompt": "sing",
+        "videoModel": "ltx25-ia2v",
+        "reference_audio_url": "data:audio/wav;base64,UklGRgAAAABXQVZF",
+        "reference_image_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+        "duration": 6,
+        "width": 768,
+        "height": 512,
+        "generateAudio": false
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "modelId": "ltx25-22b-int8_ia2v_distilled",
+        "positivePrompt": "sing",
+        "numberOfMedia": 1,
+        "referenceAudio": true,
+        "width": 768,
+        "height": 512,
+        "fps": 24,
+        "duration": 6,
+        "audioDuration": 6,
+        "generateAudio": false,
+        "referenceImage": true
+      }
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "prompt": "redraw",
+        "videoModel": "ltx25-v2v",
+        "control_mode": "canny",
+        "reference_video_url": "data:video/mp4;base64,AAAADGZ0eXBpc29t",
+        "outputFormat": "webm",
+        "returnLastFrame": false,
+        "detailer_strength": 0.4
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "outputFormat": "webm",
+        "returnLastFrame": false,
+        "modelId": "ltx25-22b-int8_v2v_distilled",
+        "positivePrompt": "redraw",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "width": 1920,
+        "height": 1088,
+        "fps": 24,
+        "duration": 5,
+        "controlNet": {
+          "name": "canny",
+          "strength": 0.85
+        },
+        "detailerStrength": 0.4
+      }
+    },
+    {
+      "tool": "generate_music",
+      "args": {
+        "prompt": "music",
+        "model": "ace_step_1.5_xl_turbo",
+        "duration": 20,
+        "output_format": "mp3",
+        "timesignature": 4,
+        "composer_mode": false,
+        "prompt_strength": 0,
+        "creativity": 0.7
+      },
+      "options": {},
+      "expected": {
+        "type": "audio",
+        "modelId": "ace_step_1.5_xl_turbo",
+        "positivePrompt": "music",
+        "numberOfMedia": 1,
+        "duration": 20,
+        "outputFormat": "mp3",
+        "timesignature": "4",
+        "composerMode": false,
+        "promptStrength": 0,
+        "creativity": 0.7
+      }
+    }
+  ]
+}

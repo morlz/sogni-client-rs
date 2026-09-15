@@ -170,7 +170,11 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
         else {
             continue;
         };
-        let job = project.ensure_job(&id.to_uppercase());
+        let Some(job) =
+            project.job_for_attempt(id, job_raw.get("jobIndex").and_then(Value::as_u64))
+        else {
+            continue;
+        };
         let raw_status = job_raw.get("status").and_then(Value::as_str).unwrap_or("");
         let status = match raw_status {
             "assigned" | "initiatingModel" => JobStatus::Initiating,
@@ -199,6 +203,10 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
                     .map(ToOwned::to_owned)
                     .or_else(|| state.worker_name.clone());
                 state.result_url = raw_result_url(&job_raw).or_else(|| state.result_url.clone());
+                super::events::copy_export_metadata(state, &job_raw);
+                if let Some(index) = job_raw.get("jobIndex") {
+                    state.extra.insert("jobIndex".into(), index.clone());
+                }
                 if let Some(provenance) = JobProvenance::from_result(&job_raw) {
                     state.provenance = Some(provenance);
                 }
@@ -238,6 +246,9 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
         _ => None,
     };
     if let Some(status) = status {
+        if raw.get("status").and_then(Value::as_str) == Some("queued") {
+            project.suspend_processing_deadlines();
+        }
         // A compact terminal record may omit unfinished children entirely.
         // Preserve an existing server error and settle every remaining child.
         let snapshot = project.snapshot();

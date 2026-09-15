@@ -48,6 +48,12 @@ pub struct JobSnapshot {
     pub seed: Option<i64>,
     pub result_url: Option<String>,
     pub preview_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_frame_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_frame_key: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub output_format: Option<String>,
     /// Public worker receipt, when this result includes one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub provenance: Option<JobProvenance>,
@@ -81,6 +87,9 @@ impl JobSnapshot {
             seed: None,
             result_url: None,
             preview_url: None,
+            last_frame_url: None,
+            last_frame_key: None,
+            output_format: None,
             provenance: None,
             error: None,
             is_nsfw: false,

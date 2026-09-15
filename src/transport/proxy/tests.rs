@@ -96,6 +96,9 @@ async fn explicit_proxy_routes_authenticated_rest_media_and_websocket() {
                 let mut socket = tokio_tungstenite::accept_hdr_async(socket, CheckApiKey)
                     .await
                     .unwrap();
+                futures_util::SinkExt::send(&mut socket, tokio_tungstenite::tungstenite::Message::Text(
+                    json!({"type":"authenticated","data":crate::utils::b64_json_encode(&json!({})).unwrap()})
+                        .to_string().into())).await.unwrap();
                 while let Some(Ok(message)) = socket.next().await {
                     if message.is_text() {
                         assert!(message.into_text().unwrap().contains("fixtureRequest"));

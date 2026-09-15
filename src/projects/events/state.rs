@@ -14,6 +14,7 @@ pub(super) fn handle_job_state(inner: &Arc<ProjectsInner>, data: &Value) {
     };
     match kind {
         "queued" => {
+            project.suspend_processing_deadlines();
             let seconds =
                 number(data.get("estimatedStartSeconds")).filter(|seconds| *seconds >= 0.0);
             let queue_status = data
@@ -57,7 +58,11 @@ pub(super) fn handle_job_state(inner: &Arc<ProjectsInner>, data: &Value) {
             let Some(job_id) = data.get("imgID").and_then(Value::as_str) else {
                 return;
             };
-            let job = project.ensure_job(&job_id.to_uppercase());
+            let Some(job) =
+                project.job_for_attempt(job_id, data.get("jobIndex").and_then(Value::as_u64))
+            else {
+                return;
+            };
             let status = if kind == "initiatingModel" {
                 JobStatus::Initiating
             } else {
@@ -110,7 +115,10 @@ pub(super) fn handle_job_progress(inner: &Arc<ProjectsInner>, data: &Value) {
     let Some(job_id) = data.get("imgID").and_then(Value::as_str) else {
         return;
     };
-    let job = project.ensure_job(&job_id.to_uppercase());
+    let Some(job) = project.job_for_attempt(job_id, data.get("jobIndex").and_then(Value::as_u64))
+    else {
+        return;
+    };
     job.update(
         |state| {
             if state.status.is_finished() {
@@ -144,6 +152,7 @@ pub(super) fn handle_job_progress(inner: &Arc<ProjectsInner>, data: &Value) {
     inner.events.emit("job", data.clone());
     if data.get("hasImage").and_then(Value::as_bool) == Some(true) {
         let inner = inner.clone();
+        let attempt_id = job.id();
         tokio::spawn(async move {
             let query = json!({
                 "jobId": project.id(),
@@ -161,7 +170,11 @@ pub(super) fn handle_job_progress(inner: &Arc<ProjectsInner>, data: &Value) {
                     .and_then(Value::as_str)
                 {
                     job.update(
-                        |state| state.preview_url = Some(url.to_owned()),
+                        |state| {
+                            if state.id == attempt_id {
+                                state.preview_url = Some(url.to_owned());
+                            }
+                        },
                         &["previewUrl"],
                     );
                 }
@@ -185,7 +198,10 @@ pub(super) fn handle_job_eta(inner: &Arc<ProjectsInner>, data: &Value) {
         return;
     };
     let eta = Utc::now() + chrono::Duration::milliseconds((seconds * 1_000.0) as i64);
-    let job = project.ensure_job(&job_id.to_uppercase());
+    let Some(job) = project.job_for_attempt(job_id, data.get("jobIndex").and_then(Value::as_u64))
+    else {
+        return;
+    };
     job.update(
         |state| {
             state.eta = Some(eta);

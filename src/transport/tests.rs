@@ -2,6 +2,7 @@ use std::time::Duration;
 
 mod media_timeout;
 mod socket_abort;
+mod socket_readiness;
 
 use futures_util::{SinkExt, StreamExt};
 use reqwest::header::HeaderMap;
@@ -247,11 +248,25 @@ async fn websocket_uses_base64_envelope_and_normalizes_ids() {
     let server = tokio::spawn(async move {
         let (socket, _) = listener.accept().await.expect("accept WebSocket");
         let mut socket = accept_async(socket).await.expect("handshake");
-        let message = socket
-            .next()
+        socket
+            .send(Message::Text(
+                json!({"type":"authenticated",
+            "data":b64_json_encode(&json!({})).unwrap()})
+                .to_string()
+                .into(),
+            ))
             .await
-            .expect("client frame")
-            .expect("valid client frame");
+            .unwrap();
+        let message = loop {
+            let message = socket
+                .next()
+                .await
+                .expect("client frame")
+                .expect("valid client frame");
+            if message.is_text() {
+                break message;
+            }
+        };
         let Message::Text(text) = message else {
             panic!("expected text envelope");
         };

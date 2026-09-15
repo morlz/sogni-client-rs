@@ -1,17 +1,29 @@
 use super::*;
 
 pub(in crate::projects) const SAM3_MODEL_ID: &str = "sam3_image_segment_bf16";
+#[cfg(test)]
 pub(in crate::projects) const PIXAL3D_MODEL_ID: &str = "pixal3d_int8_i23d";
 
 /// Normalize before constructing the project so its expected result count and
 /// MIME type agree with the wire request and a single mask settles the project.
 pub(in crate::projects) fn normalize_utility_params(params: &mut Map<String, Value>) {
     if params.get("type").and_then(Value::as_str) == Some("image")
-        && params.get("modelId").and_then(Value::as_str) == Some(SAM3_MODEL_ID)
+        && params
+            .get("modelId")
+            .and_then(Value::as_str)
+            .is_some_and(is_segmentation_model)
     {
         params.insert("numberOfMedia".into(), json!(1));
         params.insert("numberOfPreviews".into(), json!(0));
         params.insert("outputFormat".into(), json!("png"));
+    }
+    if params.get("type").and_then(Value::as_str) == Some("image")
+        && params
+            .get("modelId")
+            .and_then(Value::as_str)
+            .is_some_and(is_model_artifact_model)
+    {
+        params.insert("numberOfPreviews".into(), json!(0));
     }
 }
 
@@ -21,7 +33,15 @@ pub(super) fn normalize_sam3_prompt(prompt: &Value) -> Result<Value> {
         .ok_or_else(|| invalid("sam3Prompt must be an object"))?;
     let unknown = unknown_keys(
         prompt,
-        &["points", "boxes", "text", "threshold", "multimask"],
+        &[
+            "points",
+            "boxes",
+            "text",
+            "threshold",
+            "multimask",
+            "applyMask",
+            "maxInstances",
+        ],
     );
     if !unknown.is_empty() {
         return Err(invalid(format!(
@@ -58,7 +78,7 @@ pub(super) fn normalize_sam3_prompt(prompt: &Value) -> Result<Value> {
         let selection = selection
             .as_object()
             .ok_or_else(|| invalid(format!("{field} must be an object")))?;
-        if !unknown_keys(selection, &["x0", "y0", "x1", "y1"]).is_empty() {
+        if !unknown_keys(selection, &["x0", "y0", "x1", "y1", "label"]).is_empty() {
             return Err(invalid(format!("{field} contains unsupported fields")));
         }
         let x0 = coordinate(selection.get("x0"), &format!("{field}.x0"))?;
@@ -68,7 +88,14 @@ pub(super) fn normalize_sam3_prompt(prompt: &Value) -> Result<Value> {
         if x0 >= x1 || y0 >= y1 {
             return Err(invalid(format!("{field} must have x0 < x1 and y0 < y1")));
         }
-        normalized_boxes.push(json!({"x0":x0, "y0":y0, "x1":x1, "y1":y1}));
+        let label = selection.get("label").map(|value| value.as_str());
+        if !matches!(label, None | Some(Some("positive" | "negative"))) {
+            return Err(invalid(format!(
+                "{field}.label must be \"positive\" or \"negative\""
+            )));
+        }
+        normalized_boxes.push(json!({"x0":x0, "y0":y0, "x1":x1, "y1":y1,
+            "label": label.flatten().unwrap_or("positive")}));
     }
     let text = prompt
         .get("text")
@@ -97,6 +124,13 @@ pub(super) fn normalize_sam3_prompt(prompt: &Value) -> Result<Value> {
             "sam3Prompt supports at most one box when point prompts are present",
         ));
     }
+    if !points.is_empty()
+        && normalized_boxes
+            .iter()
+            .any(|selection| selection["label"] == "negative")
+    {
+        return Err(invalid("sam3Prompt negative boxes require a text prompt"));
+    }
     let threshold = prompt
         .get("threshold")
         .map(|v| {
@@ -113,11 +147,40 @@ pub(super) fn normalize_sam3_prompt(prompt: &Value) -> Result<Value> {
                 .ok_or_else(|| invalid("sam3Prompt.multimask must be a boolean"))
         })
         .transpose()?
-        .unwrap_or(true);
+        .unwrap_or(!points.is_empty());
+    // Multimask chooses click candidates. Explicit false on text/box paths is
+    // harmless and omitted; true without points names a caller error.
+    if multimask && points.is_empty() {
+        return Err(invalid("sam3Prompt.multimask requires point prompts"));
+    }
+    let apply_mask = prompt
+        .get("applyMask")
+        .map(|value| {
+            value
+                .as_bool()
+                .ok_or_else(|| invalid("sam3Prompt.applyMask must be a boolean"))
+        })
+        .transpose()?
+        .unwrap_or(false);
+    let max_instances = prompt
+        .get("maxInstances")
+        .map(|value| {
+            value
+                .as_u64()
+                .filter(|value| (1..=16).contains(value))
+                .ok_or_else(|| invalid("sam3Prompt.maxInstances must be an integer from 1 to 16"))
+        })
+        .transpose()?;
     let mut normalized = json!({
         "points": normalized_points, "boxes": normalized_boxes,
-        "threshold": threshold, "multimask": multimask,
+        "threshold": threshold, "applyMask": apply_mask,
     });
+    if !points.is_empty() {
+        normalized["multimask"] = json!(multimask);
+    }
+    if let Some(count) = max_instances {
+        normalized["maxInstances"] = json!(count);
+    }
     if let Some(text) = text {
         normalized["text"] = json!(text);
     }

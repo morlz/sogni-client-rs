@@ -5,7 +5,10 @@ mod loras;
 mod media;
 mod models;
 mod recovery;
+mod reusable;
 mod status;
+mod submission_recovery;
+pub use reusable::{ReusableUploads, SavedUpload, SavedUploadBinding};
 
 #[derive(Clone)]
 pub struct ProjectsApi {
@@ -21,11 +24,16 @@ pub(super) struct ProjectsInner {
     pub(super) client: Arc<ApiClient>,
     pub(super) projects: RwLock<HashMap<String, Project>>,
     pub(super) available_models: RwLock<Vec<Value>>,
+    // Budget unpinned jobs against the last server announcement, not the
+    // requested client network; an unknown network uses the relaxed floor.
+    pub(super) runtime_network: RwLock<Option<Network>>,
     pub(super) supported_models: RwLock<Option<TimedValue>>,
     pub(super) model_tiers: RwLock<Option<TimedValue>>,
     pub(super) events: EventBus,
     pub(super) recovered_completed_ids: RwLock<HashSet<String>>,
     pub(super) sync_lock: Mutex<()>,
+    pub(super) assets: ReusableUploads,
+    pub(super) submission: parking_lot::Mutex<submission_recovery::SubmissionRecovery>,
 }
 
 impl std::fmt::Debug for ProjectsApi {
@@ -39,9 +47,12 @@ impl std::fmt::Debug for ProjectsApi {
 impl ProjectsApi {
     pub(crate) fn new(client: Arc<ApiClient>) -> Self {
         let inner = Arc::new(ProjectsInner {
+            assets: ReusableUploads::new(client.rest.clone()),
+            submission: parking_lot::Mutex::new(submission_recovery::SubmissionRecovery::default()),
             client,
             projects: RwLock::new(HashMap::new()),
             available_models: RwLock::new(Vec::new()),
+            runtime_network: RwLock::new(None),
             supported_models: RwLock::new(None),
             model_tiers: RwLock::new(None),
             events: EventBus::default(),
@@ -55,6 +66,11 @@ impl ProjectsApi {
     #[must_use]
     pub fn subscribe(&self) -> EventReceiver {
         self.inner.events.subscribe()
+    }
+
+    #[must_use]
+    pub fn assets(&self) -> ReusableUploads {
+        self.inner.assets.clone()
     }
 
     #[must_use]
@@ -82,10 +98,9 @@ impl ProjectsApi {
     /// Consult advertised media metadata, falling back to known 3D model IDs.
     #[must_use]
     pub fn is_model_artifact_model_id(&self, model_id: &str) -> bool {
-        cached_model_media(&self.inner.supported_models, model_id).map_or_else(
-            || is_model_artifact_model(model_id),
-            |media| media == "model",
-        )
+        is_model_artifact_model(model_id)
+            || cached_model_media(&self.inner.supported_models, model_id)
+                .is_some_and(|media| media == "model")
     }
 
     pub async fn wait_for_models(&self, timeout: Duration) -> Result<Vec<Value>> {

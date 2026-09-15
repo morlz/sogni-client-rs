@@ -24,6 +24,7 @@ pub(super) struct ChatInner {
     pub(super) active: RwLock<HashMap<String, ActiveChat>>,
     pub(super) models: RwLock<HashMap<String, Value>>,
     pub(super) events: EventBus,
+    pub(super) recovery: parking_lot::Mutex<super::events::TransportRecovery>,
 }
 
 impl std::fmt::Debug for ChatApi {
@@ -43,6 +44,7 @@ impl ChatApi {
             active: RwLock::new(HashMap::new()),
             models: RwLock::new(HashMap::new()),
             events: EventBus::default(),
+            recovery: parking_lot::Mutex::new(super::events::TransportRecovery::default()),
         });
         listen_for_chat_events(&inner);
         Self {
