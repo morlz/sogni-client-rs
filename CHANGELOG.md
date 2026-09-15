@@ -8,6 +8,10 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.50.1] - 2026-09-15
+
+- Remove visible rustdoc `#` setup markers from README examples and indent their Rust code for GitHub and crates.io rendering, preserving documentation test coverage.
+
 ## [5.50.0] - 2026-09-15
 
 - Port the public TypeScript 5.50.0 contract through upstream `452e789`.

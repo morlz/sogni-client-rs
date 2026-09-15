@@ -3,7 +3,7 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.50.0** implements the TypeScript public contract through
+Version **5.50.1** implements the TypeScript **5.50.0** public contract through
 [`452e789`](https://github.com/Sogni-AI/sogni-client/commit/452e78967a21ab80977c11f16517072d1836405a),
 including hosted tool definitions from Sogni Protocol `1.0.0-alpha.42`.
 
@@ -43,7 +43,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client = { version = "5.50.0", default-features = false }
+sogni-client = { version = "5.50.1", default-features = false }
 ```
 
 For development against the repository:
@@ -114,14 +114,14 @@ For hosted chat, workflows, replay, announcements, or account REST APIs, use
 `disable_socket(true)`. This mode never opens a socket and needs no app ID:
 
 ```rust,no_run
-# async fn rest_only() -> sogni_client::Result<()> {
-let client = sogni_client::SogniClient::builder()
-    .api_key(std::env::var("SOGNI_API_KEY").expect("API key"))
-    .disable_socket(true)
-    .build().await?;
-client.close().await?;
-# Ok(())
-# }
+async fn rest_only() -> sogni_client::Result<()> {
+    let client = sogni_client::SogniClient::builder()
+        .api_key(std::env::var("SOGNI_API_KEY").expect("API key"))
+        .disable_socket(true)
+        .build().await?;
+    client.close().await?;
+    Ok(())
+}
 ```
 
 ## Generate an image
@@ -199,21 +199,21 @@ snapshot's `extra` map, including future phases.
 ```rust,no_run
 use sogni_client::{AssetRole, MediaSource, ProjectRequest, Sam3ImagePrompt};
 
-# async fn segment(client: &sogni_client::SogniClient) -> sogni_client::Result<()> {
-let project = client.projects.create(
-    ProjectRequest::image("sam3_image_segment_bf16", "")
-        .asset(AssetRole::StartingImage, MediaSource::Path("source.png".into()))
-        .sam3_prompt(Sam3ImagePrompt {
-            text: Some("teapot".into()),
-            apply_mask: Some(true),
-            max_instances: Some(1),
-            ..Default::default()
-        })
-).await?;
-let cutouts = project.wait_for_completion(None).await?;
-# let _ = cutouts;
-# Ok(())
-# }
+async fn segment(client: &sogni_client::SogniClient) -> sogni_client::Result<()> {
+    let project = client.projects.create(
+        ProjectRequest::image("sam3_image_segment_bf16", "")
+            .asset(AssetRole::StartingImage, MediaSource::Path("source.png".into()))
+            .sam3_prompt(Sam3ImagePrompt {
+                text: Some("teapot".into()),
+                apply_mask: Some(true),
+                max_instances: Some(1),
+                ..Default::default()
+            })
+    ).await?;
+    let cutouts = project.wait_for_completion(None).await?;
+    let _ = cutouts;
+    Ok(())
+}
 ```
 
 SAM3 always requests one PNG and no previews, including in the local snapshot.
@@ -241,15 +241,15 @@ refer to the subject's own side. Both models reject generic context images.
 ```rust,no_run
 use sogni_client::{AssetRole, MediaSource, Pixal3dGenerationOptions, ProjectRequest};
 
-# fn reconstruction() -> ProjectRequest {
-ProjectRequest::image("pixal3d_multiview_int8_i23d", "")
-    .asset(AssetRole::StartingImage, MediaSource::Path("front.png".into()))
-    .asset(AssetRole::Pixal3dBackView, MediaSource::Path("back.png".into()))
-    .pixal3d_options(Pixal3dGenerationOptions {
-        mesh_target_faces: Some(60_000),
-        ..Default::default()
-    })
-# }
+fn reconstruction() -> ProjectRequest {
+    ProjectRequest::image("pixal3d_multiview_int8_i23d", "")
+        .asset(AssetRole::StartingImage, MediaSource::Path("front.png".into()))
+        .asset(AssetRole::Pixal3dBackView, MediaSource::Path("back.png".into()))
+        .pixal3d_options(Pixal3dGenerationOptions {
+            mesh_target_faces: Some(60_000),
+            ..Default::default()
+        })
+}
 ```
 
 `Pixal3dGenerationOptions` covers mesh/texture controls and shape resolution.
@@ -286,11 +286,11 @@ The service validates which audio controls a model accepts.
 ```rust,no_run
 use sogni_client::{AssetRole, MediaSource, ProjectRequest};
 
-# fn speech() -> ProjectRequest {
-ProjectRequest::audio("qwen3_tts_1.7b_voice_clone_bf16", "Welcome to the studio.")
-    .asset(AssetRole::ReferenceAudio, MediaSource::Path("voice.wav".into()))
-    .param("referenceText", "The exact words spoken in the reference recording.")
-# }
+fn speech() -> ProjectRequest {
+    ProjectRequest::audio("qwen3_tts_1.7b_voice_clone_bf16", "Welcome to the studio.")
+        .asset(AssetRole::ReferenceAudio, MediaSource::Path("voice.wav".into()))
+        .param("referenceText", "The exact words spoken in the reference recording.")
+}
 ```
 
 FlashVSR is promptless and preserves the complete source video, its exact frame
@@ -303,11 +303,11 @@ and `seed` default to `stable`, `stable`, and 0; -1 requests a random seed.
 ```rust,no_run
 use sogni_client::{AssetRole, FLASHVSR_VIDEO_UPSCALE_MODEL_ID, MediaSource, ProjectRequest};
 
-# fn upscale() -> ProjectRequest {
-ProjectRequest::video(FLASHVSR_VIDEO_UPSCALE_MODEL_ID, "")
-    .asset(AssetRole::ReferenceVideo, MediaSource::Path("clip.mp4".into()))
-    .param("upscaleResolution", 1440)
-# }
+fn upscale() -> ProjectRequest {
+    ProjectRequest::video(FLASHVSR_VIDEO_UPSCALE_MODEL_ID, "")
+        .asset(AssetRole::ReferenceVideo, MediaSource::Path("clip.mp4".into()))
+        .param("upscaleResolution", 1440)
+}
 ```
 
 FastH3 uses `minimax-h3-fastvideo-int8_{mode}_turbo`, with `t2v`, `i2v`,
@@ -332,13 +332,13 @@ Seedance 2.5 accepts `.param("outputFormat", "mov")` and
 ```rust,no_run
 use sogni_client::{AssetRole, MediaSource, ProjectRequest};
 
-# fn request() -> ProjectRequest {
-ProjectRequest::image("qwen_image_edit_2511_fp8_lightning", "Make it cinematic")
-    .asset(
-        AssetRole::ContextImage(1),
-        MediaSource::Path("input.png".into()),
-    )
-# }
+fn request() -> ProjectRequest {
+    ProjectRequest::image("qwen_image_edit_2511_fp8_lightning", "Make it cinematic")
+        .asset(
+            AssetRole::ContextImage(1),
+            MediaSource::Path("input.png".into()),
+        )
+}
 ```
 
 Adding an asset automatically enables its matching request flag. MiniMax H3
@@ -347,19 +347,19 @@ reference-to-video supports explicit numbered audio/video slots:
 ```rust,no_run
 use sogni_client::{AssetRole, MediaSource, ProjectRequest};
 
-# fn request() -> ProjectRequest {
-ProjectRequest::video(
-    "minimax-h3-ref2va-fp8_r2v",
-    "The subject walks into frame and speaks",
-)
-    .duration(6.0)
-    .asset(AssetRole::ReferenceImage, MediaSource::Path("subject.png".into()))
-    .asset(
-        AssetRole::ReferenceVideoSlot(1),
-        MediaSource::Path("motion.mp4".into()),
+fn request() -> ProjectRequest {
+    ProjectRequest::video(
+        "minimax-h3-ref2va-fp8_r2v",
+        "The subject walks into frame and speaks",
     )
-    .param("referenceVideoDurations", serde_json::json!([4.0]))
-# }
+        .duration(6.0)
+        .asset(AssetRole::ReferenceImage, MediaSource::Path("subject.png".into()))
+        .asset(
+            AssetRole::ReferenceVideoSlot(1),
+            MediaSource::Path("motion.mp4".into()),
+        )
+        .param("referenceVideoDurations", serde_json::json!([4.0]))
+}
 ```
 
 Numbered H3 audio/video slots must be contiguous from slot 1. The SDK validates
@@ -388,22 +388,23 @@ use futures_util::StreamExt;
 use serde_json::json;
 use sogni_client::SogniClient;
 
-# async fn run(client: &SogniClient) -> sogni_client::Result<()> {
-let mut stream = client
-    .chat
-    .stream_completion(&json!({
-        "model": "qwen3.6-35b-a3b-gguf-iq4xs",
-        "messages": [{"role": "user", "content": "Describe a nebula."}],
-        "think": false
-    }))
-    .await?;
+async fn run(client: &SogniClient) -> sogni_client::Result<()> {
+    let mut stream = client
+        .chat
+        .stream_completion(&json!({
+            "model": "qwen3.6-35b-a3b-gguf-iq4xs",
+            "messages": [{"role": "user", "content": "Describe a nebula."}],
+            "think": false
+        }))
+        .await?;
 
-while let Some(chunk) = stream.next().await {
-    print!("{}", chunk?.content);
+    while let Some(chunk) = stream.next().await {
+        print!("{}", chunk?.content);
+    }
+
+    let final_result = stream.final_result();
+    Ok(())
 }
-
-let final_result = stream.final_result();
-# Ok(()) }
 ```
 
 Use `create_completion` for a non-streaming socket call and
@@ -435,18 +436,19 @@ disconnect and resume.
 use futures_util::StreamExt;
 use serde_json::json;
 
-# async fn run(client: &sogni_client::SogniClient) -> sogni_client::Result<()> {
-let run = client.chat.create_run(&json!({
-    "messages": [{"role": "user", "content": "Create a launch campaign"}],
-    "confirmCost": false
-})).await?;
+async fn run(client: &sogni_client::SogniClient) -> sogni_client::Result<()> {
+    let run = client.chat.create_run(&json!({
+        "messages": [{"role": "user", "content": "Create a launch campaign"}],
+        "confirmCost": false
+    })).await?;
 
-let run_id = run["id"].as_str().expect("server run id");
-let mut events = client.chat.stream_run_events(run_id, None).await?;
-while let Some(event) = events.next().await {
-    println!("{:#?}", event?);
+    let run_id = run["id"].as_str().expect("server run id");
+    let mut events = client.chat.stream_run_events(run_id, None).await?;
+    while let Some(event) = events.next().await {
+        println!("{:#?}", event?);
+    }
+    Ok(())
 }
-# Ok(()) }
 ```
 
 The workflow namespace provides `start`, `get`, `list`, `events`,
@@ -483,13 +485,13 @@ variants when an application needs structured handling:
 ```rust,no_run
 use sogni_client::{Error, is_subscription_limit_error};
 
-# fn inspect(error: Error) {
-if is_subscription_limit_error(&error) {
-    // Prompt for the appropriate subscription change.
-} else if let Error::Api(api) = &error {
-    eprintln!("HTTP {}: {}", api.status, api.message);
+fn inspect(error: Error) {
+    if is_subscription_limit_error(&error) {
+        // Prompt for the appropriate subscription change.
+    } else if let Error::Api(api) = &error {
+        eprintln!("HTTP {}: {}", api.status, api.message);
+    }
 }
-# }
 ```
 
 The SDK does not log credentials or include them in `Debug` output. Server-side
