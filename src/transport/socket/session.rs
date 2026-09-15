@@ -26,7 +26,7 @@ use super::{
     PROTOCOL_VERSION, RECONNECT_BASE_DELAY, RECONNECT_MAX_DELAY, SWITCH_CONNECTION, SocketCommand,
     SocketInner,
 };
-use crate::{Error, Network, Result, utils::b64_json_decode};
+use crate::{Error, Network, Result, auth::AuthVersion, utils::b64_json_decode};
 
 pub(super) async fn socket_manager(
     inner: Arc<SocketInner>,
@@ -75,16 +75,27 @@ pub(super) async fn socket_manager(
             json!({"network": inner.network.read().as_str()}),
         );
         match connect_socket(&inner).await {
-            Ok(mut socket) => {
+            Ok((mut socket, version)) => {
+                if version.session != inner.auth.version().session {
+                    let _ = socket.close(None).await;
+                    continue;
+                }
                 reconnect_attempt = 0;
+                inner.session.store(version.session, Ordering::Release);
                 inner.authenticated.store(false, Ordering::Release);
                 inner.connected.send_replace(true);
                 inner.events.emit(
                     "connected",
                     json!({"network": inner.network.read().as_str()}),
                 );
-                let outcome =
-                    socket_session(&inner, &mut socket, &mut commands, &mut pending).await;
+                let outcome = socket_session(
+                    &inner,
+                    &mut socket,
+                    &mut commands,
+                    &mut pending,
+                    version.session,
+                )
+                .await;
                 inner.connected.send_replace(false);
                 inner.authenticated.store(false, Ordering::Release);
                 match outcome {
@@ -97,13 +108,13 @@ pub(super) async fn socket_manager(
                         return;
                     }
                     SocketOutcome::AuthChanged => {
-                        fail_pending(&mut pending, Error::Closed);
-                        fail_queued(&mut commands);
+                        discard_stale(&mut pending, inner.auth.version().session);
                         inner.events.emit(
                             "disconnected",
                             json!({"code":0,"reason":"Authentication changed"}),
                         );
                         reconnect_attempt = 0;
+                        continue;
                     }
                     SocketOutcome::Disconnected { code, reason } => {
                         match disconnect_disposition(code) {
@@ -118,7 +129,7 @@ pub(super) async fn socket_manager(
                             DisconnectDisposition::ClearAuthAndSuspend => {
                                 fail_pending(&mut pending, Error::Closed);
                                 fail_queued(&mut commands);
-                                inner.auth.clear();
+                                inner.auth.clear_if_version(version);
                                 inner
                                     .events
                                     .emit("disconnected", json!({"code": code, "reason": reason}));
@@ -154,9 +165,10 @@ pub(super) async fn socket_manager(
 
 async fn connect_socket(
     inner: &SocketInner,
-) -> Result<
+) -> Result<(
     tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>,
-> {
+    AuthVersion,
+)> {
     let mut url = inner.url.clone();
     {
         let mut query = url.query_pairs_mut();
@@ -197,7 +209,11 @@ async fn connect_socket(
         .as_str()
         .into_client_request()
         .map_err(|error| Error::Transport(format!("failed to build WebSocket request: {error}")))?;
-    for (name, value) in inner.auth.headers().await? {
+    let (version, mut headers) = inner.auth.headers().await?;
+    if let Some(cookie) = inner.auth.socket_cookie(&url) {
+        headers.insert(reqwest::header::COOKIE, cookie);
+    }
+    for (name, value) in headers {
         if let Some(name) = name {
             request.headers_mut().insert(name, value);
         }
@@ -222,7 +238,7 @@ async fn connect_socket(
     .await
     .map_err(|_| Error::Timeout("WebSocket connection timed out".into()))?
     .map_err(|error| Error::Transport(format!("WebSocket connection failed: {error}")))?;
-    Ok(socket)
+    Ok((socket, version))
 }
 
 enum SocketOutcome {
@@ -236,20 +252,30 @@ async fn socket_session<S>(
     socket: &mut tokio_tungstenite::WebSocketStream<S>,
     commands: &mut mpsc::Receiver<SocketCommand>,
     pending: &mut VecDeque<SocketCommand>,
+    session: u64,
 ) -> SocketOutcome
 where
     S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin,
 {
-    let mut auth_updates = inner.auth.subscribe();
+    let mut auth_updates = inner.auth.subscribe_session();
     let fallback_at = tokio::time::Instant::now() + Duration::from_secs(10);
     let mut legacy_ready = false;
     let mut ping = tokio::time::interval(Duration::from_secs(15));
     ping.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
     loop {
+        if inner.auth.version().session != session {
+            let _ = socket.close(None).await;
+            return SocketOutcome::AuthChanged;
+        }
         if inner.authenticated.load(Ordering::Acquire) || legacy_ready {
             while let Some(command) = pending.pop_front() {
+                if inner.auth.version().session != session {
+                    pending.push_front(command);
+                    let _ = socket.close(None).await;
+                    return SocketOutcome::AuthChanged;
+                }
                 if let Err(SocketCommand::Send { response, .. }) =
-                    send_command(socket, command).await
+                    send_command(socket, command, session).await
                 {
                     // A failed write may have reached the peer; only definitely
                     // unsent queued work survives reconnect. Never replay it here.
@@ -267,10 +293,10 @@ where
                 return SocketOutcome::Closed;
             }
             changed = auth_updates.changed() => {
-                if changed.is_err() || !*auth_updates.borrow() {
+                if changed.is_err() || *auth_updates.borrow() != session {
                     let _ = socket.send(Message::Close(Some(CloseFrame {
                         code: CloseCode::Normal,
-                        reason: "Authentication cleared".into(),
+                        reason: "Authentication changed".into(),
                     }))).await;
                     return SocketOutcome::AuthChanged;
                 }
@@ -289,7 +315,12 @@ where
                     return transport_loss("WebSocket ping failed");
                 }
             }
-            incoming = socket.next() => match incoming {
+            incoming = socket.next() => {
+                if inner.auth.version().session != session {
+                    let _ = socket.close(None).await;
+                    return SocketOutcome::AuthChanged;
+                }
+                match incoming {
                 Some(Ok(Message::Text(text))) => handle_socket_frame(inner, text.as_bytes()),
                 Some(Ok(Message::Binary(bytes))) => handle_socket_frame(inner, &bytes),
                 Some(Ok(Message::Ping(payload))) => {
@@ -307,6 +338,7 @@ where
                     return transport_loss(error.to_string());
                 }
                 None => return transport_loss("WebSocket stream ended"),
+                }
             }
         }
     }
@@ -315,18 +347,33 @@ where
 async fn send_command<S>(
     socket: &mut tokio_tungstenite::WebSocketStream<S>,
     command: SocketCommand,
+    connection_session: u64,
 ) -> std::result::Result<(), SocketCommand>
 where
     S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin,
 {
     match command {
-        SocketCommand::Send { message, response } => {
+        SocketCommand::Send {
+            message,
+            response,
+            session,
+        } => {
             if response.is_closed() {
+                return Ok(());
+            }
+            if session != connection_session {
+                let _ = response.send(Err(Error::InvalidInput(
+                    "account session changed before send".into(),
+                )));
                 return Ok(());
             }
             if socket.send(message.clone()).await.is_err() {
                 tracing::warn!("Sogni WebSocket send failed");
-                return Err(SocketCommand::Send { message, response });
+                return Err(SocketCommand::Send {
+                    message,
+                    response,
+                    session,
+                });
             }
             let _ = response.send(Ok(()));
             Ok(())
@@ -388,6 +435,20 @@ fn fail_pending(pending: &mut VecDeque<SocketCommand>, error: Error) {
     while let Some(SocketCommand::Send { response, .. }) = pending.pop_front() {
         let _ = response.send(Err(Error::Transport(message.clone())));
     }
+}
+
+fn discard_stale(pending: &mut VecDeque<SocketCommand>, current: u64) {
+    let mut retained = VecDeque::new();
+    while let Some(command) = pending.pop_front() {
+        let SocketCommand::Send { session, .. } = &command;
+        if *session == current {
+            retained.push_back(command);
+        } else {
+            let SocketCommand::Send { response, .. } = command;
+            let _ = response.send(Err(Error::Closed));
+        }
+    }
+    *pending = retained;
 }
 
 fn fail_queued(commands: &mut mpsc::Receiver<SocketCommand>) {

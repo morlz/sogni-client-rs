@@ -81,7 +81,7 @@ fn parse_inline(input: &str, media: &str) -> Result<(Bytes, String)> {
     if body.len() % 4 == 1 {
         return Err(Error::InvalidInput("Invalid base64 payload".into()));
     }
-    while body.len() % 4 != 0 {
+    while !body.len().is_multiple_of(4) {
         body.push('=');
     }
     let bytes = STANDARD

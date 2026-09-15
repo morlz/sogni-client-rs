@@ -1,0 +1,41 @@
+name: Upstream updates
+
+on:
+  schedule:
+    - cron: '17 15 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: community-upstream
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    if: github.repository == 'Sogni-AI/sogni-client-rs' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Propose community updates without running upstream code
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags https://github.com/morlz/sogni-client-rs.git dev
+          if [[ "$(git rev-list --count HEAD..FETCH_HEAD)" == "0" ]]; then
+            echo "All upstream commits are already included."
+            exit 0
+          fi
+          issue=$(gh issue list --state open --json number,title --jq '.[] | select(.title == "Community upstream updates available") | .number' | head -1)
+          if [[ -n "$issue" ]]; then
+            gh issue edit "$issue" --body-file .github/UPSTREAM_UPDATE.md
+          else
+            gh issue create --title "Community upstream updates available" --body-file .github/UPSTREAM_UPDATE.md
+          fi

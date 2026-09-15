@@ -210,7 +210,7 @@ async fn media_downloads_follow_redirects_without_credentials() {
 async fn credential_headers_are_sensitive() {
     let base_url = Url::parse("https://api.sogni.ai/").expect("base URL");
     let http = HttpClients::build(Duration::from_secs(1)).expect("HTTP clients");
-    let headers = api_key_auth(base_url, &http)
+    let (_, headers) = api_key_auth(base_url, &http)
         .headers()
         .await
         .expect("authentication headers");

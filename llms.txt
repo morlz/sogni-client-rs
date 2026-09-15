@@ -1,10 +1,14 @@
-# sogni-client Rust SDK 5.50.2
+Community-origin alpha fork maintained by Sogni-AI. Original author: @morlz.
+Upstream: https://github.com/morlz/sogni-client-rs (5.50.2). See UPSTREAM.md.
+GitHub alpha distribution; the crates.io package belongs to upstream.
+
+# sogni-client Rust SDK 5.50.3-alpha.1
 
 Compatibility: TypeScript 5.50.0 at 452e789; hosted protocol 1.0.0-alpha.42.
-Repository: https://github.com/morlz/sogni-client-rs
+Repository: https://github.com/Sogni-AI/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
-Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.85.
+Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
 
 Primary documentation: README.md and https://docs.sogni.ai/
 

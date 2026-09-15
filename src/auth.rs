@@ -56,6 +56,18 @@ enum Credentials {
     Cookies,
 }
 
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+pub(crate) struct AuthVersion {
+    pub(crate) session: u64,
+    revision: u64,
+}
+
+#[derive(Default)]
+struct AuthState {
+    credentials: Credentials,
+    version: AuthVersion,
+}
+
 #[derive(Clone)]
 pub(crate) struct AuthManager {
     inner: Arc<AuthInner>,
@@ -66,9 +78,10 @@ struct AuthInner {
     base_url: Url,
     http: reqwest::Client,
     cookies: Arc<ClearableCookieStore>,
-    credentials: RwLock<Credentials>,
+    state: RwLock<AuthState>,
     refresh_lock: Mutex<()>,
     updates: watch::Sender<bool>,
+    sessions: watch::Sender<u64>,
 }
 
 impl fmt::Debug for AuthManager {
@@ -88,15 +101,17 @@ impl AuthManager {
         cookies: Arc<ClearableCookieStore>,
     ) -> Self {
         let (updates, _) = watch::channel(false);
+        let (sessions, _) = watch::channel(0);
         Self {
             inner: Arc::new(AuthInner {
                 kind,
                 base_url,
                 http,
                 cookies,
-                credentials: RwLock::new(Credentials::Empty),
+                state: RwLock::new(AuthState::default()),
                 refresh_lock: Mutex::new(()),
                 updates,
+                sessions,
             }),
         }
     }
@@ -109,9 +124,29 @@ impl AuthManager {
         self.inner.updates.subscribe()
     }
 
+    pub(crate) fn subscribe_session(&self) -> watch::Receiver<u64> {
+        self.inner.sessions.subscribe()
+    }
+
+    pub(crate) fn version(&self) -> AuthVersion {
+        self.inner.state.read().version
+    }
+
+    fn replace(&self, credentials: Credentials, authenticated: bool) {
+        let mut state = self.inner.state.write();
+        if !matches!(credentials, Credentials::Cookies) {
+            self.inner.cookies.clear();
+        }
+        state.credentials = credentials;
+        state.version.session = state.version.session.wrapping_add(1);
+        state.version.revision = state.version.revision.wrapping_add(1);
+        self.inner.sessions.send_replace(state.version.session);
+        self.inner.updates.send_replace(authenticated);
+    }
+
     pub(crate) fn is_authenticated(&self) -> bool {
         let now = unix_time();
-        match &*self.inner.credentials.read() {
+        match &self.inner.state.read().credentials {
             Credentials::ApiKey(key) => !key.trim().is_empty(),
             Credentials::Tokens {
                 refresh_token,
@@ -134,8 +169,10 @@ impl AuthManager {
         if api_key.is_empty() {
             return Err(Error::InvalidInput("api_key must be non-empty".into()));
         }
-        *self.inner.credentials.write() = Credentials::ApiKey(Zeroizing::new(api_key.to_owned()));
-        self.inner.updates.send_replace(true);
+        self.replace(
+            Credentials::ApiKey(Zeroizing::new(api_key.to_owned())),
+            true,
+        );
         Ok(())
     }
 
@@ -145,8 +182,7 @@ impl AuthManager {
                 "cookie authentication was not configured".into(),
             ));
         }
-        *self.inner.credentials.write() = Credentials::Cookies;
-        self.inner.updates.send_replace(true);
+        self.replace(Credentials::Cookies, true);
         Ok(())
     }
 
@@ -167,43 +203,63 @@ impl AuthManager {
         }
         let token_exp = jwt_exp(&token)?;
         let refresh_exp = jwt_exp(&refresh_token)?;
-        *self.inner.credentials.write() = Credentials::Tokens {
-            token,
-            token_expires_at: token_exp,
-            refresh_token,
-            refresh_expires_at: refresh_exp,
-        };
-        self.inner.updates.send_replace(refresh_exp > unix_time());
+        self.replace(
+            Credentials::Tokens {
+                token,
+                token_expires_at: token_exp,
+                refresh_token,
+                refresh_expires_at: refresh_exp,
+            },
+            refresh_exp > unix_time(),
+        );
         if token_exp <= unix_time() {
             self.renew_token().await?;
         }
         Ok(())
     }
 
-    pub(crate) async fn headers(&self) -> Result<HeaderMap> {
-        let mut headers = HeaderMap::new();
-        match self.inner.kind {
-            AuthKind::ApiKey => {
-                if let Credentials::ApiKey(key) = &*self.inner.credentials.read() {
-                    headers.insert(
-                        HeaderName::from_static("api-key"),
-                        secret_header(key.as_str())?,
-                    );
-                }
-            }
-            AuthKind::Token => {
-                let token = self.current_token().await?;
-                if let Some(token) = token {
-                    headers.insert(AUTHORIZATION, secret_header(&token)?);
-                }
-            }
-            AuthKind::Cookies => {}
+    pub(crate) async fn headers(&self) -> Result<(AuthVersion, HeaderMap)> {
+        let needs_refresh = matches!(&self.inner.state.read().credentials,
+            Credentials::Tokens { token_expires_at, .. } if *token_expires_at <= unix_time());
+        if needs_refresh {
+            self.renew_token().await?;
         }
-        Ok(headers)
+        let state = self.inner.state.read();
+        let mut headers = HeaderMap::new();
+        match &state.credentials {
+            Credentials::ApiKey(key) => {
+                headers.insert(
+                    HeaderName::from_static("api-key"),
+                    secret_header(key.as_str())?,
+                );
+            }
+            Credentials::Tokens { token, .. } => {
+                headers.insert(AUTHORIZATION, secret_header(token)?);
+            }
+            _ => {}
+        }
+        Ok((state.version, headers))
+    }
+
+    pub(crate) fn socket_cookie(&self, url: &Url) -> Option<HeaderValue> {
+        if self.kind() != AuthKind::Cookies {
+            return None;
+        }
+        let mut url = url.clone();
+        let scheme = if url.scheme() == "wss" {
+            "https"
+        } else {
+            "http"
+        };
+        url.set_scheme(scheme).ok()?;
+        self.inner.cookies.request_header(&url).1.map(|mut cookie| {
+            cookie.set_sensitive(true);
+            cookie
+        })
     }
 
     pub(crate) fn backup(&self) -> Result<Option<AuthBackup>> {
-        match &*self.inner.credentials.read() {
+        match &self.inner.state.read().credentials {
             Credentials::ApiKey(key) => Ok(Some(AuthBackup::ApiKey(key.to_string()))),
             Credentials::Tokens {
                 token,
@@ -221,38 +277,28 @@ impl AuthManager {
     }
 
     pub(crate) fn clear(&self) {
-        self.inner.cookies.clear();
-        let had_credentials = !matches!(*self.inner.credentials.read(), Credentials::Empty);
-        if had_credentials {
-            *self.inner.credentials.write() = Credentials::Empty;
-            self.inner.updates.send_replace(false);
-        }
+        self.replace(Credentials::Empty, false);
     }
 
-    async fn current_token(&self) -> Result<Option<String>> {
-        let current = {
-            let guard = self.inner.credentials.read();
-            match &*guard {
-                Credentials::Tokens {
-                    token,
-                    token_expires_at,
-                    ..
-                } if *token_expires_at > unix_time() => return Ok(Some(token.to_string())),
-                Credentials::Tokens { refresh_token, .. } => Some(refresh_token.to_string()),
-                _ => None,
-            }
-        };
-        if current.is_none() {
-            return Ok(None);
+    pub(crate) fn clear_if_version(&self, expected: AuthVersion) {
+        let mut state = self.inner.state.write();
+        if state.version != expected {
+            return;
         }
-        self.renew_token().await.map(Some)
+        self.inner.cookies.clear();
+        state.credentials = Credentials::Empty;
+        state.version.session = state.version.session.wrapping_add(1);
+        state.version.revision = state.version.revision.wrapping_add(1);
+        self.inner.sessions.send_replace(state.version.session);
+        self.inner.updates.send_replace(false);
     }
 
     async fn renew_token(&self) -> Result<String> {
         let _guard = self.inner.refresh_lock.lock().await;
-        let refresh_token = {
-            let guard = self.inner.credentials.read();
-            match &*guard {
+        let (version, refresh_token) = {
+            let guard = self.inner.state.read();
+            let version = guard.version;
+            match &guard.credentials {
                 Credentials::Tokens {
                     token,
                     token_expires_at,
@@ -262,10 +308,12 @@ impl AuthManager {
                     refresh_token,
                     refresh_expires_at,
                     ..
-                } if *refresh_expires_at > unix_time() => refresh_token.to_string(),
+                } if *refresh_expires_at > unix_time() => {
+                    (version, Zeroizing::new(refresh_token.to_string()))
+                }
                 Credentials::Tokens { .. } => {
                     drop(guard);
-                    self.clear();
+                    self.clear_if_version(version);
                     return Err(Error::InvalidInput("refresh token expired".into()));
                 }
                 _ => return Err(Error::InvalidInput("no refresh token is configured".into())),
@@ -276,7 +324,7 @@ impl AuthManager {
             .inner
             .http
             .post(url)
-            .json(&json!({"refreshToken": refresh_token}))
+            .json(&json!({"refreshToken": refresh_token.as_str()}))
             .send()
             .await?;
         let status = response.status();
@@ -285,7 +333,7 @@ impl AuthManager {
             json!({"status": "error", "message": status.canonical_reason().unwrap_or("Token refresh failed"), "errorCode": status.as_u16()})
         });
         if !status.is_success() {
-            self.clear();
+            self.clear_if_version(version);
             return Err(ApiError::new(status.as_u16(), payload).into());
         }
         let data = payload
@@ -303,12 +351,19 @@ impl AuthManager {
             })?;
         let token_exp = jwt_exp(token)?;
         let refresh_exp = jwt_exp(next_refresh)?;
-        *self.inner.credentials.write() = Credentials::Tokens {
+        let mut state = self.inner.state.write();
+        if state.version != version {
+            return Err(Error::InvalidInput(
+                "account session changed during token refresh".into(),
+            ));
+        }
+        state.credentials = Credentials::Tokens {
             token: Zeroizing::new(token.to_owned()),
             token_expires_at: token_exp,
             refresh_token: Zeroizing::new(next_refresh.to_owned()),
             refresh_expires_at: refresh_exp,
         };
+        state.version.revision = state.version.revision.wrapping_add(1);
         self.inner.updates.send_replace(true);
         Ok(token.to_owned())
     }
@@ -321,7 +376,7 @@ fn jwt_exp(token: &str) -> Result<f64> {
         .nth(1)
         .ok_or_else(|| Error::InvalidInput("invalid JWT".into()))?;
     let mut padded = payload.to_owned();
-    while padded.len() % 4 != 0 {
+    while !padded.len().is_multiple_of(4) {
         padded.push('=');
     }
     let decoded = URL_SAFE
@@ -347,4 +402,43 @@ fn secret_header(value: &str) -> Result<HeaderValue> {
         .map_err(|_| Error::InvalidInput("credential contains invalid header bytes".into()))?;
     value.set_sensitive(true);
     Ok(value)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn socket_cookies_respect_domain_path_and_secure() {
+        let url = Url::parse("https://api.example.test/login").unwrap();
+        let cookies = Arc::new(ClearableCookieStore::default());
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            reqwest::header::SET_COOKIE,
+            HeaderValue::from_static(
+                "session=fixture; Domain=example.test; Path=/socket; Secure; HttpOnly",
+            ),
+        );
+        let (generation, _) = cookies.request_header(&url);
+        cookies.store_response(generation, &headers, &url);
+        let auth = AuthManager::new(AuthKind::Cookies, url, reqwest::Client::new(), cookies);
+        auth.authenticate_cookies().unwrap();
+        let header = auth
+            .socket_cookie(&Url::parse("wss://socket.example.test/socket").unwrap())
+            .unwrap();
+        assert_eq!(header, "session=fixture");
+        assert!(header.is_sensitive());
+        for url in [
+            "ws://socket.example.test/socket",
+            "wss://other.test/socket",
+            "wss://socket.example.test/other",
+        ] {
+            assert!(auth.socket_cookie(&Url::parse(url).unwrap()).is_none());
+        }
+        auth.clear();
+        assert!(
+            auth.socket_cookie(&Url::parse("wss://socket.example.test/socket").unwrap())
+                .is_none()
+        );
+    }
 }
