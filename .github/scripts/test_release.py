@@ -9,22 +9,23 @@ release = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release)
 
 SHA = "a" * 40
-VERSION = "5.50.0"
+VERSION = "5.50.3-alpha.1"
 
 
 class ReleaseTests(unittest.TestCase):
-    def test_only_release_repository_default_branch_push_is_trusted(self):
-        trusted = {"GITHUB_REPOSITORY": release.REPOSITORY, "DEFAULT_BRANCH": "dev", "GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/dev", "GITHUB_SHA": SHA}
-        release.require_trusted_push(trusted)
+    def test_only_manual_release_repository_main_dispatch_is_trusted(self):
+        trusted = {"GITHUB_REPOSITORY": release.REPOSITORY, "DEFAULT_BRANCH": "main", "GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_REF": "refs/heads/main", "GITHUB_SHA": SHA}
+        release.require_release_dispatch(trusted)
         for key, value in [("GITHUB_REPOSITORY", "fork/sogni-client-rs"), ("GITHUB_EVENT_NAME", "pull_request"), ("GITHUB_EVENT_NAME", "workflow_run"), ("GITHUB_REF", "refs/heads/feature"), ("GITHUB_REF", "refs/tags/v5.50.0"), ("GITHUB_SHA", "dev"), ("DEFAULT_BRANCH", "")]:
             with self.subTest(key=key, value=value), self.assertRaises(ValueError):
-                release.require_trusted_push({**trusted, key: value})
+                release.require_release_dispatch({**trusted, key: value})
 
     def test_manifest_lockfile_changelog_and_repository_must_agree(self):
         root = Path("release-fixture")
         files = {}
         with patch.object(Path, "read_text", lambda path, **kwargs: files[path.name]):
             manifest = f'[package]\nname="sogni-client"\nversion="{VERSION}"\nrepository="https://github.com/{release.REPOSITORY}"\n'
+            manifest += "publish=false\n"
             lock = f'[[package]]\nname="sogni-client"\nversion="{VERSION}"\n'
             changelog = f'## [{VERSION}] - 2026-09-15\n'
             files = {"Cargo.toml": manifest, "Cargo.lock": lock, "CHANGELOG.md": changelog}
@@ -32,29 +33,29 @@ class ReleaseTests(unittest.TestCase):
             for name in files:
                 with self.subTest(name=name):
                     original = files[name]
-                    files[name] = original.replace(VERSION, "5.27.1")
+                    files[name] = original.replace(VERSION, "5.50.3-alpha.2")
                     with self.assertRaises(ValueError):
                         release.release_version(root)
                     files[name] = original
-            files["Cargo.toml"] = manifest.replace("morlz/", "other/")
+            files["Cargo.toml"] = manifest.replace("Sogni-AI/", "other/")
             with self.assertRaises(ValueError):
                 release.release_version(root)
 
-    def test_registry_missing_existing_and_mismatched_versions(self):
+    def test_github_missing_existing_and_mismatched_versions(self):
         self.assertFalse(release.already_published(VERSION, request=lambda *a, **k: None))
-        self.assertTrue(release.already_published(VERSION, request=lambda *a, **k: {"version": {"num": VERSION}}))
+        self.assertTrue(release.already_published(VERSION, request=lambda *a, **k: {"tag_name": f"v{VERSION}", "prerelease": True}))
         for payload in [{}, {"version": {"num": "5.27.1"}}, {"version": None}, []]:
             with self.subTest(payload=payload), self.assertRaises(ValueError):
                 release.already_published(VERSION, request=lambda *a, **k: payload)
 
-    def test_registry_http_failures_are_not_missing_versions(self):
+    def test_github_http_failures_are_not_missing_versions(self):
         for status in [401, 403, 429, 500, 503]:
-            error = urllib.error.HTTPError("https://crates.io", status, "error", {}, None)
+            error = urllib.error.HTTPError("https://api.github.com", status, "error", {}, None)
             with self.subTest(status=status), patch("urllib.request.urlopen", side_effect=error), self.assertRaises(ValueError):
-                release.request_json("https://crates.io", missing_ok=True)
-        error = urllib.error.HTTPError("https://crates.io", 404, "missing", {}, None)
+                release.request_json("https://api.github.com", missing_ok=True)
+        error = urllib.error.HTTPError("https://api.github.com", 404, "missing", {}, None)
         with patch("urllib.request.urlopen", side_effect=error):
-            self.assertIsNone(release.request_json("https://crates.io", missing_ok=True))
+            self.assertIsNone(release.request_json("https://api.github.com", missing_ok=True))
 
     def test_existing_tag_cannot_move_to_another_commit(self):
         for target in [{"type": "commit", "sha": "b" * 40}, {"type": "tree", "sha": SHA}]:

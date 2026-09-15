@@ -1,9 +1,27 @@
-# Sogni Client for Rust
+# Sogni Client for Rust — Community Alpha
+
+**An experimental Sogni-AI fork of the community Rust SDK created by
+[@morlz](https://github.com/morlz).** Thank you for building the Rust client,
+sharing it with the community, and offering it to Sogni!
+
+The original, AI-assisted implementation lives at
+[`morlz/sogni-client-rs`](https://github.com/morlz/sogni-client-rs).
+This fork preserves its history and ISC license. Sogni-AI maintains this alpha
+fork and reviews upstream contributions; the original author can continue
+developing independently. See [upstream tracking and attribution](UPSTREAM.md).
+
+**Status: alpha, for early adopters.** APIs and behavior may change. Hosting in
+the Sogni-AI organization does not make this a production-supported SDK.
+See [release scope and validation](ALPHA_RELEASE.md), and report reproducible
+issues [in this fork](https://github.com/Sogni-AI/sogni-client-rs/issues).
+The original `sogni-client` package on crates.io is a separate upstream release;
+this alpha is distributed through GitHub.
 
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.50.2** implements the TypeScript **5.50.0** public contract through
+This **5.50.3-alpha.1** fork starts from upstream Rust **5.50.2**, which targets
+the TypeScript **5.50.0** public contract through
 [`452e789`](https://github.com/Sogni-AI/sogni-client/commit/452e78967a21ab80977c11f16517072d1836405a),
 including hosted tool definitions from Sogni Protocol `1.0.0-alpha.42`.
 
@@ -32,7 +50,7 @@ select from `projects.get_available_models()` instead.
 
 ## Requirements
 
-- Rust 1.85 or newer
+- Rust 1.88 or newer
 - Tokio runtime
 - A Sogni account token pair or API key
 
@@ -43,14 +61,14 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client = { version = "5.50.2", default-features = false }
+sogni-client = { git = "https://github.com/Sogni-AI/sogni-client-rs", tag = "v5.50.3-alpha.1", default-features = false }
 ```
 
-For development against the repository:
+For username/password login and wallet support, enable the default features:
 
 ```toml
 [dependencies]
-sogni-client = { git = "https://github.com/morlz/sogni-client-rs", branch = "dev" }
+sogni-client = { git = "https://github.com/Sogni-AI/sogni-client-rs", tag = "v5.50.3-alpha.1" }
 ```
 
 ## Authenticate with an API key
@@ -90,6 +108,10 @@ that original deadline. Input and authorization failures are not retried; this
 does not broadly retry generation requests. The SDK can resend the original
 project request after a server explicitly refuses admission during a restart;
 an uncertain socket send still requires reconciliation.
+
+For SSE event streams, `request_timeout` limits connection setup and idle reads,
+not the total stream duration. Incoming data resets the read timeout. Drop the
+stream to stop listening; use the API's cancel operation to cancel remote work.
 
 The service requires the `sogni-client` WebSocket protocol-family identifier for
 API-key authentication. The wire field uses that family with the actual compatible

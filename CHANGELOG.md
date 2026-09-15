@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.50.3-alpha.1]
+
+- Match the TypeScript client's `0x`-prefixed wallet signature format.
+- Start the attributed Sogni-AI community alpha fork from morlz/sogni-client-rs 5.50.2.
+- Keep account sessions consistent across token refresh, REST responses, and WebSocket reconnects.
+- Apply matching cookies to WebSocket upgrades and idle timeouts to SSE streams.
+- Update dependencies, require Rust 1.88, and add regression and upstream-intake checks.
+- Distribute this alpha as a GitHub prerelease; preserve the upstream crates.io package.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),

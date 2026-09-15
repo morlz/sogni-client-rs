@@ -105,7 +105,7 @@ pub fn dimensions(args: &Args, spec: &Spec) -> Result<(u32, u32)> {
     };
     let width = args.width.unwrap_or(default_w);
     let height = args.height.unwrap_or(default_h);
-    if width == 0 || height == 0 || width % 32 != 0 || height % 32 != 0 {
+    if width == 0 || height == 0 || !width.is_multiple_of(32) || !height.is_multiple_of(32) {
         bail!("H3 dimensions must be positive multiples of 32");
     }
     if u64::from(width) * u64::from(height) > spec.max_pixels {

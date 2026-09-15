@@ -52,7 +52,7 @@ pub struct SavedUploadBinding {
 }
 
 struct Availability {
-    session: watch::Receiver<bool>,
+    session: watch::Receiver<u64>,
     capability: Option<(Instant, bool)>,
     blocked_until: Option<Instant>,
 }
@@ -114,7 +114,7 @@ impl ReusableUploads {
         &self,
         id: &str,
         binding: &SavedUploadBinding,
-        session: &watch::Receiver<bool>,
+        session: &watch::Receiver<u64>,
     ) -> Result<()> {
         require_id(id)?;
         self.post_busy(
@@ -203,7 +203,7 @@ impl ReusableUploads {
         bytes: &Bytes,
         content_type: &str,
         name: &str,
-        session: &watch::Receiver<bool>,
+        session: &watch::Receiver<u64>,
     ) -> Result<Value> {
         if bytes.is_empty() || bytes.len() > MAX_FILE_BYTES {
             return Err(ApiError::new(
@@ -231,7 +231,7 @@ impl ReusableUploads {
         &self,
         prepared: Value,
         bytes: Bytes,
-        session: &watch::Receiver<bool>,
+        session: &watch::Receiver<u64>,
     ) -> Result<SavedUpload> {
         assert_session(session)?;
         if prepared.get("state").and_then(Value::as_str) == Some("ready") {
@@ -273,7 +273,7 @@ impl ReusableUploads {
         &self,
         path: &str,
         body: &Value,
-        session: &watch::Receiver<bool>,
+        session: &watch::Receiver<u64>,
     ) -> Result<Value> {
         for attempt in 0..=4 {
             assert_session(session)?;
@@ -297,7 +297,7 @@ impl ReusableUploads {
             .is_some_and(|until| until > Instant::now())
     }
 
-    async fn can_save(&self, session: &watch::Receiver<bool>) -> Result<bool> {
+    async fn can_save(&self, session: &watch::Receiver<u64>) -> Result<bool> {
         let mut state = self.inner.availability.lock().await;
         refresh_session(&mut state);
         assert_session(session)?;
@@ -321,7 +321,7 @@ impl ReusableUploads {
     }
 }
 
-fn assert_session(session: &watch::Receiver<bool>) -> Result<()> {
+fn assert_session(session: &watch::Receiver<u64>) -> Result<()> {
     if session.has_changed().unwrap_or(true) {
         Err(Error::InvalidInput(
             "The account changed. Select the upload again.".into(),

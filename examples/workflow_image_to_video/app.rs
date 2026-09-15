@@ -173,7 +173,7 @@ fn build(args: &Args) -> Result<ProjectRequest> {
     }
     let width = args.width.unwrap_or(config.width);
     let height = args.height.unwrap_or(config.height);
-    if width % config.grid != 0 || height % config.grid != 0 {
+    if !width.is_multiple_of(config.grid) || !height.is_multiple_of(config.grid) {
         bail!("dimensions must be divisible by {}", config.grid);
     }
     let fps = args.fps.unwrap_or(config.fps);

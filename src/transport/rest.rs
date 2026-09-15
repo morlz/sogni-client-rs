@@ -27,6 +27,7 @@ pub struct RestClient {
     base_url: Url,
     auth: AuthManager,
     authenticated_http: reqwest::Client,
+    streaming_http: reqwest::Client,
     cookies: Arc<ClearableCookieStore>,
     media_http: reqwest::Client,
     timeout: Duration,
@@ -54,6 +55,7 @@ impl RestClient {
             base_url,
             auth,
             authenticated_http: http.authenticated,
+            streaming_http: http.streaming,
             cookies: http.cookies,
             media_http: http.media,
             timeout,
@@ -96,22 +98,10 @@ impl RestClient {
         headers: Option<HeaderMap>,
         timeout: Option<Duration>,
     ) -> Result<reqwest::Response> {
-        let mut request_headers = self.auth.headers().await?;
-        if let Some(headers) = headers {
-            request_headers.extend(headers);
-        }
         let url = self.url(path)?;
-        let (cookie_generation, cookie) = self.cookies.request_header(&url);
-        if !request_headers.contains_key(COOKIE) {
-            if let Some(mut cookie) = cookie {
-                cookie.set_sensitive(true);
-                request_headers.insert(COOKIE, cookie);
-            }
-        }
         let mut request = self
             .authenticated_http
-            .request(method, url)
-            .headers(request_headers)
+            .request(method, url.clone())
             .timeout(timeout.unwrap_or(self.timeout));
         if let Some(query) = query {
             request = request.query(&query_pairs(query));
@@ -119,7 +109,35 @@ impl RestClient {
         if let Some(body) = body {
             request = request.json(&drop_nulls(body.clone()));
         }
-        let response = request.send().await?;
+        self.send_authenticated(request, &url, headers).await
+    }
+
+    async fn send_authenticated(
+        &self,
+        request: reqwest::RequestBuilder,
+        url: &Url,
+        headers: Option<HeaderMap>,
+    ) -> Result<reqwest::Response> {
+        let (version, mut request_headers) = self.auth.headers().await?;
+        if let Some(headers) = headers {
+            request_headers.extend(headers);
+        }
+        let (cookie_generation, cookie) = self.cookies.request_header(url);
+        if !request_headers.contains_key(COOKIE) {
+            if let Some(mut cookie) = cookie {
+                cookie.set_sensitive(true);
+                request_headers.insert(COOKIE, cookie);
+            }
+        }
+        if self.auth.version() != version {
+            return Err(Error::InvalidInput(
+                "account session changed before request".into(),
+            ));
+        }
+        let response = request.headers(request_headers).send().await?;
+        if response.status() == StatusCode::UNAUTHORIZED {
+            self.auth.clear_if_version(version);
+        }
         self.cookies
             .store_response(cookie_generation, response.headers(), response.url());
         Ok(response)
@@ -132,9 +150,6 @@ impl RestClient {
             .get(reqwest::header::RETRY_AFTER)
             .and_then(|value| value.to_str().ok())
             .map(str::to_owned);
-        if status == StatusCode::UNAUTHORIZED && self.auth.is_authenticated() {
-            self.auth.clear();
-        }
         let text = response.text().await?;
         let parsed = if text.trim().is_empty() {
             None
@@ -196,8 +211,8 @@ impl RestClient {
         media_upload::put(self, url, data, content_type).await
     }
 
-    pub(crate) fn auth_updates(&self) -> tokio::sync::watch::Receiver<bool> {
-        self.auth.subscribe()
+    pub(crate) fn auth_updates(&self) -> tokio::sync::watch::Receiver<u64> {
+        self.auth.subscribe_session()
     }
 
     /// Transfer a write-once saved asset using only the server's signed headers.
@@ -351,8 +366,13 @@ impl RestClient {
             reqwest::header::ACCEPT,
             reqwest::header::HeaderValue::from_static("text/event-stream"),
         );
+        let url = self.url(path)?;
+        let mut request = self.streaming_http.get(url.clone());
+        if let Some(query) = query {
+            request = request.query(&query_pairs(query));
+        }
         let response = self
-            .raw_request(Method::GET, path, query, None, Some(headers), None)
+            .send_authenticated(request, &url, Some(headers))
             .await?;
         if !response.status().is_success() {
             self.process_response(response).await?;

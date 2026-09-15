@@ -1,150 +1,69 @@
-name: Publish to crates.io
+name: GitHub alpha release
 
 on:
-  workflow_call:
-    secrets:
-      CARGO_REGISTRY_TOKEN:
-        required: true
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: crates-io-sogni-client
+  group: github-alpha-release
   cancel-in-progress: false
-
-env:
-  CARGO_TERM_COLOR: always
-  RUSTFLAGS: -Dwarnings
 
 jobs:
   verify:
-    name: Verify release
-    if: >-
-      github.event_name == 'push' &&
-      github.repository == 'morlz/sogni-client-rs' &&
-      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    if: github.repository == 'Sogni-AI/sogni-client-rs' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    env:
+      RUSTFLAGS: -Dwarnings
+      RUSTDOCFLAGS: -Dwarnings
     outputs:
       version: ${{ steps.release.outputs.version }}
       already_published: ${{ steps.release.outputs.already_published }}
     steps:
-      - name: Check out the revision that passed CI
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
-
-      - name: Verify source, version, changelog, and registry state
+      - name: Verify release identity
         id: release
         run: python3 .github/scripts/release.py verify
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-
-      - name: Install Rust 1.85
-        if: steps.release.outputs.already_published == 'false'
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with:
-          toolchain: "1.85"
+          toolchain: stable
           components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - run: cargo fmt --all --check
+      - run: cargo test --all-targets --all-features --locked
+      - run: cargo test --all-targets --no-default-features --locked
+      - run: cargo test --doc --all-features --locked
+      - run: cargo clippy --all-targets --all-features --locked -- -D warnings
+      - run: cargo clippy --all-targets --no-default-features --locked -- -D warnings
+      - run: cargo doc --lib --examples --all-features --no-deps --locked
+      - run: python3 .github/scripts/test_release.py
+      - run: cargo package --locked
+      - run: cargo install cargo-audit --version 0.22.2 --locked
+      - run: cargo audit --deny warnings
 
-      - name: Cache Rust build artifacts
-        if: steps.release.outputs.already_published == 'false'
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
-
-      - name: Check formatting
-        if: steps.release.outputs.already_published == 'false'
-        run: cargo fmt --all --check
-      - name: Test all features
-        if: steps.release.outputs.already_published == 'false'
-        run: cargo test --all-targets --all-features --locked
-      - name: Test without default features
-        if: steps.release.outputs.already_published == 'false'
-        run: cargo test --all-targets --no-default-features --locked
-      - name: Lint all features
-        if: steps.release.outputs.already_published == 'false'
-        run: cargo clippy --all-targets --all-features --locked -- -D warnings
-      - name: Lint without default features
-        if: steps.release.outputs.already_published == 'false'
-        run: cargo clippy --all-targets --no-default-features --locked -- -D warnings
-      - name: Build examples with all features
-        if: steps.release.outputs.already_published == 'false'
-        run: cargo build --examples --all-features --locked
-      - name: Build examples without default features
-        if: steps.release.outputs.already_published == 'false'
-        run: cargo build --examples --no-default-features --locked
-      - name: Build API documentation with all features
-        if: steps.release.outputs.already_published == 'false'
-        env:
-          RUSTDOCFLAGS: -Dwarnings
-        run: cargo doc --lib --examples --all-features --no-deps --locked
-      - name: Build API documentation without default features
-        if: steps.release.outputs.already_published == 'false'
-        env:
-          RUSTDOCFLAGS: -Dwarnings
-        run: cargo doc --lib --examples --no-default-features --no-deps --locked
-      - name: Inspect package contents
-        if: steps.release.outputs.already_published == 'false'
-        run: cargo package --package sogni-client --locked --list
-      - name: Verify package archive
-        if: steps.release.outputs.already_published == 'false'
-        run: cargo package --package sogni-client --locked
-      - name: Dry-run crates.io publication
-        if: steps.release.outputs.already_published == 'false'
-        run: cargo publish --package sogni-client --registry crates-io --locked --dry-run
-
-  tag:
-    name: Preserve immutable source tag
+  publish:
     needs: verify
     if: needs.verify.outputs.already_published == 'false'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Check out the verified revision
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Create or verify the version tag
-        run: python3 .github/scripts/release.py tag
+      - name: Preserve tag and publish prerelease
         env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           VERSION: ${{ needs.verify.outputs.version }}
-          GITHUB_TOKEN: ${{ github.token }}
-
-  publish:
-    name: Publish sogni-client ${{ needs.verify.outputs.version }}
-    needs: [verify, tag]
-    if: needs.verify.outputs.already_published == 'false'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Check out the verified revision
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-      - name: Install Rust 1.85
-        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
-        with:
-          toolchain: "1.85"
-      - name: Publish to crates.io
-        shell: bash
         run: |
-          set -euo pipefail
-          if [[ -z "$CARGO_REGISTRY_TOKEN" ]]; then
-            echo "The repository secret CARGO_REGISTRY_TOKEN is required." >&2
-            exit 1
-          fi
-          cargo publish --package sogni-client --registry crates-io --locked --no-verify
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-      - name: Confirm published version
-        run: python3 .github/scripts/release.py published
-        env:
-          VERSION: ${{ needs.verify.outputs.version }}
+          python3 .github/scripts/release.py tag
+          gh release create "v$VERSION" --verify-tag --prerelease --latest=false --title "Rust community alpha $VERSION" --notes-file ALPHA_RELEASE.md

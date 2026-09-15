@@ -1,15 +1,15 @@
 [package]
 name = "sogni-client"
-version = "5.50.2"
+version = "5.50.3-alpha.1"
 edition = "2024"
-rust-version = "1.85"
-description = "Production-ready async Rust SDK for the Sogni Supernet"
+rust-version = "1.88"
+description = "Community-origin Rust SDK for Sogni, maintained as a Sogni-AI alpha fork"
 license = "ISC"
-repository = "https://github.com/morlz/sogni-client-rs"
+repository = "https://github.com/Sogni-AI/sogni-client-rs"
 homepage = "https://www.sogni.ai"
-documentation = "https://docs.rs/sogni-client"
+documentation = "https://github.com/Sogni-AI/sogni-client-rs#readme"
 readme = "README.md"
-publish = ["crates-io"]
+publish = false
 keywords = ["sogni", "generative-ai", "image", "video", "llm"]
 categories = ["api-bindings", "asynchronous", "multimedia"]
 include = [
@@ -21,6 +21,9 @@ include = [
   "CHANGELOG.md",
   "LICENSE",
   "README.md",
+  "CONTRIBUTING.md",
+  "UPSTREAM.md",
+  "ALPHA_RELEASE.md",
   "SECURITY.md",
   "llms.txt",
   "llms-full.txt",
@@ -45,12 +48,14 @@ pbkdf2 = { version = "0.12.2", optional = true }
 rand = "0.9.2"
 regex = "1.11.2"
 reqwest = { version = "0.12.23", default-features = false, features = ["cookies", "http2", "json", "multipart", "rustls-tls-native-roots", "socks", "stream"] }
-rustls = { version = "0.23.43", default-features = false, features = ["ring", "std", "tls12"] }
+rustls = { version = "0.23.45", default-features = false, features = ["ring", "std", "tls12"] }
 rustls-native-certs = "0.8.4"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.143"
 sha2 = "0.10.9"
 thiserror = "2.0.16"
+# Keep the transitive cookie parser on a patched version for Git consumers too.
+time = { version = "0.3.47", default-features = false }
 tokio = { version = "1.47.1", features = ["fs", "io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
 tokio-socks = "=0.5.3"
 tokio-tungstenite = { version = "0.27.0", default-features = false, features = ["connect", "rustls-tls-native-roots"] }
@@ -61,12 +66,12 @@ uuid = { version = "1.18.1", features = ["serde", "v4"] }
 zeroize = "1.8.1"
 
 [dev-dependencies]
-anyhow = "=1.0.99"
+anyhow = "1.0.103"
 axum = { version = "=0.8.4", features = ["http1", "json", "tokio"] }
 clap = { version = "=4.5.47", features = ["derive"] }
 image = { version = "=0.25.5", default-features = false, features = ["gif", "jpeg", "png", "webp"] }
 pretty_assertions = "1.4.1"
-rustls = { version = "0.23.43", default-features = false, features = ["aws_lc_rs"] }
+rustls = { version = "0.23.45", default-features = false, features = ["aws_lc_rs"] }
 tempfile = "3.21.0"
 tokio = { version = "1.47.1", features = ["test-util"] }
 
@@ -76,3 +81,9 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [lints.rust]
 unsafe_code = "forbid"
+
+[lints.clippy]
+# Preserve upstream syntax conventions when raising the dependency MSRV,
+# keeping recurring upstream merges focused on behavior.
+collapsible_if = "allow"
+collapsible_match = "allow"

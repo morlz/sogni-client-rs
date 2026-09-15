@@ -1,4 +1,4 @@
-"""Release identity, registry preflight, and immutable tag checks for CI."""
+"""GitHub alpha release identity and immutable tag checks."""
 
 import argparse
 import json
@@ -10,19 +10,19 @@ import tomllib
 import urllib.error
 import urllib.request
 
-REPOSITORY = "morlz/sogni-client-rs"
+REPOSITORY = "Sogni-AI/sogni-client-rs"
 PACKAGE = "sogni-client"
 VERSION_PATTERN = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?"
 
 
-def require_trusted_push(environment):
+def require_release_dispatch(environment):
     if environment.get("GITHUB_REPOSITORY") != REPOSITORY:
         raise ValueError("Publishing is restricted to the release repository.")
     branch = environment.get("DEFAULT_BRANCH")
-    if not branch or environment.get("GITHUB_EVENT_NAME") != "push":
-        raise ValueError("Publishing requires a push to the default branch.")
+    if branch != "main" or environment.get("GITHUB_EVENT_NAME") != "workflow_dispatch":
+        raise ValueError("Publishing requires manual dispatch from main.")
     if environment.get("GITHUB_REF") != f"refs/heads/{branch}":
-        raise ValueError("Publishing requires a push to the default branch.")
+        raise ValueError("Publishing requires manual dispatch from main.")
     if not re.fullmatch(r"[0-9a-f]{40}", environment.get("GITHUB_SHA", "")):
         raise ValueError("Publishing requires an exact source commit.")
 
@@ -30,6 +30,8 @@ def require_trusted_push(environment):
 def require_version(version):
     if not isinstance(version, str) or not re.fullmatch(VERSION_PATTERN, version):
         raise ValueError("The release version must be a semantic version without build metadata.")
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+-alpha\.[1-9][0-9]*", version):
+        raise ValueError("This fork publishes alpha versions only.")
     return version
 
 
@@ -39,6 +41,8 @@ def release_version(root):
         raise ValueError("Unexpected package name.")
     if package["repository"] != f"https://github.com/{REPOSITORY}":
         raise ValueError("Cargo.toml must identify the release repository.")
+    if package.get("publish") is not False:
+        raise ValueError("Cargo registry publication must remain disabled.")
     version = require_version(package["version"])
     locked = tomllib.loads((root / "Cargo.lock").read_text(encoding="utf-8"))["package"]
     if not any(p["name"] == PACKAGE and p["version"] == version and "source" not in p for p in locked):
@@ -70,12 +74,13 @@ def request_json(url, *, token=None, body=None, missing_ok=False):
 
 def already_published(version, request=request_json):
     require_version(version)
-    record = request(f"https://crates.io/api/v1/crates/{PACKAGE}/{version}", missing_ok=True)
+    record = request(f"https://api.github.com/repos/{REPOSITORY}/releases/tags/v{version}", missing_ok=True)
     if record is None:
         return False
-    returned = record.get("version") if isinstance(record, dict) else None
-    if not isinstance(returned, dict) or returned.get("num") != version:
-        raise ValueError("crates.io did not return the exact requested version.")
+    if not isinstance(record, dict) or record.get("tag_name") != f"v{version}" or not record.get("prerelease"):
+        raise ValueError("GitHub did not return the expected alpha prerelease.")
+    if record.get("draft"):
+        raise ValueError("A draft release exists; review it before publishing.")
     return True
 
 
@@ -111,7 +116,7 @@ def output(name, value):
 
 
 def verify_source():
-    require_trusted_push(os.environ)
+    require_release_dispatch(os.environ)
     branch = os.environ["DEFAULT_BRANCH"]
     commit = os.environ["GITHUB_SHA"]
     actual = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
@@ -135,10 +140,10 @@ def main():
     if args.command == "verify":
         verify_source()
     elif args.command == "tag":
-        require_trusted_push(os.environ)
+        require_release_dispatch(os.environ)
         ensure_tag(os.environ["VERSION"], os.environ["GITHUB_SHA"], os.environ.get("GITHUB_TOKEN"))
     elif not already_published(os.environ["VERSION"]):
-        raise ValueError("The released version is not available on crates.io yet.")
+        raise ValueError("The released version is not available on GitHub yet.")
 
 
 if __name__ == "__main__":
