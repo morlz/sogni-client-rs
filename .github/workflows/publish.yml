@@ -1,15 +1,16 @@
 name: Publish to crates.io
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_call:
+    secrets:
+      CARGO_REGISTRY_TOKEN:
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: crates-io-${{ github.ref }}
+  group: crates-io-sogni-client
   cancel-in-progress: false
 
 env:
@@ -19,158 +20,131 @@ env:
 jobs:
   verify:
     name: Verify release
+    if: >-
+      github.event_name == 'push' &&
+      github.repository == 'morlz/sogni-client-rs' &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
     permissions:
       contents: read
     outputs:
       version: ${{ steps.release.outputs.version }}
-      already_published: ${{ steps.registry.outputs.already_published }}
+      already_published: ${{ steps.release.outputs.already_published }}
     steps:
-      - name: Check out the tagged revision
+      - name: Check out the revision that passed CI
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Verify source, version, changelog, and registry state
+        id: release
+        run: python3 .github/scripts/release.py verify
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+
       - name: Install Rust 1.85
+        if: steps.release.outputs.already_published == 'false'
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with:
           toolchain: "1.85"
           components: clippy, rustfmt
 
       - name: Cache Rust build artifacts
+        if: steps.release.outputs.already_published == 'false'
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
-      - name: Verify tag, manifest, lockfile, changelog, and branch
-        id: release
-        shell: bash
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-        run: |
-          set -euo pipefail
-          if [[ "$GITHUB_REF_TYPE" != "tag" ]]; then
-            echo "Publishing requires an existing version tag." >&2
-            exit 1
-          fi
-
-          version="$(cargo metadata --locked --no-deps --format-version 1 | jq -er '.packages[] | select(.name == "sogni-client") | .version')"
-          if [[ "$GITHUB_REF_NAME" != "v$version" ]]; then
-            echo "Tag $GITHUB_REF_NAME does not match Cargo.toml version $version." >&2
-            exit 1
-          fi
-          if [[ "$version" == "5.27.1" ]]; then
-            echo "Version 5.27.1 contains post-upstream contract work; coordinate and set the next release version before publishing." >&2
-            exit 1
-          fi
-
-          lock_version="$(awk '
-            $0 == "[[package]]" { in_package = 0 }
-            $0 == "name = \"sogni-client\"" { in_package = 1; next }
-            in_package && /^version = / {
-              value = $0
-              sub(/^version = \"/, "", value)
-              sub(/\"$/, "", value)
-              print value
-              exit
-            }
-          ' Cargo.lock)"
-          if [[ "$lock_version" != "$version" ]]; then
-            echo "Cargo.lock version $lock_version does not match Cargo.toml version $version." >&2
-            exit 1
-          fi
-          if ! grep -Fq "## [$version]" CHANGELOG.md; then
-            echo "CHANGELOG.md has no release heading for $version." >&2
-            exit 1
-          fi
-
-          git fetch --no-tags origin "$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH"
-          tag_commit="$(git rev-list -n 1 "$GITHUB_REF_NAME")"
-          if ! git merge-base --is-ancestor "$tag_commit" "origin/$DEFAULT_BRANCH"; then
-            echo "Tag commit is not contained in the default branch $DEFAULT_BRANCH." >&2
-            exit 1
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-
-      - name: Check whether this version already exists
-        id: registry
-        shell: bash
-        env:
-          VERSION: ${{ steps.release.outputs.version }}
-        run: |
-          set -euo pipefail
-          status="$(curl --silent --show-error --location --max-time 30 \
-            --output crates-io-response.json --write-out '%{http_code}' \
-            --user-agent 'sogni-client-rs-release-check' \
-            "https://crates.io/api/v1/crates/sogni-client/$VERSION")"
-          case "$status" in
-            200)
-              reported="$(jq -er '.version.num' crates-io-response.json)"
-              if [[ "$reported" != "$VERSION" ]]; then
-                echo "crates.io returned version $reported for requested version $VERSION." >&2
-                exit 1
-              fi
-              echo "already_published=true" >> "$GITHUB_OUTPUT"
-              echo "sogni-client $VERSION is already published; the publish job will be skipped." >> "$GITHUB_STEP_SUMMARY"
-              ;;
-            404)
-              echo "already_published=false" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "crates.io preflight returned HTTP $status; refusing to publish." >&2
-              exit 1
-              ;;
-          esac
-
       - name: Check formatting
+        if: steps.release.outputs.already_published == 'false'
         run: cargo fmt --all --check
       - name: Test all features
+        if: steps.release.outputs.already_published == 'false'
         run: cargo test --all-targets --all-features --locked
       - name: Test without default features
+        if: steps.release.outputs.already_published == 'false'
         run: cargo test --all-targets --no-default-features --locked
       - name: Lint all features
+        if: steps.release.outputs.already_published == 'false'
         run: cargo clippy --all-targets --all-features --locked -- -D warnings
       - name: Lint without default features
+        if: steps.release.outputs.already_published == 'false'
         run: cargo clippy --all-targets --no-default-features --locked -- -D warnings
       - name: Build examples with all features
+        if: steps.release.outputs.already_published == 'false'
         run: cargo build --examples --all-features --locked
       - name: Build examples without default features
+        if: steps.release.outputs.already_published == 'false'
         run: cargo build --examples --no-default-features --locked
       - name: Build API documentation with all features
+        if: steps.release.outputs.already_published == 'false'
         env:
           RUSTDOCFLAGS: -Dwarnings
         run: cargo doc --lib --examples --all-features --no-deps --locked
       - name: Build API documentation without default features
+        if: steps.release.outputs.already_published == 'false'
         env:
           RUSTDOCFLAGS: -Dwarnings
         run: cargo doc --lib --examples --no-default-features --no-deps --locked
       - name: Inspect package contents
+        if: steps.release.outputs.already_published == 'false'
         run: cargo package --package sogni-client --locked --list
       - name: Verify package archive
+        if: steps.release.outputs.already_published == 'false'
         run: cargo package --package sogni-client --locked
       - name: Dry-run crates.io publication
-        if: steps.registry.outputs.already_published == 'false'
+        if: steps.release.outputs.already_published == 'false'
         run: cargo publish --package sogni-client --registry crates-io --locked --dry-run
 
-  publish:
-    name: Publish sogni-client ${{ needs.verify.outputs.version }}
+  tag:
+    name: Preserve immutable source tag
     needs: verify
     if: needs.verify.outputs.already_published == 'false'
     runs-on: ubuntu-latest
-    environment:
-      name: crates-io
-      url: https://crates.io/crates/sogni-client/${{ needs.verify.outputs.version }}
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the verified revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Create or verify the version tag
+        run: python3 .github/scripts/release.py tag
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          VERSION: ${{ needs.verify.outputs.version }}
+          GITHUB_TOKEN: ${{ github.token }}
+
+  publish:
+    name: Publish sogni-client ${{ needs.verify.outputs.version }}
+    needs: [verify, tag]
+    if: needs.verify.outputs.already_published == 'false'
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - name: Check out the tagged revision
+      - name: Check out the verified revision
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
       - name: Install Rust 1.85
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with:
           toolchain: "1.85"
       - name: Publish to crates.io
-        run: cargo publish --package sogni-client --registry crates-io --locked --no-verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$CARGO_REGISTRY_TOKEN" ]]; then
+            echo "The repository secret CARGO_REGISTRY_TOKEN is required." >&2
+            exit 1
+          fi
+          cargo publish --package sogni-client --registry crates-io --locked --no-verify
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: Confirm published version
+        run: python3 .github/scripts/release.py published
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
