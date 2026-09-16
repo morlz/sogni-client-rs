@@ -9,7 +9,10 @@ use super::{
     api::ChatInner,
     types::{ActiveChat, ChatChunk, completion_from_state},
 };
-use crate::{ChatError, event::EventBus};
+use crate::{
+    ChatError,
+    event::{EventBus, ScopedEvent},
+};
 mod transport_recovery;
 pub(super) use transport_recovery::{TransportRecovery, submitted, transport_error};
 
@@ -19,7 +22,7 @@ const CHAT_EVENT_LAG_MESSAGE: &str =
     "chat event stream lagged; completion state could not be recovered";
 
 pub(super) fn listen_for_chat_events(inner: &Arc<ChatInner>) {
-    let mut receiver = inner.client.subscribe();
+    let mut receiver = inner.client.subscribe_scoped();
     let weak = Arc::downgrade(inner);
     tokio::spawn(async move {
         loop {
@@ -38,23 +41,31 @@ pub(super) fn listen_for_chat_events(inner: &Arc<ChatInner>) {
             let Some(inner) = weak.upgrade() else {
                 return;
             };
-            match event.name.as_str() {
-                "swarmLLMModels" => handle_models(&inner, &event.data),
-                "jobTokens" => handle_tokens(&inner, &event.data),
-                "llmJobResult" => handle_result(&inner, &event.data),
-                "llmJobError" => handle_error(&inner, &event.data),
-                "jobState" => handle_state(&inner, &event.data),
-                "connecting" => transport_recovery::lost(&inner),
-                "disconnected" => transport_recovery::closed(&inner, &event.data),
-                "authenticated" => transport_recovery::authenticated(&inner, &event.data),
-                _ => {}
-            }
+            handle_chat_event(&inner, event);
         }
     });
 }
 
+fn handle_chat_event(inner: &Arc<ChatInner>, scoped: ScopedEvent) {
+    let event = scoped.event;
+    match event.name.as_str() {
+        "swarmLLMModels" => handle_models(inner, &event.data),
+        "jobTokens" => handle_tokens(inner, &event.data),
+        "llmJobResult" => handle_result(inner, &event.data),
+        "llmJobError" => handle_error(inner, &event.data),
+        "jobState" => handle_state(inner, &event.data),
+        "connecting" => transport_recovery::lost(inner, scoped.session),
+        "disconnected" => transport_recovery::closed(inner, &event.data, scoped.session),
+        "authenticated" => transport_recovery::authenticated(inner, &event.data, scoped.session),
+        _ => {}
+    }
+}
+
 fn fail_active_chats_after_lag(inner: &ChatInner) {
     let affected = take_active_snapshot(&inner.active);
+    for id in affected.keys() {
+        inner.recovery.lock().forget(id);
+    }
     fail_lagged_snapshot(&inner.events, affected);
 }
 
@@ -176,7 +187,7 @@ fn handle_result(inner: &ChatInner, data: &Value) {
     let Some(job_id) = data.get("jobID").and_then(Value::as_str) else {
         return;
     };
-    transport_recovery::alive(inner, job_id);
+    inner.recovery.lock().forget(job_id);
     let Some(stream) = inner.active.write().remove(job_id) else {
         return;
     };
@@ -206,7 +217,7 @@ fn handle_error(inner: &ChatInner, data: &Value) {
     let Some(job_id) = data.get("jobID").and_then(Value::as_str) else {
         return;
     };
-    transport_recovery::alive(inner, job_id);
+    inner.recovery.lock().forget(job_id);
     let Some(stream) = inner.active.write().remove(job_id) else {
         return;
     };

@@ -19,6 +19,7 @@ pub use rest::{RestClient, SseEvent, SseStream};
 #[derive(Clone)]
 pub(crate) struct HttpClients {
     authenticated: reqwest::Client,
+    streaming: reqwest::Client,
     cookies: Arc<ClearableCookieStore>,
     media: reqwest::Client,
     strict_media: bool,
@@ -57,15 +58,22 @@ impl HttpClients {
         let mut media = reqwest::Client::builder()
             .timeout(request_timeout)
             .redirect(reqwest::redirect::Policy::limited(10))
+            .user_agent(user_agent.clone());
+        let mut streaming = reqwest::Client::builder()
+            .connect_timeout(request_timeout)
+            .read_timeout(request_timeout)
+            .redirect(reqwest::redirect::Policy::none())
             .user_agent(user_agent);
         if let Some(proxy) = &proxy {
             authenticated = authenticated.proxy(proxy.http_proxy()?);
+            streaming = streaming.proxy(proxy.http_proxy()?);
             media = media.proxy(proxy.http_proxy()?);
         }
         let authenticated = authenticated.build()?;
         let media = media.build()?;
         Ok(Self {
             authenticated,
+            streaming: streaming.build()?,
             cookies,
             media,
             strict_media,

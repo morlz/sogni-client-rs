@@ -211,6 +211,7 @@ pub(super) struct ChatStreamState {
 }
 
 pub(super) struct ActiveChat {
+    pub(super) session: u64,
     pub(super) sender: mpsc::UnboundedSender<Result<ChatChunk>>,
     pub(super) state: Arc<RwLock<ChatStreamState>>,
     pub(super) changed: Arc<Notify>,

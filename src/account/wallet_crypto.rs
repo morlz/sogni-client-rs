@@ -50,7 +50,7 @@ impl AccountApi {
         wallet
             .sign_typed_data(&typed)
             .await
-            .map(|signature| signature.to_string())
+            .map(|signature| format!("0x{signature}"))
             .map_err(|error| Error::Protocol(format!("failed to sign EIP-712 payload: {error}")))
     }
 
@@ -97,7 +97,7 @@ pub(super) async fn sign_dynamic(wallet: &LocalWallet, permit: &Value) -> Result
     wallet
         .sign_typed_data(&typed)
         .await
-        .map(|signature| signature.to_string())
+        .map(|signature| format!("0x{signature}"))
         .map_err(|error| Error::Protocol(format!("failed to sign EIP-712 permit: {error}")))
 }
 

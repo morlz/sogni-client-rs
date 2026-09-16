@@ -2,5 +2,18 @@
   "repository": "https://github.com/Sogni-AI/sogni-client",
   "version": "5.50.0",
   "commit": "452e78967a21ab80977c11f16517072d1836405a",
-  "synced_at": "2026-09-15"
+  "synced_at": "2026-09-15",
+  "rust_fork": {
+    "repository": "https://github.com/Sogni-AI/sogni-client-rs",
+    "branch": "main",
+    "commit": "38b893c377c905816ae7a2365c0bc10a0dbc9a3f",
+    "version": "5.50.3-alpha.1",
+    "synced_at": "2026-09-16",
+    "policy_exclusions": [
+      "Retain morlz/sogni-client-rs identity, dev CI, and crates.io publication.",
+      "Retain local agent guidance and validated reusable publication, release guards, immutable tags, and CARGO_REGISTRY_TOKEN handling.",
+      "Exclude fork-only alpha distribution, publish=false, main-only CI, reverse update monitor, contribution automation, and ownership or approval policies.",
+      "Do not create baseline-only commits, no-op merges, or releases for echoed destination changes or excluded policy changes; advance this pointer with the next substantive sync."
+    ]
+  }
 }

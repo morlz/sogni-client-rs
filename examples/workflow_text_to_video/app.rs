@@ -155,7 +155,8 @@ fn build(args: &Args) -> Result<ProjectRequest> {
     let config = spec(&args.model)?;
     let width = args.width.unwrap_or(config.width);
     let height = args.height.unwrap_or(config.height);
-    if width % config.dimension_step != 0 || height % config.dimension_step != 0 {
+    if !width.is_multiple_of(config.dimension_step) || !height.is_multiple_of(config.dimension_step)
+    {
         bail!(
             "dimensions must be divisible by {} for this model",
             config.dimension_step

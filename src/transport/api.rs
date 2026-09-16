@@ -105,6 +105,16 @@ impl ApiClient {
         self.auth.subscribe()
     }
 
+    pub(crate) fn subscribe_scoped(
+        &self,
+    ) -> tokio::sync::broadcast::Receiver<crate::event::ScopedEvent> {
+        self.events.subscribe_scoped()
+    }
+
+    pub(crate) fn auth_session(&self) -> u64 {
+        self.auth.version().session
+    }
+
     pub async fn start(&self) -> Result<()> {
         if self.closed.load(Ordering::Acquire) {
             return Err(Error::Closed);
@@ -131,6 +141,20 @@ impl ApiClient {
             Error::InvalidInput("this client was created with disable_socket=true".into())
         })?;
         socket.get(path, query).await
+    }
+
+    pub(crate) async fn send_socket_in_session<T: Serialize>(
+        &self,
+        message_type: &str,
+        data: &T,
+        session: u64,
+    ) -> Result<()> {
+        let socket = self.socket.as_ref().ok_or_else(|| {
+            Error::InvalidInput("this client was created with disable_socket=true".into())
+        })?;
+        socket
+            .send_in_session(message_type, &serde_json::to_value(data)?, session)
+            .await
     }
 
     pub async fn switch_network(&self, network: Network) -> Result<Network> {

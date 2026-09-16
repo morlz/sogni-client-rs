@@ -8,6 +8,15 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.50.3] - 2026-09-16
+
+- Integrate the Sogni-AI Rust fork through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (source version `5.50.3-alpha.1`) while preserving this repository's crates.io release policy and Git history.
+- Include the required `0x` prefix on EIP-712 signatures, verified against an ethers.js fixture.
+- Isolate account sessions across delayed token refreshes, unauthorized REST responses, WebSocket reconnects, queued commands, and reusable uploads.
+- Send only matching cookies on native WebSocket upgrades and keep healthy SSE streams open while enforcing connection and idle-read timeouts.
+- Require patched Rustls, time, and anyhow versions; raise the minimum Rust version to 1.88.
+- Extend the weekly sync to track the TypeScript client and Rust fork independently, with review before execution and no releases for echoed or excluded changes.
+
 ## [5.50.2] - 2026-09-15
 
 - Express the weekly synchronization time in UTC in the README.

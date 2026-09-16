@@ -49,6 +49,7 @@ impl ChatApi {
             Ok(completion) => Ok(completion),
             Err(error) => {
                 self.inner.active.write().remove(&job_id);
+                self.inner.recovery.lock().forget(&job_id);
                 Err(error)
             }
         }
@@ -61,6 +62,7 @@ impl ChatApi {
     }
 
     async fn start_completion(&self, params: &Value, stream: bool) -> Result<ChatStream> {
+        let session = self.inner.client.auth_session();
         require_object(params, "chat params")?;
         let model = required_str(params, "model")?;
         let messages = params
@@ -120,10 +122,14 @@ impl ChatApi {
             ..ChatStreamState::default()
         }));
         let changed = Arc::new(Notify::new());
-        let terminal_epoch = self.inner.recovery.lock().submitting(job_id.clone());
+        self.inner
+            .recovery
+            .lock()
+            .submitting(job_id.clone(), session);
         self.inner.active.write().insert(
             job_id.clone(),
             ActiveChat {
+                session,
                 sender,
                 state: state.clone(),
                 changed: changed.clone(),
@@ -132,17 +138,17 @@ impl ChatApi {
         if let Err(error) = self
             .inner
             .client
-            .send_socket("llmJobRequest", &request)
+            .send_socket_in_session("llmJobRequest", &request, session)
             .await
         {
             self.inner.active.write().remove(&job_id);
-            self.inner.recovery.lock().unsent.remove(&job_id);
+            self.inner.recovery.lock().forget(&job_id);
             if matches!(error, Error::InvalidInput(_)) {
                 return Err(error);
             }
             return Err(super::events::transport_error(&job_id, Some(&error)).into());
         }
-        super::events::submitted(&self.inner, &job_id, terminal_epoch);
+        super::events::submitted(&self.inner, &job_id);
         Ok(ChatStream {
             job_id,
             receiver,

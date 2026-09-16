@@ -1,10 +1,12 @@
-# sogni-client Rust SDK 5.50.2
+# sogni-client Rust SDK 5.50.3
 
 Compatibility: TypeScript 5.50.0 at 452e789; hosted protocol 1.0.0-alpha.42.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
-Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.85.
+Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
+Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
+source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
 Primary documentation: README.md and https://docs.sogni.ai/
 
@@ -22,6 +24,9 @@ Reuse one client. Call `close().await` during graceful shutdown.
 Persist `app_id` across restarts; WebSocket clients now require it explicitly.
 For REST-only APIs, use `.disable_socket(true)` with no app ID. Deferred
 socket startup still requires an ID.
+Account replacement reconnects the socket and rejects commands queued by the
+previous session. Healthy SSE streams can exceed request_timeout, which limits
+connection setup and idle reads instead of total stream duration.
 
 Namespaces:
 

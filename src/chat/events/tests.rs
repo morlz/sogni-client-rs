@@ -23,6 +23,7 @@ pub(super) fn active_chat(job_id: &str) -> (ActiveChat, ChatStream) {
     let changed = Arc::new(Notify::new());
     (
         ActiveChat {
+            session: 0,
             sender,
             state: state.clone(),
             changed: changed.clone(),

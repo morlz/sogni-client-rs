@@ -4,7 +4,7 @@ use std::{
     collections::BTreeMap,
     sync::{
         Arc,
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicU64, Ordering},
     },
     time::Duration,
 };
@@ -32,6 +32,7 @@ enum SocketCommand {
     Send {
         message: Message,
         response: oneshot::Sender<Result<()>>,
+        session: u64,
     },
 }
 
@@ -54,6 +55,7 @@ struct SocketInner {
     command_receiver: Mutex<Option<mpsc::Receiver<SocketCommand>>>,
     connected: watch::Sender<bool>,
     authenticated: AtomicBool,
+    session: AtomicU64,
     task: ParkingMutex<Option<tokio::task::JoinHandle<()>>>,
     cancel: CancellationToken,
     closed: AtomicBool,
@@ -100,6 +102,7 @@ impl SocketTransport {
                 command_receiver: Mutex::new(Some(command_receiver)),
                 connected,
                 authenticated: AtomicBool::new(false),
+                session: AtomicU64::new(0),
                 task: ParkingMutex::new(None),
                 cancel: CancellationToken::new(),
                 closed: AtomicBool::new(false),
@@ -120,6 +123,7 @@ impl SocketTransport {
     pub(super) fn is_authenticated(&self) -> bool {
         self.is_connected()
             && self.inner.auth.is_authenticated()
+            && self.inner.session.load(Ordering::Acquire) == self.inner.auth.version().session
             && self.inner.authenticated.load(Ordering::Acquire)
     }
 
@@ -174,7 +178,22 @@ impl SocketTransport {
     }
 
     pub(super) async fn send(&self, message_type: &str, data: &Value) -> Result<()> {
+        self.send_in_session(message_type, data, self.inner.auth.version().session)
+            .await
+    }
+
+    pub(super) async fn send_in_session(
+        &self,
+        message_type: &str,
+        data: &Value,
+        session: u64,
+    ) -> Result<()> {
         self.start().await?;
+        if self.inner.auth.version().session != session {
+            return Err(Error::InvalidInput(
+                "account session changed before send".into(),
+            ));
+        }
         if !self.inner.auth.is_authenticated() {
             return Err(Error::InvalidInput(
                 "authentication is required for WebSocket operations".into(),
@@ -189,6 +208,7 @@ impl SocketTransport {
             self.inner.commands.send(SocketCommand::Send {
                 message: Message::Text(text.into()),
                 response,
+                session,
             }),
         )
         .await

@@ -3,9 +3,12 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.50.2** implements the TypeScript **5.50.0** public contract through
+Version **5.50.3** implements the TypeScript **5.50.0** public contract through
 [`452e789`](https://github.com/Sogni-AI/sogni-client/commit/452e78967a21ab80977c11f16517072d1836405a),
 including hosted tool definitions from Sogni Protocol `1.0.0-alpha.42`.
+It also includes authentication and streaming fixes from the
+[Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
+See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
 
 ## What is included
 
@@ -32,7 +35,7 @@ select from `projects.get_available_models()` instead.
 
 ## Requirements
 
-- Rust 1.85 or newer
+- Rust 1.88 or newer
 - Tokio runtime
 - A Sogni account token pair or API key
 
@@ -43,7 +46,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client = { version = "5.50.2", default-features = false }
+sogni-client = { version = "5.50.3", default-features = false }
 ```
 
 For development against the repository:
@@ -90,6 +93,10 @@ that original deadline. Input and authorization failures are not retried; this
 does not broadly retry generation requests. The SDK can resend the original
 project request after a server explicitly refuses admission during a restart;
 an uncertain socket send still requires reconciliation.
+
+For SSE event streams, `request_timeout` limits connection setup and idle reads,
+not the total stream duration. Incoming data resets the read timeout. Drop the
+stream to stop listening; use the API's cancel operation to cancel remote work.
 
 The service requires the `sogni-client` WebSocket protocol-family identifier for
 API-key authentication. The wire field uses that family with the actual compatible
@@ -517,7 +524,12 @@ checkout with `scripts/update-generation-parity-fixtures.cjs` and
 recorded upstream revision. CI publishes a new manifest version to crates.io after a
 successful default-branch push; see [RELEASING.md](RELEASING.md) for registry
 credentials and release checks. Weekly synchronization runs as a Codex task on
-Mondays at 06:00 UTC, using the recorded upstream baseline.
+Mondays at 06:00 UTC for both the TypeScript client and
+[`Sogni-AI/sogni-client-rs`](https://github.com/Sogni-AI/sogni-client-rs), using
+independent baselines in `.github/upstream-sync.json`. Applicable changes are
+reviewed, tested, committed, and pushed before CI publishes a new crate version.
+Echoed changes and fork-specific policy changes do not create empty merge
+commits or releases; see [UPSTREAM.md](UPSTREAM.md).
 
 See [Sogni documentation](https://docs.sogni.ai/),
 [`sogni-client`](https://github.com/Sogni-AI/sogni-client), and

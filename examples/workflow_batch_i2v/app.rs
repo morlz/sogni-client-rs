@@ -176,7 +176,7 @@ fn build(args: &Args, image: &Path, inferred: Option<(u32, u32)>) -> Result<Proj
     let height = args
         .height
         .unwrap_or_else(|| rounded_dimension(source.1, config.grid, min, max));
-    if width % config.grid != 0 || height % config.grid != 0 {
+    if !width.is_multiple_of(config.grid) || !height.is_multiple_of(config.grid) {
         bail!("dimensions must be divisible by {}", config.grid);
     }
     let fps = args.fps.unwrap_or(config.fps);

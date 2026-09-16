@@ -1,14 +1,17 @@
 # sogni-client Rust SDK complete agent reference
 
-Crate version: 5.50.2. Compatible with TypeScript 5.50.0 at upstream commit
+Crate version: 5.50.3. Compatible with TypeScript 5.50.0 at upstream commit
 452e78967a21ab80977c11f16517072d1836405a; hosted protocol 1.0.0-alpha.42.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
-Async runtime: Tokio. All public network methods return
+Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client = "5.50.2"`; disable default features for clients
+Dependency: `sogni-client = "5.50.3"`; disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
+Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
+commit 38b893c377c905816ae7a2365c0bc10a0dbc9a3f, source version 5.50.3-alpha.1.
+TypeScript and Rust-fork baselines are independent; see UPSTREAM.md.
 
 ## Construction and authentication
 
@@ -35,6 +38,15 @@ Authorization value and refresh token; JWT expiry drives refresh through
 `/v1/account/refresh-token`. `check_auth` is only for cookie-auth flows.
 Username/password authentication requires the default `wallet` feature and is
 available through `account.login` or `account.create_account`.
+Replacing the account reconnects the WebSocket and rejects commands queued by
+the prior session. Delayed token refreshes and unauthorized responses cannot
+replace or clear a newer session. Cookie-auth sockets send only cookies matching
+the WebSocket's host, path, and security requirements. EIP-712 signatures retain
+the wire-required 0x prefix.
+
+For SSE streams, `request_timeout` limits connection setup and idle reads,
+not total stream duration. Data resets the idle timeout. Drop the stream to
+stop listening; use the appropriate cancel API to stop remote execution.
 
 ## AccountApi
 

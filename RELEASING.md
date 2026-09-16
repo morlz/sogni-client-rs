@@ -1,7 +1,7 @@
 # Releasing `sogni-client`
 
 Every push to the default branch of `morlz/sogni-client-rs` runs CI. Once the
-Linux, macOS, Windows, Rust 1.85, package, and release-automation checks pass,
+Linux, macOS, Windows, Rust 1.88, package, dependency-audit, and release-automation checks pass,
 CI calls the publish workflow from that same commit. A new crate version is
 verified, tagged as `vVERSION`, and published to crates.io automatically.
 Pull requests, other branches, forks, and tag pushes cannot start publication.
@@ -25,7 +25,9 @@ because the same immutable source already passed package verification.
 
 ## Prepare a release
 
-1. Complete the upstream contract port and relevant Rust changes.
+1. Complete the applicable TypeScript contract port and reviewed Rust-fork intake
+   described in [UPSTREAM.md](UPSTREAM.md). Preserve this repository's release
+   policy when merging fork changes; a fork's alpha version is source provenance.
 2. Update `package.version` in `Cargo.toml` and the root package version in
    `Cargo.lock` together. Use the synchronized upstream version when available.
    For Rust-only fixes after that version is published, increment the patch
@@ -35,9 +37,11 @@ because the same immutable source already passed package verification.
    independently in `.github/upstream-sync.json`.
 3. Add `## [VERSION] - YYYY-MM-DD` to `CHANGELOG.md`. A version already present
    on crates.io is skipped; publishing changed code requires a new version.
-4. After complete parity, update `.github/upstream-sync.json` with the exact
-   upstream repository, version, commit, and synchronization date. The weekly
-   Codex task compares against this baseline before porting later changes.
+4. Update only fully handled baselines in `.github/upstream-sync.json`, including
+   exact repository, source version, commit, and synchronization date. The Rust
+   fork has a separate `rust_fork` entry; its merge cannot establish TypeScript
+   parity. The weekly Codex task checks both sources every Monday at 06:00 UTC.
+   Echoed or excluded changes do not justify baseline-only commits or releases.
 5. Commit the source, manifest, lockfile, changelog, and synchronization baseline
    together locally so Cargo can package a clean working tree. Keep the commit
    local until the following validation succeeds.
@@ -45,18 +49,23 @@ because the same immutable source already passed package verification.
 
    ```console
    python .github/scripts/test_release.py
-   cargo +1.85.0 fmt --all --check
-   cargo +1.85.0 test --all-targets --all-features --locked
-   cargo +1.85.0 test --all-targets --no-default-features --locked
-   cargo +1.85.0 clippy --all-targets --all-features --locked -- -D warnings
-   cargo +1.85.0 clippy --all-targets --no-default-features --locked -- -D warnings
-   cargo +1.85.0 build --examples --all-features --locked
-   cargo +1.85.0 build --examples --no-default-features --locked
-   cargo +1.85.0 doc --lib --examples --all-features --no-deps --locked
-   cargo +1.85.0 doc --lib --examples --no-default-features --no-deps --locked
-   cargo +1.85.0 package --package sogni-client --locked
-   cargo +1.85.0 publish --package sogni-client --registry crates-io --locked --dry-run
+   cargo +1.88.0 fmt --all --check
+   cargo +1.88.0 test --all-targets --all-features --locked
+   cargo +1.88.0 test --all-targets --no-default-features --locked
+   cargo +1.88.0 test --doc --all-features --locked
+   cargo +1.88.0 test --doc --no-default-features --locked
+   cargo +1.88.0 clippy --all-targets --all-features --locked -- -D warnings
+   cargo +1.88.0 clippy --all-targets --no-default-features --locked -- -D warnings
+   cargo +1.88.0 build --examples --all-features --locked
+   cargo +1.88.0 build --examples --no-default-features --locked
+   cargo +1.88.0 doc --lib --examples --all-features --no-deps --locked
+   cargo +1.88.0 doc --lib --examples --no-default-features --no-deps --locked
+   cargo +1.88.0 package --package sogni-client --locked
+   cargo +1.88.0 publish --package sogni-client --registry crates-io --locked --dry-run
+   cargo audit --deny warnings
    ```
+
+   Repeat tests, Clippy, and documentation checks on stable Rust before release.
 
 7. Inspect the `.crate` archive under `target/package`; it must contain only
    the intended public SDK, documentation, examples, manifest, and test media.
