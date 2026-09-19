@@ -2620,8 +2620,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "sogni-client"
-version = "5.50.3"
+name = "sogni-client-by-morlz"
+version = "5.50.4"
 dependencies = [
  "anyhow",
  "async-stream",

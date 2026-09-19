@@ -11,7 +11,7 @@ import urllib.error
 import urllib.request
 
 REPOSITORY = "morlz/sogni-client-rs"
-PACKAGE = "sogni-client"
+PACKAGE = "sogni-client-by-morlz"
 VERSION_PATTERN = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?"
 
 
@@ -50,7 +50,7 @@ def release_version(root):
 
 
 def request_json(url, *, token=None, body=None, missing_ok=False):
-    headers = {"User-Agent": "sogni-client-rs-release", "Accept": "application/json"}
+    headers = {"User-Agent": "sogni-client-by-morlz-release", "Accept": "application/json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
     data = None if body is None else json.dumps(body).encode("utf-8")

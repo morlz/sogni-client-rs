@@ -8,6 +8,11 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.50.4] - 2026-09-19
+
+- Publish the maintained SDK as the new `sogni-client-by-morlz` crates.io package and stop publishing new versions of `sogni-client` from this repository.
+- Preserve the established `sogni_client` Rust import path while updating release guards, documentation, and automatic publication to the new package identity.
+
 ## [5.50.3] - 2026-09-16
 
 - Integrate the Sogni-AI Rust fork through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (source version `5.50.3-alpha.1`) while preserving this repository's crates.io release policy and Git history.

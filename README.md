@@ -3,12 +3,17 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.50.3** implements the TypeScript **5.50.0** public contract through
+Version **5.50.4** implements the TypeScript **5.50.0** public contract through
 [`452e789`](https://github.com/Sogni-AI/sogni-client/commit/452e78967a21ab80977c11f16517072d1836405a),
 including hosted tool definitions from Sogni Protocol `1.0.0-alpha.42`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
 See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
+
+The maintained crates.io package is [`sogni-client-by-morlz`](https://crates.io/crates/sogni-client-by-morlz).
+It keeps the library target named `sogni_client`, so existing Rust `use`
+paths remain unchanged. This repository no longer publishes new versions of
+the previous `sogni-client` package.
 
 ## What is included
 
@@ -46,14 +51,14 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client = { version = "5.50.3", default-features = false }
+sogni-client-by-morlz = { version = "5.50.4", default-features = false }
 ```
 
 For development against the repository:
 
 ```toml
 [dependencies]
-sogni-client = { git = "https://github.com/morlz/sogni-client-rs", branch = "dev" }
+sogni-client-by-morlz = { git = "https://github.com/morlz/sogni-client-rs", branch = "dev" }
 ```
 
 ## Authenticate with an API key

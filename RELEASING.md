@@ -1,4 +1,4 @@
-# Releasing `sogni-client`
+# Releasing `sogni-client-by-morlz`
 
 Every push to the default branch of `morlz/sogni-client-rs` runs CI. Once the
 Linux, macOS, Windows, Rust 1.88, package, dependency-audit, and release-automation checks pass,
@@ -9,13 +9,13 @@ Pull requests, other branches, forks, and tag pushes cannot start publication.
 ## GitHub configuration
 
 The repository secret is named `CARGO_REGISTRY_TOKEN`. It must contain a valid
-crates.io token authorized to publish `sogni-client`. No GitHub Environment or
+crates.io token authorized to publish `sogni-client-by-morlz`. No GitHub Environment or
 manual approval is required by this workflow. The tag job requests
 `contents: write`; verification and publication use `contents: read`.
 
-For an existing crate, restrict the registry token to publishing this crate.
-The first publication may require a token authorized to create the crate;
-afterward replace it with a crate-scoped token. The workflow cannot inspect a
+After the first publication, restrict the registry token to publishing this crate.
+The initial `sogni-client-by-morlz` publication requires a token authorized to
+create the crate; afterward replace it with a crate-scoped token. The workflow cannot inspect a
 GitHub secret's value or validate its registry permissions before publishing.
 
 The registry token is exposed only to the final `cargo publish --locked
@@ -60,8 +60,8 @@ because the same immutable source already passed package verification.
    cargo +1.88.0 build --examples --no-default-features --locked
    cargo +1.88.0 doc --lib --examples --all-features --no-deps --locked
    cargo +1.88.0 doc --lib --examples --no-default-features --no-deps --locked
-   cargo +1.88.0 package --package sogni-client --locked
-   cargo +1.88.0 publish --package sogni-client --registry crates-io --locked --dry-run
+   cargo +1.88.0 package --package sogni-client-by-morlz --locked
+   cargo +1.88.0 publish --package sogni-client-by-morlz --registry crates-io --locked --dry-run
    cargo audit --deny warnings
    ```
 

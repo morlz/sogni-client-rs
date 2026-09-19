@@ -1,13 +1,13 @@
 [package]
-name = "sogni-client"
-version = "5.50.3"
+name = "sogni-client-by-morlz"
+version = "5.50.4"
 edition = "2024"
 rust-version = "1.88"
 description = "Production-ready async Rust SDK for the Sogni Supernet"
 license = "ISC"
 repository = "https://github.com/morlz/sogni-client-rs"
 homepage = "https://www.sogni.ai"
-documentation = "https://docs.rs/sogni-client"
+documentation = "https://docs.rs/sogni-client-by-morlz"
 readme = "README.md"
 publish = ["crates-io"]
 keywords = ["sogni", "generative-ai", "image", "video", "llm"]
@@ -26,6 +26,11 @@ include = [
   "llms.txt",
   "llms-full.txt",
 ]
+
+[lib]
+# Keep the established Rust import path while publishing under the maintained
+# crates.io package name.
+name = "sogni_client"
 
 [features]
 default = ["wallet"]

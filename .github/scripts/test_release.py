@@ -24,8 +24,8 @@ class ReleaseTests(unittest.TestCase):
         root = Path("release-fixture")
         files = {}
         with patch.object(Path, "read_text", lambda path, **kwargs: files[path.name]):
-            manifest = f'[package]\nname="sogni-client"\nversion="{VERSION}"\nrepository="https://github.com/{release.REPOSITORY}"\n'
-            lock = f'[[package]]\nname="sogni-client"\nversion="{VERSION}"\n'
+            manifest = f'[package]\nname="{release.PACKAGE}"\nversion="{VERSION}"\nrepository="https://github.com/{release.REPOSITORY}"\n'
+            lock = f'[[package]]\nname="{release.PACKAGE}"\nversion="{VERSION}"\n'
             changelog = f'## [{VERSION}] - 2026-09-15\n'
             files = {"Cargo.toml": manifest, "Cargo.lock": lock, "CHANGELOG.md": changelog}
             self.assertEqual(release.release_version(root), VERSION)
@@ -39,6 +39,27 @@ class ReleaseTests(unittest.TestCase):
             files["Cargo.toml"] = manifest.replace("morlz/", "other/")
             with self.assertRaises(ValueError):
                 release.release_version(root)
+
+    def test_legacy_package_identity_is_rejected_everywhere(self):
+        root = Path("release-fixture")
+        manifest = f'[package]\nname="{release.PACKAGE}"\nversion="{VERSION}"\nrepository="https://github.com/{release.REPOSITORY}"\n'
+        lock = f'[[package]]\nname="{release.PACKAGE}"\nversion="{VERSION}"\n'
+        changelog = f'## [{VERSION}] - 2026-09-19\n'
+        files = {"Cargo.toml": manifest, "Cargo.lock": lock, "CHANGELOG.md": changelog}
+        with patch.object(Path, "read_text", lambda path, **kwargs: files[path.name]):
+            for name in ("Cargo.toml", "Cargo.lock"):
+                with self.subTest(name=name):
+                    original = files[name]
+                    files[name] = original.replace(release.PACKAGE, "sogni-client")
+                    with self.assertRaises(ValueError):
+                        release.release_version(root)
+                    files[name] = original
+
+    def test_publish_workflow_targets_only_the_current_package(self):
+        workflow = Path(__file__).parents[1] / "workflows" / "publish.yml"
+        contents = workflow.read_text(encoding="utf-8")
+        self.assertEqual(contents.count(f"--package {release.PACKAGE}"), 4)
+        self.assertNotRegex(contents, r"--package sogni-client(?:\s|$)")
 
     def test_registry_missing_existing_and_mismatched_versions(self):
         self.assertFalse(release.already_published(VERSION, request=lambda *a, **k: None))

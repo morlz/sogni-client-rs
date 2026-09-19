@@ -1,6 +1,6 @@
 # Upstream synchronization
 
-This repository publishes the `sogni-client` crate from
+This repository publishes the `sogni-client-by-morlz` crate from
 [`morlz/sogni-client-rs`](https://github.com/morlz/sogni-client-rs), default branch
 `dev`. It follows the public TypeScript contract and also integrates useful
 changes from the [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs).
@@ -52,7 +52,7 @@ For each run:
 ## Repository policies retained during merges
 
 - Keep this repository's `morlz/sogni-client-rs` identity, `dev` default-branch
-  checks, crate metadata, and `publish = ["crates-io"]`.
+  checks, `sogni-client-by-morlz` crate metadata, and `publish = ["crates-io"]`.
 - Preserve the reusable `.github/workflows/publish.yml`, release identity and
   immutable-tag checks, and the repository secret `CARGO_REGISTRY_TOKEN`. The
   secret remains available only to the final publication command after CI.
