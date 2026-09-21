@@ -154,16 +154,17 @@ async fn serve_connection(
         headers,
         body,
     };
-    let (code, response) = if request.path.starts_with("/v2/projects/") {
-        faults.status.lock().as_ref().map_or_else(
-            || ("404 Not Found", json!({"error":102})),
-            |status| ("200 OK", json!({"data":{"project":status}})),
-        )
-    } else if request.path == "/api/v1/artist/projects/active" {
-        ("200 OK", faults.active.lock().clone())
-    } else {
-        ("200 OK", response(&request, address))
-    };
+    let (code, response) =
+        if request.path.starts_with("/v2/projects/") || request.path.starts_with("/v1/projects/") {
+            faults.status.lock().as_ref().map_or_else(
+                || ("404 Not Found", json!({"error":102})),
+                |status| ("200 OK", json!({"data":{"project":status}})),
+            )
+        } else if request.path == "/api/v1/artist/projects/active" {
+            ("200 OK", faults.active.lock().clone())
+        } else {
+            ("200 OK", response(&request, address))
+        };
     captured.lock().push(request);
     let body = response.to_string();
     stream.write_all(format!(

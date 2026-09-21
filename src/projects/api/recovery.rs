@@ -67,6 +67,13 @@ impl ProjectsApi {
             .client
             .socket_get("/api/v1/artist/projects/sync", None)
             .await?;
+        for raw in recovery_records(&response, "activeProjects")
+            .chain(recovery_records(&response, "unclaimedCompletedProjects"))
+        {
+            if let Some(id) = recovery_id(raw) {
+                self.inner.submission.lock().observed(&id);
+            }
+        }
         Ok(response
             .get("activeProjects")
             .and_then(Value::as_array)
@@ -166,11 +173,15 @@ impl ProjectsApi {
             .socket_get("/api/v1/artist/projects/active", None)
             .await
             .ok()?;
-        let ids = active_project_ids(&response)?;
-        for id in &ids {
-            self.inner.submission.lock().observed(id);
+        // Even a partially malformed roster can positively identify a request.
+        // Its absence verdict remains unknown, but an identified request must
+        // never become eligible for resending on a later empty response.
+        for raw in recovery_records(&response, "projects") {
+            if let Some(id) = recovery_id(raw) {
+                self.inner.submission.lock().observed(&id);
+            }
         }
-        Some(ids)
+        active_project_ids(&response)
     }
 
     async fn reconcile(

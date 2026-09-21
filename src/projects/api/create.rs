@@ -148,10 +148,21 @@ impl ProjectsApi {
             .rest
             .get(&format!("/v1/projects/{}", path_segment(project_id)), None)
             .await?;
-        response
+        let project = response
             .pointer("/data/project")
             .cloned()
-            .ok_or_else(|| Error::Protocol("project response missing data.project".into()))
+            .ok_or_else(|| Error::Protocol("project response missing data.project".into()))?;
+        if project
+            .get("id")
+            .and_then(Value::as_str)
+            .is_some_and(|id| id.eq_ignore_ascii_case(project_id))
+        {
+            self.inner
+                .submission
+                .lock()
+                .observed(&project_id.to_uppercase());
+        }
+        Ok(project)
     }
 }
 

@@ -106,7 +106,13 @@ async fn live_connections_and_acknowledged_requests_are_never_resent() {
 
 #[tokio::test]
 async fn unknown_registry_does_not_resend_and_positive_lookups_permanently_retire_eligibility() {
-    for lookup in ["unknown", "active", "owner-status"] {
+    for lookup in [
+        "unknown",
+        "active",
+        "malformed-active",
+        "owner-status",
+        "legacy-result",
+    ] {
         let mut fixture = Fixture::with_disconnects(1, false).await;
         let (client, mut events) = submit(&fixture).await;
         next_request(&mut fixture).await;
@@ -114,18 +120,32 @@ async fn unknown_registry_does_not_resend_and_positive_lookups_permanently_retir
         match lookup {
             "unknown" => *fixture.active.lock() = json!({"projects":"malformed"}),
             "active" => *fixture.active.lock() = json!({"projects":[{"id":ID}]}),
+            "malformed-active" => {
+                *fixture.active.lock() = json!({"projects":[{"id":ID},{"id":null}]})
+            }
             _ => {
                 *fixture.status.lock() =
                     Some(json!({"id":ID,"status":"processing","finished":false}))
             }
         }
-        if lookup == "unknown" {
+        if lookup == "legacy-result" {
+            assert_eq!(client.projects.get(ID).await.unwrap()["id"], ID);
+            *fixture.status.lock() = None;
+            assert_eq!(resolve(&client).await, ProjectResolution::Lost);
+        } else if lookup == "unknown" {
             assert!(matches!(
                 resolve(&client).await,
                 ProjectResolution::Unknown { .. }
             ));
         } else {
-            assert_eq!(resolve(&client).await, ProjectResolution::Active);
+            if lookup == "malformed-active" {
+                assert!(matches!(
+                    resolve(&client).await,
+                    ProjectResolution::Unknown { .. }
+                ));
+            } else {
+                assert_eq!(resolve(&client).await, ProjectResolution::Active);
+            }
             *fixture.active.lock() = json!({"projects":[]});
             *fixture.status.lock() = None;
             assert_eq!(resolve(&client).await, ProjectResolution::Lost);
