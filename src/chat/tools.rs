@@ -6,6 +6,9 @@ use super::api::ChatApi;
 use crate::{Error, Result};
 
 pub const HOSTED_TOOL_NAMES: &[&str] = &[
+    "image_to_3d",
+    "remove_background",
+    "segment_image",
     "generate_image",
     "generate_video",
     "generate_music",

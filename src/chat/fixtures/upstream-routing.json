@@ -1,6 +1,6 @@
 {
-  "version": "5.50.0",
-  "commit": "452e78967a21ab80977c11f16517072d1836405a",
+  "version": "5.54.0",
+  "commit": "4147e8dfeed5632ef8a8c648614ab476e924a0e1",
   "selectors": [
     {
       "tool": "generate_image",
@@ -1545,6 +1545,34 @@
     {
       "tool": "generate_video",
       "args": {
+        "videoModel": "minimax-h3-r2v-2stage"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_R2V_2STAGE  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "minimax-h3-r2v-balanced-2stage"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  MINIMAX_H3_R2V_BALANCED_2STAGE  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
         "videoModel": "happyhorse"
       },
       "expected": "happyhorse-1.1-t2v"
@@ -2125,6 +2153,46 @@
         "videoModel": "  MINIMAX_H3_R2V_BALANCED  "
       },
       "expected": "minimax-h3-ref2va-fp8_r2v_balanced"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-r2v-2stage"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_R2V_2STAGE  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "minimax-h3-r2v-balanced-2stage"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced_2stage"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  MINIMAX_H3_R2V_BALANCED_2STAGE  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced_2stage"
     },
     {
       "tool": "generate_video",
@@ -2635,6 +2703,34 @@
         "videoModel": "  MINIMAX_H3_R2V_BALANCED  "
       },
       "expected": "minimax-h3-ref2va-fp8_r2v_balanced"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-r2v-2stage"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_2stage"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_R2V_2STAGE  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_2stage"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "minimax-h3-r2v-balanced-2stage"
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced_2stage"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  MINIMAX_H3_R2V_BALANCED_2STAGE  "
+      },
+      "expected": "minimax-h3-ref2va-fp8_r2v_balanced_2stage"
     },
     {
       "tool": "animate_photo",
@@ -3405,6 +3501,16 @@
       "workerCount": 1
     },
     {
+      "id": "minimax-h3-ref2va-fp8_r2v_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
       "id": "wan_v2.2-14b-fp8_animate-move_lightx2v",
       "media": "video",
       "workerCount": 1
@@ -3520,7 +3626,9 @@
         "wan3.0-spicy-video",
         "minimax-h3-ref2va-fp8_r2v",
         "minimax-h3-ref2va-fp8_r2v_turbo",
-        "minimax-h3-ref2va-fp8_r2v_balanced"
+        "minimax-h3-ref2va-fp8_r2v_balanced",
+        "minimax-h3-ref2va-fp8_r2v_2stage",
+        "minimax-h3-ref2va-fp8_r2v_balanced_2stage"
       ]
     },
     {
@@ -3809,8 +3917,8 @@
     {
       "id": "seedance-2-5",
       "expected": {
-        "width": 1280,
-        "height": 720,
+        "width": 1920,
+        "height": 1080,
         "fps": 24
       }
     },
@@ -4040,6 +4148,22 @@
     },
     {
       "id": "minimax-h3-ref2va-fp8_r2v_balanced",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_2stage",
+      "expected": {
+        "width": 1344,
+        "height": 768,
+        "fps": 24
+      }
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
       "expected": {
         "width": 1344,
         "height": 768,
@@ -4377,6 +4501,14 @@
       "expected": false
     },
     {
+      "id": "minimax-h3-ref2va-fp8_r2v_2stage",
+      "expected": false
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+      "expected": false
+    },
+    {
       "id": "wan_v2.2-14b-fp8_animate-move_lightx2v",
       "expected": false
     },
@@ -4432,11 +4564,11 @@
   "schemas": [
     {
       "name": "generate_image",
-      "sha256": "ae8e82d776f8777d2a209ef1e299757f6df82531e8ad3b2f873f8f7962726e7b"
+      "sha256": "c46dcf676c91f6d899510d65dbb7c41fbecc4e1519b78d3e6a09b5c7593a5f00"
     },
     {
       "name": "generate_video",
-      "sha256": "e91546e2bd3c344c3d7746c98d5503535fd8c4aabdd595f3a8f2493d9aa21428"
+      "sha256": "d3771e353b1d590af006df6eae12452e04cf60b51f76fbd045e3df7245d20c44"
     },
     {
       "name": "generate_music",
@@ -4444,11 +4576,11 @@
     },
     {
       "name": "generate_speech",
-      "sha256": "6471f6fbfa12c54519c4b95a5fbfcbc20de6708b4ad75fcecf10974fbc512f4e"
+      "sha256": "c729da7a00bdd21cd6e8204c3e10031322fd71d0ea1903168f2978aa83d0144a"
     },
     {
       "name": "edit_image",
-      "sha256": "800f058886fe2a43f6de70c98e4bdd03320263bdc1845a1dd5975aa8e93d381f"
+      "sha256": "ec4c0cc752dc13a3db2437dc7429bf927caaed6883ffc5112016acf63cf6665f"
     },
     {
       "name": "apply_style",
@@ -4472,7 +4604,7 @@
     },
     {
       "name": "animate_photo",
-      "sha256": "b40b0503ebcfc1e6d03e9aa531549a22129db7398278bb437f877562cbc71407"
+      "sha256": "7a59115d53c66ee673b88ef6085010092de204f82a4ba11ab7a7737a3241470e"
     },
     {
       "name": "change_angle",
@@ -4537,6 +4669,18 @@
     {
       "name": "compose_workflow_template",
       "sha256": "a8de2ca0205ddbbe9ae8f55b584fa5001f99b24c2d29cc30ad84a133999e0cf7"
+    },
+    {
+      "name": "image_to_3d",
+      "sha256": "dab248d2cf10e38b0b0cdf889171f335f3113d67b4fcdb52a8f027af0dfd8775"
+    },
+    {
+      "name": "remove_background",
+      "sha256": "563d653dae5b63eeb5e37df168bf72c538cab8b09fc15eab1ee6bbc9186b58a1"
+    },
+    {
+      "name": "segment_image",
+      "sha256": "6ffd204b0c6cc383525a1d6c33c595ef0b758f96d86d5c38fd2c2cdf2718b4e5"
     }
   ]
 }

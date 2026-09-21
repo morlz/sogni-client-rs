@@ -22,6 +22,7 @@ impl ProjectsApi {
             Error::Protocol("project status response missing data.project".into())
         })?;
         validate(project_id, project)?;
+        self.inner.submission.lock().observed(&canonical_id);
         Ok(project.clone())
     }
 }

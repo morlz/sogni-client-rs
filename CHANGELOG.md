@@ -8,6 +8,17 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.54.0] - 2026-09-21
+
+- Port the public TypeScript 5.54.0 contract through `4147e8dfeed5632ef8a8c648614ab476e924a0e1`. The Rust fork remains fully handled through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (5.50.3-alpha.1), with no new fork commits to merge.
+- Add personal LoRA import, status, removal and catalog APIs, optional private/public catalog merging, and protection against returning private data after an account change.
+- Forward the caller-approved durable chat cost preview without altering nested values; support idempotency keys on cost confirmation and workflow reseeding, including reseed replay metadata.
+- Add Standard and Balanced MiniMax H3 Ref2VA two-stage models, default Seedance 2.5 to 1080p, and synchronize 30 hosted tool definitions from protocol 1.0.0-alpha.45.
+- Forward billing intent and video/audio network context in estimates, and expose the service's optional daily fair-use percentage without inferring plan coverage.
+- Preserve validated REST retry advice and structured details through API and chat errors, preferring body values over Retry-After headers.
+- Resend a successfully written, unacknowledged generation request at most once after a lost connection and confirmed absence from owner status and the live registry. Keep the same project ID and payload; exclude uncertain writes, observed requests and changed accounts.
+- Check queued-send deadlines immediately before socket writes. Retain existing Rust terminal recovery, transport safeguards, crate identity and Rust 1.88 minimum.
+
 ## [5.50.4] - 2026-09-19
 
 - Publish the maintained SDK as the new `sogni-client-by-morlz` crates.io package and stop publishing new versions of `sogni-client` from this repository.

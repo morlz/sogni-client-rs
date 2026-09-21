@@ -96,7 +96,9 @@ pub(super) fn parse_attribution(value: Option<&Value>) -> Result<Option<Workload
 pub(super) fn map_chat_error(result: Result<Value>) -> Result<Value> {
     match result {
         Err(Error::Api(error)) => {
-            Err(ChatError::from_payload(error.payload, Some(error.status), None).into())
+            let mut chat = ChatError::from_payload(error.payload, Some(error.status), None);
+            chat.retry_after_seconds = error.retry_after_seconds;
+            Err(chat.into())
         }
         other => other,
     }

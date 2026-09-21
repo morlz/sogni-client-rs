@@ -202,6 +202,25 @@ impl RestClient {
             .await
     }
 
+    /// Echo a caller-approved server object without recursively removing nulls.
+    pub(crate) async fn post_exact_with(
+        &self,
+        path: &str,
+        body: &Value,
+        headers: HeaderMap,
+    ) -> Result<Value> {
+        let url = self.url(path)?;
+        let request = self
+            .authenticated_http
+            .post(url.clone())
+            .json(body)
+            .timeout(self.timeout);
+        let response = self
+            .send_authenticated(request, &url, Some(headers))
+            .await?;
+        self.process_response(response).await
+    }
+
     pub async fn delete(&self, path: &str) -> Result<Value> {
         self.request(Method::DELETE, path, None, None, None, None)
             .await

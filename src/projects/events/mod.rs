@@ -34,13 +34,15 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
             if matches!(
                 event.name.as_str(),
                 "jobState" | "jobProgress" | "jobETA" | "jobResult" | "jobRetry"
-            ) {
+            ) || (event.name == "jobError"
+                && !(event.data.get("imgID").and_then(Value::as_str).is_none()
+                    && event
+                        .data
+                        .get("error")
+                        .is_some_and(|code| code == 1001 || code == "1001")))
+            {
                 if let Some(id) = event.data.get("jobID").and_then(Value::as_str) {
-                    inner
-                        .submission
-                        .lock()
-                        .unadmitted
-                        .remove(&id.to_uppercase());
+                    inner.submission.lock().observed(&id.to_uppercase());
                 }
             }
             match event.name.as_str() {

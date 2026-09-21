@@ -3,9 +3,9 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.50.4** implements the TypeScript **5.50.0** public contract through
-[`452e789`](https://github.com/Sogni-AI/sogni-client/commit/452e78967a21ab80977c11f16517072d1836405a),
-including hosted tool definitions from Sogni Protocol `1.0.0-alpha.42`.
+Version **5.54.0** implements the TypeScript **5.54.0** public contract through
+[`4147e8d`](https://github.com/Sogni-AI/sogni-client/commit/4147e8dfeed5632ef8a8c648614ab476e924a0e1),
+including hosted tool definitions from Sogni Protocol `1.0.0-alpha.45`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
 See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
@@ -51,7 +51,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client-by-morlz = { version = "5.50.4", default-features = false }
+sogni-client-by-morlz = { version = "5.54.0", default-features = false }
 ```
 
 For development against the repository:
@@ -196,6 +196,12 @@ active, and compact failed/canceled records terminate even when jobs are absent.
 terminal-result contract. Inconsistent or unavailable status stays unknown; a
 current 404 is not proof that a historical project never existed.
 
+After a connection drops, recovery may resend a successfully written request
+once if owner status and the live registry both confirm its absence and no
+server event or lookup has ever acknowledged it. The resend keeps the same ID
+and payload. Failed or uncertain writes and requests from an old account session
+do not qualify.
+
 Completed generated-image jobs also support `job.enhance("light", overrides).await`;
 the returned enhancement is tracked through `job.enhancement_project()`.
 Segmentation masks/cutouts and 3D artifacts reject enhancement before download.
@@ -328,6 +334,11 @@ and height at the same timing. Send the normal H3 canvas, such as 672×384,
 960×544, or 1344×768, and quote that model ID/canvas with `estimate_video_cost`.
 The retired `outputScale` field and `_2stage_720p` request IDs are rejected.
 
+Ref2VA also has two-stage IDs: `minimax-h3-ref2va-fp8_r2v_2stage` (20 steps)
+and `minimax-h3-ref2va-fp8_r2v_balanced_2stage` (8 steps). They use the same
+references, sampling and LoRAs as the corresponding one-stage R2V model, at
+24 FPS and guidance 1. The output is twice the requested canvas size.
+
 Audio-guide modes require uploaded audio: `ia2v` also requires a first image,
 `flfa2v` requires first and last images, and `a2v` takes audio alone. They use
 4 steps, guidance 1, 24 FPS, and frames `124 + n*17` in 124–362. Output always
@@ -335,7 +346,8 @@ carries the uploaded audio; `audioStart` selects its offset. `audioDuration`,
 LoRAs, and `generateAudio:false` are rejected. Use
 `get_minimax_h3_frames_for_audio_duration(seconds)` for a covering frame count.
 
-Seedance 2.5 accepts `.param("outputFormat", "mov")` and
+Seedance 2.5 defaults to 1080p and accepts 480p/720p/1080p, without 4K.
+It accepts `.param("outputFormat", "mov")` and
 `.param("returnLastFrame", true)`. Exported final frames are available through
 `job.last_frame_url()` or refreshed with `job.get_last_frame_url().await`.
 
@@ -393,6 +405,36 @@ are reported. For independent uploads used by durable chat or workflows,
 request a current v2 multipart form with `image_upload_post` or
 `media_upload_post`, then call `upload_presigned`.
 
+## Personal LoRAs and estimates
+
+`projects.personal_loras()` provides `list`, `get`, `import`, `remove`, and
+`catalog`. `ImportPersonalLoraParams` includes the source URL, name, model ID,
+and an explicit `rights_confirmed` choice. Import availability, validation and
+limits are decided by the service; discover supported targets from `list().models`.
+
+```rust,no_run
+use sogni_client::SogniClient;
+
+async fn library(client: &SogniClient) -> sogni_client::Result<()> {
+    let library = client.projects.personal_loras().list().await?;
+    for lora in library.loras {
+        println!("{}: {}", lora.name, lora.status);
+    }
+    let catalog = client.projects.available_loras_with_personal(None).await?;
+    println!("{}", catalog["loras"]);
+    Ok(())
+}
+```
+
+Private catalogs are fetched for each call and never added to a public cache.
+`available_loras` remains public-only; `get_lora("personal-...")` reads the
+private catalog. Reads and imports reject responses from a previous account.
+
+All estimate helpers accept `billingMode` (`auto` or `tokens`). Video and audio
+estimates also accept `network`, defaulting to the current connection's network.
+`CostEstimate::daily_fair_use_pct` preserves the service's optional percentage,
+including zero. An absent value is not a zero-cost or plan-coverage guarantee.
+
 ## Stream a chat completion
 
 ```rust,no_run
@@ -421,8 +463,9 @@ async fn run(client: &SogniClient) -> sogni_client::Result<()> {
 
 Use `create_completion` for a non-streaming socket call and
 `create_hosted_completion` for the hosted OpenAI-compatible REST endpoint.
-`client.chat.tools.all()` returns the 27 version-pinned hosted definitions,
-including `generate_speech` and `upscale_video`. Hosted chat and durable runs
+`client.chat.tools.all()` returns the 30 version-pinned hosted definitions,
+including `generate_speech`, `upscale_video`, `image_to_3d`, `remove_background`,
+and `segment_image`. Hosted chat and durable runs
 execute these server-side. `chat.execute_tool_call` directly runs six media
 tools: `generate_image`, `edit_image`, `generate_video`, `sound_to_video`,
 `video_to_video`, and `generate_music`.
@@ -468,6 +511,16 @@ The workflow namespace provides `start`, `get`, `list`, `events`,
 are available under `client.workflows.templates`. `WorkflowStart::safe_content_filter`
 preserves an explicitly chosen false value on the request.
 
+For a durable chat run awaiting cost approval, pass the displayed
+`acceptedCostPreview` unchanged to `chat.confirm_run_cost`, together with
+`toolCallId` and `decision: "confirm"`. The method never fetches or approves a
+replacement preview. Cancellation needs no preview. Set `idempotencyKey` to
+reuse the same confirmation operation safely.
+
+For workflow reseeding, set `WorkflowBillingOptions::idempotency_key` and reuse
+it only when retrying the same take. `ReseedWorkflowResult::idempotent` is
+`Some(true)` when the service reports a replay of that operation.
+
 ## Events and state
 
 `SogniClient`, `ProjectsApi`, `Project`, `Job`, `ChatApi`, and `CurrentAccount`
@@ -505,6 +558,12 @@ fn inspect(error: Error) {
     }
 }
 ```
+
+`ApiError::retry_after()` and `ChatError::retry_after()` expose validated server
+waits in seconds, preserving fractional body values and falling back to the
+`Retry-After` header. `retry_after_seconds` rounds up to whole seconds, and
+`details()` returns structured service context when supplied. These accessors
+do not retry requests; preserve an operation's idempotency key when retrying.
 
 The SDK does not log credentials or include them in `Debug` output. Server-side
 authorization, billing, eligibility, and safety decisions remain authoritative.

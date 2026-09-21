@@ -1,6 +1,6 @@
 {
-  "version": "5.50.0",
-  "commit": "452e78967a21ab80977c11f16517072d1836405a",
+  "version": "5.54.0",
+  "commit": "4147e8dfeed5632ef8a8c648614ab476e924a0e1",
   "models": [
     {
       "id": "gpt-image-2",
@@ -293,6 +293,16 @@
       "workerCount": 1
     },
     {
+      "id": "minimax-h3-ref2va-fp8_r2v_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
       "id": "wan_v2.2-14b-fp8_animate-move_lightx2v",
       "media": "video",
       "workerCount": 1
@@ -423,8 +433,8 @@
         "modelId": "seedance-2-5",
         "positivePrompt": "ocean",
         "numberOfMedia": 1,
-        "width": 1280,
-        "height": 720,
+        "width": 1920,
+        "height": 1080,
         "fps": 24,
         "duration": 4,
         "generateAudio": false
@@ -490,8 +500,8 @@
         "modelId": "seedance-2-5",
         "positivePrompt": "scene",
         "numberOfMedia": 1,
-        "width": 1280,
-        "height": 720,
+        "width": 1920,
+        "height": 1080,
         "fps": 24,
         "referenceImageUrls": [
           "https://cdn.sogni.ai/a.png"

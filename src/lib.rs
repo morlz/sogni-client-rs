@@ -41,12 +41,14 @@ pub use error::{
 pub use event::{Event, EventReceiver};
 pub use projects::{
     ACTIVE_PROJECTS_RECOVERED_EVENT, AssetRole, COMPLETED_PROJECTS_RECOVERED_EVENT, CostEstimate,
-    Job, JobModelPhaseStep, JobPreparation, JobProvenance, JobSnapshot, JobStatus, MediaSource,
-    ModelOptions, PROJECT_LOST_ORIGINAL_CODE, Pixal3dGenerationOptions, Pixal3dTemplateVariant,
-    PresignedPost, Project, ProjectRequest, ProjectResolution, ProjectSnapshot, ProjectStatus,
-    ProjectSubmissionError, ProjectsApi, ResolveMissingOptions, ReusableUploads, Sam3ImagePrompt,
-    Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint, Sam3Selection, SavedUpload, SavedUploadBinding,
-    SubmissionPhase, WorldGenerationReceiptRequest, is_project_lost_error, is_project_lost_payload,
+    ImportPersonalLoraParams, Job, JobModelPhaseStep, JobPreparation, JobProvenance, JobSnapshot,
+    JobStatus, MediaSource, ModelOptions, PROJECT_LOST_ORIGINAL_CODE, PersonalLora,
+    PersonalLoraLibrary, PersonalLoraLimits, PersonalLoras, Pixal3dGenerationOptions,
+    Pixal3dTemplateVariant, PresignedPost, Project, ProjectRequest, ProjectResolution,
+    ProjectSnapshot, ProjectStatus, ProjectSubmissionError, ProjectsApi, ResolveMissingOptions,
+    ReusableUploads, Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint,
+    Sam3Selection, SavedUpload, SavedUploadBinding, SubmissionPhase, WorldGenerationReceiptRequest,
+    is_project_lost_error, is_project_lost_payload,
 };
 pub use replay::{ReplayApi, ReplayGetResult, ReplayWriteResult};
 pub use stats::StatsApi;
@@ -73,5 +75,5 @@ pub use workflows::{
     WorkflowStart, WorkflowTemplatePage,
 };
 
-/// Version of the compatible upstream public client contract.
+/// Version of this Rust crate; the exact upstream baseline is recorded separately.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

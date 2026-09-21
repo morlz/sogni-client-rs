@@ -31,8 +31,9 @@ const RECONNECT_MAX_DELAY: f64 = 15.0;
 enum SocketCommand {
     Send {
         message: Message,
-        response: oneshot::Sender<Result<()>>,
+        response: oneshot::Sender<Result<u64>>,
         session: u64,
+        deadline: tokio::time::Instant,
     },
 }
 
@@ -56,6 +57,7 @@ struct SocketInner {
     connected: watch::Sender<bool>,
     authenticated: AtomicBool,
     session: AtomicU64,
+    generation: AtomicU64,
     task: ParkingMutex<Option<tokio::task::JoinHandle<()>>>,
     cancel: CancellationToken,
     closed: AtomicBool,
@@ -103,6 +105,7 @@ impl SocketTransport {
                 connected,
                 authenticated: AtomicBool::new(false),
                 session: AtomicU64::new(0),
+                generation: AtomicU64::new(0),
                 task: ParkingMutex::new(None),
                 cancel: CancellationToken::new(),
                 closed: AtomicBool::new(false),
@@ -129,6 +132,10 @@ impl SocketTransport {
 
     pub(super) fn network(&self) -> Network {
         *self.inner.network.read()
+    }
+
+    pub(super) fn generation(&self) -> u64 {
+        self.inner.generation.load(Ordering::Acquire)
     }
 
     pub(super) fn cancel(&self) {
@@ -188,6 +195,18 @@ impl SocketTransport {
         data: &Value,
         session: u64,
     ) -> Result<()> {
+        self.send_tracked_in_session(message_type, data, session)
+            .await
+            .map(|_| ())
+    }
+
+    /// Return the connection that actually carried the frame, before any reconnect.
+    pub(super) async fn send_tracked_in_session(
+        &self,
+        message_type: &str,
+        data: &Value,
+        session: u64,
+    ) -> Result<u64> {
         self.start().await?;
         if self.inner.auth.version().session != session {
             return Err(Error::InvalidInput(
@@ -209,6 +228,7 @@ impl SocketTransport {
                 message: Message::Text(text.into()),
                 response,
                 session,
+                deadline,
             }),
         )
         .await
@@ -217,8 +237,7 @@ impl SocketTransport {
         tokio::time::timeout_at(deadline, waiter)
             .await
             .map_err(|_| Error::Timeout("waiting for WebSocket connection".into()))?
-            .map_err(|_| Error::Closed)??;
-        Ok(())
+            .map_err(|_| Error::Closed)?
     }
 
     pub(super) async fn get(&self, path: &str, query: Option<&Value>) -> Result<Value> {

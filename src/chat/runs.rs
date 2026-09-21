@@ -88,23 +88,39 @@ impl ChatApi {
         run_field(&response)
     }
 
+    /// Confirm with the exact `acceptedCostPreview` the user approved and an
+    /// optional `idempotencyKey`. A cancel does not need a preview. This method
+    /// never fetches or accepts a newer preview on the caller's behalf.
     pub async fn confirm_run_cost(&self, run_id: &str, params: &Value) -> Result<Value> {
         require_nonempty(run_id, "run_id")?;
         required_str(params, "toolCallId")?;
         required_str(params, "decision")?;
-        let body = drop_nulls(json!({
+        let mut body = json!({
             "tool_call_id": params.get("toolCallId"),
             "decision": params.get("decision"),
+            "acceptedCostPreview": params.get("acceptedCostPreview"),
             "overrides": params.get("overrides"),
             "reason": params.get("reason"),
-        }));
+        });
+        // Omit absent optional fields, but preserve the approved preview exactly,
+        // including future fields and nested nulls issued by the service.
+        body.as_object_mut()
+            .expect("object body")
+            .retain(|_, value| !value.is_null());
+        let mut headers = HeaderMap::new();
+        if let Some(key) =
+            alias(params, "idempotencyKey", "idempotency_key").and_then(Value::as_str)
+        {
+            insert_header(&mut headers, "Idempotency-Key", key)?;
+        }
         let response = map_chat_error(
             self.inner
                 .client
                 .rest
-                .post(
+                .post_exact_with(
                     &format!("/v1/chat/runs/{}/confirm-cost", path_segment(run_id)),
                     &body,
+                    headers,
                 )
                 .await,
         )?;

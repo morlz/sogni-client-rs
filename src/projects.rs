@@ -55,7 +55,10 @@ mod wire;
 #[cfg(test)]
 mod tests;
 
-pub use api::{ProjectsApi, ReusableUploads, SavedUpload, SavedUploadBinding};
+pub use api::{
+    ImportPersonalLoraParams, PersonalLora, PersonalLoraLibrary, PersonalLoraLimits, PersonalLoras,
+    ProjectsApi, ReusableUploads, SavedUpload, SavedUploadBinding,
+};
 pub use generation::{Pixal3dGenerationOptions, Pixal3dTemplateVariant};
 pub use job::Job;
 pub use preparation::{JobModelPhaseStep, JobPreparation};

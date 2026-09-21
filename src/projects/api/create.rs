@@ -19,14 +19,16 @@ impl ProjectsApi {
     }
 
     /// Submit with a phase-aware error so callers can distinguish failed asset
-    /// preparation from uncertain generation submission. This never retries a
-    /// generation request; callers must reconcile any failed `Send` phase.
+    /// preparation from uncertain generation submission. A failed `Send` phase
+    /// must be reconciled by the caller. Successful writes later proven absent
+    /// after a dropped connection may be resent once with the same identity.
     pub async fn create_with_id_detailed(
         &self,
         project_id: &str,
         mut request: ProjectRequest,
     ) -> std::result::Result<Project, ProjectSubmissionError> {
         let session = self.inner.client.rest.auth_updates();
+        let auth_session = *session.borrow();
         let (project_id, mut wire) = self
             .prepare_submission(project_id, &mut request)
             .await
@@ -69,10 +71,25 @@ impl ProjectsApi {
             .lock()
             .unadmitted
             .insert(project_id.clone(), wire.clone());
-        if let Err(cause) = self.inner.client.send_socket("jobRequest", &wire).await {
-            self.inner.projects.write().remove(&project_id);
-            self.inner.submission.lock().unadmitted.remove(&project_id);
-            return Err(ProjectSubmissionError::new(SubmissionPhase::Send, cause));
+        match self
+            .inner
+            .client
+            .send_socket_tracked_in_session("jobRequest", &wire, auth_session)
+            .await
+        {
+            Ok(generation) => {
+                let mut state = self.inner.submission.lock();
+                if state.unadmitted.contains_key(&project_id) {
+                    state
+                        .sent_on
+                        .insert(project_id.clone(), (generation, auth_session));
+                }
+            }
+            Err(cause) => {
+                self.inner.projects.write().remove(&project_id);
+                self.inner.submission.lock().unadmitted.remove(&project_id);
+                return Err(ProjectSubmissionError::new(SubmissionPhase::Send, cause));
+            }
         }
         self.inner
             .events

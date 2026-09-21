@@ -144,6 +144,17 @@ impl ProjectsApi {
         if !pending.is_empty() {
             let active = self.list_active_project_ids().await;
             classify_exhausted_404s(&mut result, pending, active.as_ref());
+            let absent = result
+                .iter()
+                .filter_map(|(id, resolution)| {
+                    matches!(resolution, ProjectResolution::Lost).then_some(id.clone())
+                })
+                .collect::<Vec<_>>();
+            for id in absent {
+                if self.resend_undelivered(&id).await || self.recently_resubmitted(&id) {
+                    result.insert(id, ProjectResolution::Active);
+                }
+            }
         }
         result
     }
@@ -155,7 +166,11 @@ impl ProjectsApi {
             .socket_get("/api/v1/artist/projects/active", None)
             .await
             .ok()?;
-        active_project_ids(&response)
+        let ids = active_project_ids(&response)?;
+        for id in &ids {
+            self.inner.submission.lock().observed(id);
+        }
+        Some(ids)
     }
 
     async fn reconcile(
@@ -179,7 +194,7 @@ impl ProjectsApi {
             if is_llm_recovery(raw) || !seen.insert(id.clone()) {
                 continue;
             }
-            self.inner.submission.lock().unadmitted.remove(&id);
+            self.inner.submission.lock().observed(&id);
             let tracked = { self.inner.projects.read().get(&id).cloned() };
             if let Some(project) = tracked {
                 if !project.status().is_finished() {
@@ -208,6 +223,7 @@ impl ProjectsApi {
             if is_llm_recovery(raw) || !seen.insert(id.clone()) {
                 continue;
             }
+            self.inner.submission.lock().observed(&id);
             let tracked = { self.inner.projects.read().get(&id).cloned() };
             if let Some(project) = tracked {
                 if !project.status().is_finished() || incomplete_results(&project) {

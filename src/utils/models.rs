@@ -62,6 +62,8 @@ const MINIMAX_H3_MODELS: &[&str] = &[
     "minimax-h3-fl2va-fp8_i2v_balanced",
     "minimax-h3-fl2va-fp8_flf2v_balanced",
     "minimax-h3-ref2va-fp8_r2v_balanced",
+    "minimax-h3-ref2va-fp8_r2v_2stage",
+    "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
 ];
 
 #[must_use]
@@ -125,7 +127,8 @@ pub fn is_minimax_h3_turbo_model(model_id: &str) -> bool {
 
 #[must_use]
 pub fn is_minimax_h3_balanced_model(model_id: &str) -> bool {
-    is_minimax_h3_model(model_id) && model_id.ends_with("_balanced")
+    is_minimax_h3_model(model_id)
+        && (model_id.ends_with("_balanced") || model_id.ends_with("_balanced_2stage"))
 }
 
 #[must_use]

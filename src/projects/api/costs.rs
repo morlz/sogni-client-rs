@@ -98,6 +98,7 @@ impl ProjectsApi {
         let query = json!({
             "gptImageQuality": params.get("gptImageQuality"),
             "outputFormat": params.get("outputFormat"),
+            "billingMode": params.get("billingMode"),
         });
         self.estimate(
             &format!("/api/v{version}/job/estimate/{path}"),
@@ -161,6 +162,8 @@ impl ProjectsApi {
             .collect::<Vec<_>>()
             .join("/");
         let mut query = json!({
+            "network": self.quote_network(params),
+            "billingMode": params.get("billingMode"),
             "hasVideoInput": params.get("hasVideoInput").and_then(Value::as_bool).filter(|v| *v).map(|_| 1),
             "referenceImageCount": params.get("referenceImageCount"),
             "referenceVideoCount": params.get("referenceVideoCount"),
@@ -198,7 +201,47 @@ impl ProjectsApi {
             .map(|segment| path_segment(segment))
             .collect::<Vec<_>>()
             .join("/");
-        self.estimate(&format!("/api/v1/job-audio/estimate/{path}"), None)
+        let query = json!({
+            "network": self.quote_network(params),
+            "billingMode": params.get("billingMode"),
+        });
+        self.estimate(&format!("/api/v1/job-audio/estimate/{path}"), Some(&query))
             .await
+    }
+
+    fn quote_network<'a>(&self, params: &'a Value) -> &'a str {
+        params
+            .get("network")
+            .and_then(Value::as_str)
+            .unwrap_or_else(|| {
+                // The server may move a connection to a different network than the
+                // one requested at construction. Quote its most recent announcement.
+                (*self.inner.runtime_network.read())
+                    .unwrap_or(self.inner.client.network())
+                    .as_str()
+            })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn unpinned_quotes_follow_the_advertised_network_not_the_startup_preference() {
+        let client = crate::SogniClient::builder()
+            .disable_socket(true)
+            .network(Network::Fast)
+            .build()
+            .await
+            .unwrap();
+        assert_eq!(client.projects.quote_network(&json!({})), "fast");
+        *client.projects.inner.runtime_network.write() = Some(Network::Relaxed);
+        assert_eq!(client.projects.quote_network(&json!({})), "relaxed");
+        assert_eq!(
+            client.projects.quote_network(&json!({"network":"fast"})),
+            "fast"
+        );
+        client.close().await.unwrap();
     }
 }

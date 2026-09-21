@@ -1,6 +1,34 @@
 use super::policy::ABNORMAL_CLOSURE;
 use super::*;
 
+#[tokio::test]
+async fn expired_command_is_not_written_even_before_its_caller_timeout_runs() {
+    use tokio_tungstenite::{WebSocketStream, tungstenite::protocol::Role};
+    let (left, right) = tokio::io::duplex(1024);
+    let mut writer = WebSocketStream::from_raw_socket(left, Role::Client, None).await;
+    let mut reader = WebSocketStream::from_raw_socket(right, Role::Server, None).await;
+    let (response, waiter) = tokio::sync::oneshot::channel();
+    let result = send_command(
+        &mut writer,
+        SocketCommand::Send {
+            message: Message::Text("expired request".into()),
+            response,
+            session: 7,
+            deadline: tokio::time::Instant::now() - Duration::from_secs(1),
+        },
+        7,
+        1,
+    )
+    .await;
+    assert!(result.is_ok());
+    assert!(matches!(waiter.await.unwrap(), Err(Error::Timeout(_))));
+    assert!(
+        tokio::time::timeout(Duration::from_millis(20), reader.next())
+            .await
+            .is_err()
+    );
+}
+
 #[test]
 fn eof_and_connection_reset_are_reconnectable_transport_losses() {
     for reason in ["WebSocket stream ended", "connection reset by peer"] {
@@ -49,6 +77,7 @@ async fn closing_one_account_keeps_new_account_commands() {
             message: Message::Text("fixture".into()),
             response,
             session,
+            deadline: tokio::time::Instant::now() + Duration::from_secs(30),
         };
         results.push((session, waiter));
         if queued {

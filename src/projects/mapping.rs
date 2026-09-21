@@ -235,6 +235,9 @@ pub(super) fn parse_cost(response: Value) -> Result<CostEstimate> {
         estimated_total_seconds: response
             .pointer("/benchmark/estimatedTotalTimeSec")
             .and_then(Value::as_f64),
+        daily_fair_use_pct: response
+            .pointer("/dailyFairUse/pct")
+            .and_then(Value::as_f64),
         raw: response,
     })
 }

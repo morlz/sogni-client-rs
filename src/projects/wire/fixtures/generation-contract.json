@@ -1,5 +1,5 @@
 {
-  "upstream": "Sogni-AI/sogni-client@452e789 (5.50.0)",
+  "upstream": "Sogni-AI/sogni-client@4147e8dfeed5632ef8a8c648614ab476e924a0e1 (5.54.0)",
   "cases": [
     {
       "name": "sam-0",
@@ -3444,6 +3444,262 @@
       }
     },
     {
+      "name": "h3-r2v_2stage",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 20,
+        "guidance": 1,
+        "referenceImage": true,
+        "contextImages": [
+          true
+        ],
+        "referenceVideo": true,
+        "referenceAudio": true,
+        "referenceVideoDurations": [
+          3
+        ],
+        "loras": [
+          "fixture-lora"
+        ],
+        "loraStrengths": [
+          0.5
+        ]
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 20,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "loras": [
+              "fixture-lora"
+            ],
+            "loraStrengths": [
+              0.5
+            ],
+            "hasReferenceImage": true,
+            "hasContextImage2": true,
+            "hasReferenceAudio1": true,
+            "hasReferenceVideo1": true,
+            "referenceVideo1DurationSeconds": 3,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "h3-r2v_balanced_2stage",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 8,
+        "guidance": 1,
+        "referenceImage": true,
+        "contextImages": [
+          true
+        ],
+        "referenceVideo": true,
+        "referenceAudio": true,
+        "referenceVideoDurations": [
+          3
+        ],
+        "loras": [
+          "fixture-lora"
+        ],
+        "loraStrengths": [
+          0.5
+        ]
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "loras": [
+              "fixture-lora"
+            ],
+            "loraStrengths": [
+              0.5
+            ],
+            "hasReferenceImage": true,
+            "hasContextImage2": true,
+            "hasReferenceAudio1": true,
+            "hasReferenceVideo1": true,
+            "referenceVideo1DurationSeconds": 3,
+            "fps": 24,
+            "frames": 243,
+            "width": 672,
+            "height": 384,
+            "comfySampler": null,
+            "comfyScheduler": null
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-FIXTURE",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
       "name": "seedance-export",
       "params": {
         "type": "video",
@@ -6087,7 +6343,189 @@
       "message": "audioStart is supported only by the MiniMax H3 FastH3 audio-guide workflows (minimax-h3-fastvideo-int8_ia2v_turbo, minimax-h3-fastvideo-int8_flfa2v_turbo, minimax-h3-fastvideo-int8_a2v_turbo and their _2stage ids)."
     },
     {
-      "name": "export-invalid-80",
+      "name": "h3-r2v_2stage-steps",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "contextImages": [
+          true
+        ],
+        "referenceVideo": true,
+        "referenceAudio": true,
+        "referenceVideoDurations": [
+          3
+        ],
+        "loras": [
+          "fixture-lora"
+        ],
+        "loraStrengths": [
+          0.5
+        ]
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 steps are fixed at 20."
+    },
+    {
+      "name": "h3-r2v_2stage-fps",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 20,
+        "guidance": 1,
+        "referenceImage": true,
+        "contextImages": [
+          true
+        ],
+        "referenceVideo": true,
+        "referenceAudio": true,
+        "referenceVideoDurations": [
+          3
+        ],
+        "loras": [
+          "fixture-lora"
+        ],
+        "loraStrengths": [
+          0.5
+        ],
+        "fps": 32
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 fps is fixed at 24. Omit fps or set it to 24."
+    },
+    {
+      "name": "h3-r2v_balanced_2stage-steps",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 4,
+        "guidance": 1,
+        "referenceImage": true,
+        "contextImages": [
+          true
+        ],
+        "referenceVideo": true,
+        "referenceAudio": true,
+        "referenceVideoDurations": [
+          3
+        ],
+        "loras": [
+          "fixture-lora"
+        ],
+        "loraStrengths": [
+          0.5
+        ]
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 Balanced steps are fixed at 8."
+    },
+    {
+      "name": "h3-r2v_balanced_2stage-fps",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "frames": 243,
+        "width": 672,
+        "height": 384,
+        "steps": 8,
+        "guidance": 1,
+        "referenceImage": true,
+        "contextImages": [
+          true
+        ],
+        "referenceVideo": true,
+        "referenceAudio": true,
+        "referenceVideoDurations": [
+          3
+        ],
+        "loras": [
+          "fixture-lora"
+        ],
+        "loraStrengths": [
+          0.5
+        ],
+        "fps": 32
+      },
+      "options": {
+        "type": "video",
+        "sampler": {
+          "allowed": [
+            "euler"
+          ],
+          "default": "euler"
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "MiniMax H3 fps is fixed at 24. Omit fps or set it to 24."
+    },
+    {
+      "name": "export-invalid-84",
       "params": {
         "type": "video",
         "modelId": "seedance-2-0",
@@ -6113,7 +6551,7 @@
       "message": "Video outputFormat must be mp4 or mov."
     },
     {
-      "name": "export-invalid-81",
+      "name": "export-invalid-85",
       "params": {
         "type": "video",
         "modelId": "seedance-2-0",
@@ -6139,7 +6577,7 @@
       "message": "MOV output is supported only by Seedance 2.5."
     },
     {
-      "name": "export-invalid-82",
+      "name": "export-invalid-86",
       "params": {
         "type": "video",
         "modelId": "seedance-2-0",
@@ -6165,7 +6603,7 @@
       "message": "Last-frame export is supported only by Seedance 2.5."
     },
     {
-      "name": "export-invalid-83",
+      "name": "export-invalid-87",
       "params": {
         "type": "video",
         "modelId": "seedance-2-0",

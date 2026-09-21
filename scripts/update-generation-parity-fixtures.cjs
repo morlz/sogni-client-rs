@@ -10,7 +10,7 @@ const root = path.resolve(process.argv[2]);
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd:root, encoding:'utf8' }).trim();
 const version = require(path.join(root, 'package.json')).version;
 const builtVersion = require(path.join(root, 'dist/version.js')).LIB_VERSION;
-if (commit !== '452e78967a21ab80977c11f16517072d1836405a' || version !== '5.50.0') {
+if (commit !== '4147e8dfeed5632ef8a8c648614ab476e924a0e1' || version !== '5.54.0') {
   throw new Error('Update the pinned upstream revision intentionally before regenerating fixtures.');
 }
 if (builtVersion !== version) throw new Error('Rebuild the upstream SDK before generating fixtures.');
@@ -20,7 +20,7 @@ const utils = require(path.join(root, 'dist/Projects/utils/index.js'));
 const destination = path.resolve(__dirname, '../src/projects/wire/fixtures');
 const old = JSON.parse(fs.readFileSync(path.join(destination, 'utility-contract.json')));
 for (const fixture of old.cases) fixture.wire = create('UPSTREAM-FIXTURE', fixture.params, fixture.options);
-old.upstream = 'Sogni-AI/sogni-client@452e789 (5.50.0)';
+old.upstream = `Sogni-AI/sogni-client@${commit} (${version})`;
 fs.writeFileSync(path.join(destination, 'utility-contract.json'), JSON.stringify(old, null, 2) + '\n');
 const defaults = type => ({type, sampler: {allowed:['euler'],default:'euler'}, scheduler:{allowed:['simple'],default:'simple'}});
 const cases = [], invalid = [];
@@ -72,6 +72,16 @@ for (const mode of ['ia2v','flfa2v','a2v']) {
 for (const outputScale of [null,false,1,'2']) reject(`h3-output-scale-${invalid.length}`,h3('t2v','_2stage',{outputScale}));
 for (const mode of ['t2v','i2v','flf2v']) reject(`h3-retired-720-${mode}`,h3(mode,'_2stage_720p'));
 reject('h3-non-audio-offset',h3('t2v','',{audioStart:0}));
+for (const [suffix, steps] of [['_2stage',20], ['_balanced_2stage',8]]) {
+  const input = params('video', `minimax-h3-ref2va-fp8_r2v${suffix}`, {
+    frames:243, width:672, height:384, steps, guidance:1, referenceImage:true,
+    contextImages:[true], referenceVideo:true, referenceAudio:true,
+    referenceVideoDurations:[3], loras:['fixture-lora'], loraStrengths:[0.5]
+  });
+  add(`h3-r2v${suffix}`, input);
+  reject(`h3-r2v${suffix}-steps`, {...input, steps:4});
+  reject(`h3-r2v${suffix}-fps`, {...input, fps:32});
+}
 add('seedance-export',params('video','seedance-2-5',{positivePrompt:'A kite.',duration:5,outputFormat:'mov',returnLastFrame:true}));
 for (const values of [{outputFormat:'webm'},{outputFormat:'mov'},{returnLastFrame:true},{returnLastFrame:null}]) reject(`export-invalid-${invalid.length}`,params('video','seedance-2-0',values));
 add('receipt-application-chosen',params('image','gpt-image-2.5-flare',{appSource:'custom-application',worldGenerationReceipt:{stage:'target_still',sourceImageSha256:'A'.repeat(64),selectionHash:'B'.repeat(64)}}));

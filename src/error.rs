@@ -20,36 +20,53 @@ pub struct ApiError {
     pub error_code: Value,
     pub message: String,
     pub payload: Value,
-    /// Parsed server Retry-After advice. Reading it never retries a request.
+    /// Server retry advice rounded up to whole seconds. The body's `retryAfter`
+    /// takes precedence over the header. Reading it never retries a request.
     pub retry_after_seconds: Option<u64>,
 }
 
 impl ApiError {
     #[must_use]
     pub fn new(status: u16, payload: Value) -> Self {
-        let message = payload
+        let fields = error_fields(&payload);
+        let message = fields
             .get("message")
             .and_then(Value::as_str)
             .map_or_else(|| format!("HTTP {status}"), ToOwned::to_owned);
-        let error_code = payload
+        let error_code = fields
             .get("errorCode")
-            .or_else(|| payload.get("error_code"))
+            .or_else(|| fields.get("error_code"))
             .cloned()
             .unwrap_or_else(|| json!(status));
         Self {
             status,
             error_code,
             message,
+            retry_after_seconds: retry_after_seconds(&payload),
             payload,
-            retry_after_seconds: None,
         }
     }
 
     #[must_use]
     pub fn with_retry_after(mut self, value: Option<&str>) -> Self {
-        self.retry_after_seconds =
-            value.and_then(|value| crate::retry_after::seconds(value, chrono::Utc::now()));
+        self.retry_after_seconds = retry_after_seconds(&self.payload).or_else(|| {
+            value.and_then(|value| crate::retry_after::seconds(value, chrono::Utc::now()))
+        });
         self
+    }
+
+    /// The server's wait in seconds, preserving fractional body values.
+    #[must_use]
+    pub fn retry_after(&self) -> Option<f64> {
+        retry_after(&self.payload).or(self.retry_after_seconds.map(|seconds| seconds as f64))
+    }
+
+    /// Structured context supplied by the service; arrays and scalars are ignored.
+    #[must_use]
+    pub fn details(&self) -> Option<&serde_json::Map<String, Value>> {
+        error_fields(&self.payload)
+            .get("details")
+            .and_then(Value::as_object)
     }
 }
 
@@ -105,6 +122,8 @@ pub struct ChatError {
     pub required_plans: Vec<String>,
     pub feature: Option<String>,
     pub limitation: Option<String>,
+    /// Server retry advice rounded up to whole seconds, when available.
+    pub retry_after_seconds: Option<u64>,
 }
 
 impl ChatError {
@@ -160,8 +179,22 @@ impl ChatError {
                 .get("limitation")
                 .and_then(Value::as_str)
                 .map(ToOwned::to_owned),
+            retry_after_seconds: retry_after_seconds(&payload),
             payload,
         }
+    }
+
+    /// Retry advice for REST chat errors, with body values preferred over headers.
+    #[must_use]
+    pub fn retry_after(&self) -> Option<f64> {
+        retry_after(&self.payload).or(self.retry_after_seconds.map(|seconds| seconds as f64))
+    }
+
+    #[must_use]
+    pub fn details(&self) -> Option<&serde_json::Map<String, Value>> {
+        error_fields(&self.payload)
+            .get("details")
+            .and_then(Value::as_object)
     }
 
     #[must_use]
@@ -260,4 +293,55 @@ pub(crate) fn value_i64(value: &Value) -> Option<i64> {
         .as_i64()
         .or_else(|| value.as_u64().and_then(|v| i64::try_from(v).ok()))
         .or_else(|| value.as_str().and_then(|v| v.parse().ok()))
+}
+
+fn retry_after(payload: &Value) -> Option<f64> {
+    error_fields(payload)
+        .get("retryAfter")
+        .and_then(Value::as_f64)
+        .filter(|seconds| seconds.is_finite() && *seconds >= 0.0)
+}
+
+// Workflow, template and replay failures may put their public fields in data.
+// Keep the original envelope intact in payload for forward compatibility.
+fn error_fields(payload: &Value) -> &Value {
+    if payload.get("status").and_then(Value::as_str) == Some("error") {
+        payload
+    } else {
+        payload
+            .get("data")
+            .filter(|data| data.is_object())
+            .unwrap_or(payload)
+    }
+}
+
+fn retry_after_seconds(payload: &Value) -> Option<u64> {
+    retry_after(payload).map(|seconds| seconds.ceil() as u64)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rest_retry_advice_prefers_valid_body_and_preserves_payload() {
+        for seconds in [0.0, 2.5, 1837.0] {
+            let payload = json!({"message":"try later", "retryAfter":seconds,
+                "details":{"reason":"busy"}});
+            let error = ApiError::new(429, payload.clone()).with_retry_after(Some("9"));
+            assert_eq!(error.retry_after(), Some(seconds));
+            assert_eq!(error.retry_after_seconds, Some(seconds.ceil() as u64));
+            assert_eq!(error.details().unwrap()["reason"], "busy");
+            assert_eq!(error.payload, payload);
+        }
+        for value in [json!(-1), json!("60"), Value::Null, json!([])] {
+            let error = ApiError::new(503, json!({"retryAfter":value,"details":[]}))
+                .with_retry_after(Some("42"));
+            assert_eq!(error.retry_after(), Some(42.0));
+            assert!(error.details().is_none());
+        }
+        let plain = ApiError::new(400, json!({"message":"invalid"})).with_retry_after(Some("soon"));
+        assert_eq!(plain.retry_after(), None);
+        assert_eq!(plain.details(), None);
+    }
 }

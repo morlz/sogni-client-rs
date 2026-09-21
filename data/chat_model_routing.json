@@ -1,6 +1,6 @@
 {
-  "version": "5.50.0",
-  "commit": "452e78967a21ab80977c11f16517072d1836405a",
+  "version": "5.54.0",
+  "commit": "4147e8dfeed5632ef8a8c648614ab476e924a0e1",
   "selectors": {
     "image": {
       "chatgpt": "gpt-image-2",
@@ -115,6 +115,8 @@
       "minimax-h3-r2v": "minimax-h3-ref2va-fp8_r2v",
       "minimax-h3-r2v-turbo": "minimax-h3-ref2va-fp8_r2v_turbo",
       "minimax-h3-r2v-balanced": "minimax-h3-ref2va-fp8_r2v_balanced",
+      "minimax-h3-r2v-2stage": "minimax-h3-ref2va-fp8_r2v_2stage",
+      "minimax-h3-r2v-balanced-2stage": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
       "happyhorse": "happyhorse-1.1-t2v",
       "happyhorse1.1": "happyhorse-1.1-t2v",
       "wan3": "wan3.0-video",
@@ -147,6 +149,8 @@
       "minimax-h3-r2v": "minimax-h3-ref2va-fp8_r2v",
       "minimax-h3-r2v-turbo": "minimax-h3-ref2va-fp8_r2v_turbo",
       "minimax-h3-r2v-balanced": "minimax-h3-ref2va-fp8_r2v_balanced",
+      "minimax-h3-r2v-2stage": "minimax-h3-ref2va-fp8_r2v_2stage",
+      "minimax-h3-r2v-balanced-2stage": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
       "happyhorse": "happyhorse-1.1-i2v",
       "happyhorse1.1": "happyhorse-1.1-i2v",
       "happyhorse-1.1-i2v": "happyhorse-1.1-i2v",
@@ -253,6 +257,8 @@
       "minimaxH3BalancedI2v": "minimax-h3-fl2va-fp8_i2v_balanced",
       "minimaxH3BalancedFlf2v": "minimax-h3-fl2va-fp8_flf2v_balanced",
       "minimaxH3BalancedR2v": "minimax-h3-ref2va-fp8_r2v_balanced",
+      "minimaxH3TwoStageR2v": "minimax-h3-ref2va-fp8_r2v_2stage",
+      "minimaxH3BalancedTwoStageR2v": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
       "animateMove": "wan_v2.2-14b-fp8_animate-move_lightx2v",
       "animateReplace": "wan_v2.2-14b-fp8_animate-replace_lightx2v"
     },

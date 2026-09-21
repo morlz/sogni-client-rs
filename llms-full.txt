@@ -1,12 +1,12 @@
-# sogni-client Rust SDK complete agent reference
+# sogni-client-by-morlz Rust SDK complete agent reference
 
-Crate version: 5.50.3. Compatible with TypeScript 5.50.0 at upstream commit
-452e78967a21ab80977c11f16517072d1836405a; hosted protocol 1.0.0-alpha.42.
+Crate version: 5.54.0. Compatible with TypeScript 5.54.0 at upstream commit
+4147e8dfeed5632ef8a8c648614ab476e924a0e1; hosted protocol 1.0.0-alpha.45.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client = "5.50.3"`; disable default features for clients
+Dependency: `sogni-client-by-morlz = "5.54.0"`; disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
@@ -292,12 +292,13 @@ prefer function tools plus required tool choice. Helpers:
 `is_sogni_tool_call` and `parse_tool_call_arguments`.
 
 Hosted REST: `create_hosted_completion`. Direct synchronous hosted tools:
-`execute_hosted_tool`. The hosted tool manifest has 27 version-pinned entries;
+`execute_hosted_tool`. The hosted tool manifest has 30 version-pinned entries;
 read through `HostedTools` rather than copying schemas.
 
-Current hosted definitions include generate_speech and upscale_video, plus
+Current hosted definitions include generate_speech, upscale_video, image_to_3d,
+remove_background and segment_image, plus
 FastH3 audio-guide/two-stage and GPT Image 2.5 selectors. These definitions
-come from protocol alpha.42. chat.execute_tool_call directly executes six
+come from protocol alpha.45. chat.execute_tool_call directly executes six
 media tools: generate_image, edit_image, generate_video, sound_to_video,
 video_to_video, generate_music. Other tools use hosted chat or durable runs.
 
@@ -313,6 +314,12 @@ exposes model_id, model, selected_by. VideoDefaults contains width/height/fps.
 Durable chat: `create_run`, `get_run`, `cancel_run`, `confirm_run_cost`, and
 `stream_run_events`. `Idempotency-Key` and workload attribution are propagated.
 SSE resume uses `Last-Event-ID`.
+
+For cost approval, pass toolCallId, decision="confirm", and the exact
+acceptedCostPreview displayed from run.waiting.details to confirm_run_cost.
+Nested nulls and future fields are preserved; no replacement preview is fetched
+or automatically accepted. Cancel does not need a preview. Optional
+idempotencyKey becomes an Idempotency-Key header, not a body field.
 
 Socket chat preserves streams confirmed alive after reconnection. A lost turn
 returns a structured retryable error instead of being automatically replayed.
@@ -333,6 +340,43 @@ Methods: `start`, `list`, `get`, `events`, `stream_events`, `confirm_cost`,
 `CREATIVE_WORKFLOW_WAITING_REASONS`.
 
 Templates: `workflows.templates.list/get/create/update/delete/fork`.
+
+Reseeding accepts WorkflowBillingOptions.idempotency_key. Reuse a key only for
+the same take; it is sent as Idempotency-Key. ReseedWorkflowResult.idempotent is
+Some(true) only when data.idempotent is true; other responses leave it absent.
+
+## TypeScript 5.54 additions
+
+Personal LoRAs: projects.personal_loras() exposes list() -> PersonalLoraLibrary,
+get(id)/import(&ImportPersonalLoraParams) -> PersonalLora, remove(id) -> (),
+and catalog(model_id: Option<&str>) -> JSON with loras. Imports send url, name,
+modelId and the caller's explicit rightsConfirmed. Supported model IDs and
+limits come from list(), including nullable file_bytes. No private catalog is
+cached; pending reads/imports reject an account switch. Eligibility stays on
+the service. available_loras_with_personal optionally filters and merges the
+public/private catalogs for one call. get_lora routes personal- IDs privately.
+
+MiniMax H3 Ref2VA two-stage IDs: minimax-h3-ref2va-fp8_r2v_2stage (20 steps)
+and minimax-h3-ref2va-fp8_r2v_balanced_2stage (8 steps). Same references, LoRAs,
+24 FPS and guidance 1 as their one-stage counterparts; output doubles the canvas.
+Seedance 2.5 accepts 480p/720p/1080p and defaults to 1080p; 4K is unsupported.
+
+Image/video/audio estimates accept billingMode=auto|tokens. Video/audio also
+accept network and default to the connection's network. CostEstimate exposes
+daily_fair_use_pct only when the server supplies it; zero remains Some(0).
+Missing advice must not be treated as zero or used to infer plan coverage.
+
+Recovery can resend a completed socket write once after a dropped connection,
+only after owner status and the live registry confirm absence. Any server
+observation, unfinished/uncertain write or changed account prevents a resend.
+The original project ID/payload are retained; repeated lookups cannot resend
+twice. Existing explicit restart-refusal recovery remains supported.
+
+ApiError and ChatError expose retry_after() in seconds, retaining fractional
+body retryAfter values. Only finite nonnegative numbers are accepted; otherwise
+the Retry-After header supplies delta seconds or an HTTP date. The existing
+retry_after_seconds field rounds up. details() returns only object context,
+and the complete original payload is retained. These fields never auto-retry.
 
 ## Other namespaces
 

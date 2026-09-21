@@ -28,7 +28,17 @@ pub(super) struct Fixture {
     pub address: SocketAddr,
     pub http: Arc<Mutex<Vec<HttpCapture>>>,
     pub wire: mpsc::Receiver<Value>,
+    pub active: Arc<Mutex<Value>>,
+    pub status: Arc<Mutex<Option<Value>>>,
     task: JoinHandle<()>,
+}
+
+struct Faults {
+    restarts: AtomicUsize,
+    disconnects: AtomicUsize,
+    acknowledge: bool,
+    active: Arc<Mutex<Value>>,
+    status: Arc<Mutex<Option<Value>>>,
 }
 
 impl Fixture {
@@ -37,20 +47,36 @@ impl Fixture {
     }
 
     pub async fn with_restart_count(restarts: usize) -> Self {
+        Self::with_faults(restarts, 0, false).await
+    }
+
+    pub async fn with_disconnects(disconnects: usize, acknowledge: bool) -> Self {
+        Self::with_faults(0, disconnects, acknowledge).await
+    }
+
+    async fn with_faults(restarts: usize, disconnects: usize, acknowledge: bool) -> Self {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let http = Arc::new(Mutex::new(Vec::new()));
         let captured = http.clone();
         let (sender, wire) = mpsc::channel(4);
-        let restarts = Arc::new(AtomicUsize::new(restarts));
+        let active = Arc::new(Mutex::new(json!({"projects":[]})));
+        let status = Arc::new(Mutex::new(None));
+        let faults = Arc::new(Faults {
+            restarts: AtomicUsize::new(restarts),
+            disconnects: AtomicUsize::new(disconnects),
+            acknowledge,
+            active: active.clone(),
+            status: status.clone(),
+        });
         let task = tokio::spawn(async move {
             loop {
                 let (stream, _) = listener.accept().await.unwrap();
                 let captured = captured.clone();
                 let sender = sender.clone();
-                let restarts = restarts.clone();
+                let faults = faults.clone();
                 tokio::spawn(async move {
-                    serve_connection(stream, address, captured, sender, restarts).await;
+                    serve_connection(stream, address, captured, sender, faults).await;
                 });
             }
         });
@@ -58,6 +84,8 @@ impl Fixture {
             address,
             http,
             wire,
+            active,
+            status,
             task,
         }
     }
@@ -74,7 +102,7 @@ async fn serve_connection(
     address: SocketAddr,
     captured: Arc<Mutex<Vec<HttpCapture>>>,
     sender: mpsc::Sender<Value>,
-    restarts: Arc<AtomicUsize>,
+    faults: Arc<Faults>,
 ) {
     let mut preview = [0_u8; 16384];
     let header = loop {
@@ -99,7 +127,7 @@ async fn serve_connection(
         .is_some_and(|value| value == "websocket")
     {
         assert_eq!(headers.get("api-key").map(String::as_str), Some(KEY));
-        serve_socket(stream, sender, restarts).await;
+        serve_socket(stream, sender, faults).await;
         return;
     }
     let first = header
@@ -126,11 +154,20 @@ async fn serve_connection(
         headers,
         body,
     };
-    let response = response(&request, address);
+    let (code, response) = if request.path.starts_with("/v2/projects/") {
+        faults.status.lock().as_ref().map_or_else(
+            || ("404 Not Found", json!({"error":102})),
+            |status| ("200 OK", json!({"data":{"project":status}})),
+        )
+    } else if request.path == "/api/v1/artist/projects/active" {
+        ("200 OK", faults.active.lock().clone())
+    } else {
+        ("200 OK", response(&request, address))
+    };
     captured.lock().push(request);
     let body = response.to_string();
     stream.write_all(format!(
-        "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+        "HTTP/1.1 {code}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
         body.len()
     ).as_bytes()).await.unwrap();
 }
@@ -184,7 +221,7 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
     }
 }
 
-async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, restarts: Arc<AtomicUsize>) {
+async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, faults: Arc<Faults>) {
     let mut socket = tokio_tungstenite::accept_async(stream).await.unwrap();
     let payload = crate::utils::b64_json_encode(&json!({
         "username":"fixture", "address":"fixture", "subscriptionEntitlement":{}
@@ -206,7 +243,8 @@ async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, restarts: 
                     let value =
                         crate::utils::b64_json_decode(envelope["data"].as_str().unwrap()).unwrap();
                     sender.send(value.clone()).await.unwrap();
-                    if restarts
+                    if faults
+                        .restarts
                         .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |count| {
                             count.checked_sub(1)
                         })
@@ -222,6 +260,36 @@ async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, restarts: 
                         // Finish the closing handshake before dropping TCP:
                         // unread pings can otherwise reset the connection and
                         // discard the refusal we just sent (notably on Windows).
+                        while let Some(Ok(message)) = socket.next().await {
+                            if matches!(message, Message::Close(_)) {
+                                break;
+                            }
+                        }
+                        return;
+                    }
+                    if faults
+                        .disconnects
+                        .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |count| {
+                            count.checked_sub(1)
+                        })
+                        .is_ok()
+                    {
+                        if faults.acknowledge {
+                            socket
+                                .send(Message::Text(
+                                    json!({"type":"jobState","data":crate::utils::b64_json_encode(
+                                &json!({"jobID":value["jobID"],"type":"jobInitiating"})
+                            ).unwrap()})
+                                    .to_string()
+                                    .into(),
+                                ))
+                                .await
+                                .unwrap();
+                        }
+                        socket.close(Some(tokio_tungstenite::tungstenite::protocol::CloseFrame {
+                            code:tokio_tungstenite::tungstenite::protocol::frame::coding::CloseCode::Away,
+                            reason:"fixture connection lost".into()
+                        })).await.unwrap();
                         while let Some(Ok(message)) = socket.next().await {
                             if matches!(message, Message::Close(_)) {
                                 break;

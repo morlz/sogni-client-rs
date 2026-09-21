@@ -4,10 +4,14 @@ mod create;
 mod loras;
 mod media;
 mod models;
+mod personal_loras;
 mod recovery;
 mod reusable;
 mod status;
 mod submission_recovery;
+pub use personal_loras::{
+    ImportPersonalLoraParams, PersonalLora, PersonalLoraLibrary, PersonalLoraLimits, PersonalLoras,
+};
 pub use reusable::{ReusableUploads, SavedUpload, SavedUploadBinding};
 
 #[derive(Clone)]
@@ -71,6 +75,11 @@ impl ProjectsApi {
     #[must_use]
     pub fn assets(&self) -> ReusableUploads {
         self.inner.assets.clone()
+    }
+
+    #[must_use]
+    pub fn personal_loras(&self) -> PersonalLoras {
+        PersonalLoras::new(self.inner.client.rest.clone())
     }
 
     #[must_use]

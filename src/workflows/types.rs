@@ -61,6 +61,9 @@ pub struct WorkflowBillingOptions {
     pub app_source: Option<String>,
     #[serde(skip)]
     pub attribution: Option<WorkloadAttribution>,
+    /// Reuse one key when retrying the same reseed; use a new key for a new take.
+    #[serde(skip)]
+    pub idempotency_key: Option<String>,
 }
 
 /// Result returned after resuming a paused durable workflow.
@@ -82,6 +85,9 @@ pub struct ReseedWorkflowMetadata {
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct ReseedWorkflowResult {
     pub workflow: Value,
+    /// True only when the service replayed an earlier request with the same key.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub idempotent: Option<bool>,
     pub reseed: ReseedWorkflowMetadata,
 }
 

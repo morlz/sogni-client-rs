@@ -132,6 +132,10 @@ pub struct CostEstimate {
     pub sogni: Value,
     pub estimated_render_seconds: Option<f64>,
     pub estimated_total_seconds: Option<f64>,
+    /// Server-estimated share of the subscriber's daily fair-use capacity.
+    /// Absent unless the service says the plan covers this project.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub daily_fair_use_pct: Option<f64>,
     pub raw: Value,
 }
 

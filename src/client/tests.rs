@@ -12,6 +12,7 @@ use url::Url;
 
 use super::SogniClient;
 
+mod lost_submission;
 mod project_wire;
 mod project_wire_server;
 mod rest_only;

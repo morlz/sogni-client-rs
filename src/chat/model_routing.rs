@@ -179,10 +179,7 @@ pub fn get_video_defaults(model_id: &str) -> VideoDefaults {
         Some("s2v" | "animate-move" | "animate-replace")
     ) {
         (832, 480, 16)
-    } else if matches!(
-        model_id,
-        "seedance-2-0-mini" | "seedance-2-0-fast" | "seedance-2-5"
-    ) {
+    } else if matches!(model_id, "seedance-2-0-mini" | "seedance-2-0-fast") {
         (1280, 720, 24)
     } else if is_seedance_model(model_id) || is_happyhorse_model(model_id) {
         (1920, 1080, 24)

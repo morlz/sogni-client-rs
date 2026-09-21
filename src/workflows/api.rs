@@ -206,9 +206,14 @@ impl CreativeWorkflowsApi {
         let workload = self
             .client
             .resolve_workload_attribution(options.attribution.as_ref(), Some(&new_id()));
-        let headers = self
+        let mut headers = self
             .client
             .attribution_headers(app_source, workload.as_ref())?;
+        if action == "reseed" {
+            if let Some(key) = options.idempotency_key.as_deref() {
+                insert_header(&mut headers, "Idempotency-Key", key)?;
+            }
+        }
         let mut body = serde_json::to_value(&options)?;
         if let Some(source) = app_source {
             body["app_source"] = json!(source);
@@ -279,6 +284,11 @@ fn reseed_result(response: &Value) -> Result<ReseedWorkflowResult> {
         .unwrap_or_default();
     Ok(ReseedWorkflowResult {
         workflow,
+        idempotent: (response
+            .pointer("/data/idempotent")
+            .and_then(Value::as_bool)
+            == Some(true))
+        .then_some(true),
         reseed: ReseedWorkflowMetadata {
             cloned_from_run_id,
             steps,

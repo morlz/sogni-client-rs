@@ -84,6 +84,7 @@ pub(super) async fn socket_manager(
                 reconnect_attempt = 0;
                 inner.session.store(version.session, Ordering::Release);
                 inner.authenticated.store(false, Ordering::Release);
+                inner.generation.fetch_add(1, Ordering::AcqRel);
                 inner.connected.send_replace(true);
                 inner.events.emit_scoped(
                     "connected",
@@ -280,8 +281,13 @@ where
                     let _ = socket.close(None).await;
                     return SocketOutcome::AuthChanged;
                 }
-                if let Err(SocketCommand::Send { response, .. }) =
-                    send_command(socket, command, session).await
+                if let Err(SocketCommand::Send { response, .. }) = send_command(
+                    socket,
+                    command,
+                    session,
+                    inner.generation.load(Ordering::Acquire),
+                )
+                .await
                 {
                     // A failed write may have reached the peer; only definitely
                     // unsent queued work survives reconnect. Never replay it here.
@@ -354,6 +360,7 @@ async fn send_command<S>(
     socket: &mut tokio_tungstenite::WebSocketStream<S>,
     command: SocketCommand,
     connection_session: u64,
+    generation: u64,
 ) -> std::result::Result<(), SocketCommand>
 where
     S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin,
@@ -363,8 +370,17 @@ where
             message,
             response,
             session,
+            deadline,
         } => {
             if response.is_closed() {
+                return Ok(());
+            }
+            // Check the deadline in the writer too: its task may resume before
+            // the caller's timeout task after a long scheduler suspension.
+            if tokio::time::Instant::now() >= deadline {
+                let _ = response.send(Err(Error::Timeout(
+                    "waiting for WebSocket connection".into(),
+                )));
                 return Ok(());
             }
             if session != connection_session {
@@ -379,9 +395,10 @@ where
                     message,
                     response,
                     session,
+                    deadline,
                 });
             }
-            let _ = response.send(Ok(()));
+            let _ = response.send(Ok(generation));
             Ok(())
         }
     }

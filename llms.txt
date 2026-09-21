@@ -1,10 +1,11 @@
-# sogni-client Rust SDK 5.50.3
+# sogni-client-by-morlz Rust SDK 5.54.0
 
-Compatibility: TypeScript 5.50.0 at 452e789; hosted protocol 1.0.0-alpha.42.
+Compatibility: TypeScript 5.54.0 at 4147e8d; hosted protocol 1.0.0-alpha.45.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
+Cargo dependency: `sogni-client-by-morlz = "5.54.0"`.
 Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
 source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
@@ -79,6 +80,14 @@ project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
 - `job.preparation()` exposes typed download/unload/load phases.
 - `projects.assets().upload/list/remove/bind` manages private saved files.
   Normal `.asset(...)` requests automatically reuse eligible verified files.
+- `projects.personal_loras().list/get/import/remove/catalog` manages private
+  adapters. Imports require an explicit rights_confirmed choice. Discover
+  supported import models from list().models; private responses are not cached.
+- `available_loras_with_personal` merges catalogs only for that call.
+- Ref2VA `_r2v_2stage` and `_r2v_balanced_2stage` use 20/8 steps and deliver
+  twice the canvas size. Seedance 2.5 now defaults to 1080p (no 4K).
+- Estimates accept billingMode; video/audio also accept network, defaulting to
+  the current connection. daily_fair_use_pct is optional server-supplied advice.
 
 LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
 `1 + n*8`. WAN 2.2 generates internally at 16 FPS. Use
@@ -91,6 +100,8 @@ LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
 - `chat.create_hosted_completion(&json)` -> hosted REST response
 - `chat.execute_hosted_tool(&json)` -> direct hosted tool execution
 - `chat.create_run/get_run/cancel_run/confirm_run_cost/stream_run_events`
+- Cost confirmation sends the exact caller-approved acceptedCostPreview with
+  toolCallId, decision="confirm", and optional idempotencyKey; cancel needs no preview.
 - `chat.tools.get(name)` / `.all()` -> bundled hosted definitions
 - `chat.execute_tool_call`: six direct media tools; speech/upscale_video
   execute via hosted chat or durable runs.
@@ -106,6 +117,8 @@ Durable runs/workflows require HTTP(S) media URLs.
 `confirm_cost`, `resume`, `reseed`, `cancel`. Templates: `list`, `get`,
 `create`, `update`, `delete`, `fork`. `WorkflowStart.safe_content_filter`
 preserves explicit false.
+Reseeding accepts WorkflowBillingOptions.idempotency_key; reuse it for the same
+take. ReseedWorkflowResult.idempotent reports a server replay as Some(true).
 
 ## Reliability
 
@@ -116,7 +129,12 @@ Reassignment preserves the logical Job handle and job_index while the attempt
 ID changes. Chat streams survive confirmed reconnect recovery; unavailable
 requests return retryable server_restarting/transport_lost errors. Use
 `is_retryable_chat_error`; do not replay uncertain paid requests blindly.
+Recovery can resend one successfully written request after a connection drop
+only when both lookups confirm absence and no server evidence ever admitted it.
+It preserves the request ID/payload and rejects old-account or uncertain writes.
 
 All errors use `sogni_client::Error`. Preserve `ApiError.payload`,
 `ProjectError.payload`, or `ChatError.payload` for structured application logic,
 but do not log credentials or private media URLs.
+ApiError/ChatError.retry_after() returns validated seconds (body before header);
+retry_after_seconds rounds up. details() returns object context; neither retries.

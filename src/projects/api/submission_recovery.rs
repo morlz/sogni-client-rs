@@ -5,10 +5,94 @@ pub(in crate::projects) struct SubmissionRecovery {
     pub(in crate::projects) unadmitted: HashMap<String, Value>,
     pub(in crate::projects) awaiting: HashSet<String>,
     pub(in crate::projects) submitted_at: HashMap<String, DateTime<Utc>>,
+    /// Connection generation and account session of a completed socket write.
+    pub(in crate::projects) sent_on: HashMap<String, (u64, u64)>,
     recheck_epoch: u64,
 }
 
+impl SubmissionRecovery {
+    pub(in crate::projects) fn observed(&mut self, id: &str) {
+        self.unadmitted.remove(id);
+        self.sent_on.remove(id);
+    }
+}
+
 impl ProjectsApi {
+    /// Only after both owner status and the live registry confirmed absence.
+    /// An uncertain write has no generation receipt and can never qualify.
+    pub(super) async fn resend_undelivered(&self, project_id: &str) -> bool {
+        let id = project_id.to_uppercase();
+        if !self.inner.client.is_socket_authenticated() {
+            return false;
+        }
+        let Some(generation) = self.inner.client.socket_generation() else {
+            return false;
+        };
+        let session = self.inner.client.auth_session();
+        let project = self.inner.projects.read().get(&id).cloned();
+        if project
+            .as_ref()
+            .is_none_or(|project| project.status().is_finished())
+        {
+            return false;
+        }
+        let request = {
+            let mut state = self.inner.submission.lock();
+            let Some(&(sent_on, sent_session)) = state.sent_on.get(&id) else {
+                return false;
+            };
+            if sent_on >= generation
+                || sent_session != session
+                || state.submitted_at.contains_key(&id)
+                || state.awaiting.contains(&id)
+            {
+                return false;
+            }
+            let Some(request) = state.unadmitted.get(&id).cloned() else {
+                return false;
+            };
+            // Claim before awaiting: simultaneous recovery passes must not resend twice.
+            state.submitted_at.insert(id.clone(), Utc::now());
+            state.sent_on.remove(&id);
+            request
+        };
+        let result = self
+            .inner
+            .client
+            .send_socket_tracked_in_session("jobRequest", &request, session)
+            .await;
+        // Even a failed write may have arrived; leave a grace window and use
+        // read-only recovery. Never issue a second automatic resend.
+        self.inner
+            .submission
+            .lock()
+            .submitted_at
+            .insert(id.clone(), Utc::now());
+        if let Ok(generation) = result {
+            let mut state = self.inner.submission.lock();
+            if state.unadmitted.contains_key(&id) {
+                state.sent_on.insert(id, (generation, session));
+            }
+        }
+        self.schedule_recheck(RECENTLY_CREATED_GRACE);
+        true
+    }
+
+    pub(super) fn recently_resubmitted(&self, project_id: &str) -> bool {
+        self.inner
+            .submission
+            .lock()
+            .submitted_at
+            .get(&project_id.to_uppercase())
+            .is_some_and(|at| {
+                Utc::now()
+                    .signed_duration_since(*at)
+                    .to_std()
+                    .unwrap_or_default()
+                    < RECENTLY_CREATED_GRACE
+            })
+    }
+
     /// Only explicit project-wide 1001 refusals can be retried automatically:
     /// the server did not admit or charge them. Unknown writes stay uncertain.
     pub(in crate::projects) fn resubmit_if_restarting(&self, data: &Value) -> bool {
@@ -48,6 +132,7 @@ impl ProjectsApi {
         };
         let mut events = self.inner.client.subscribe();
         let session = self.inner.client.rest.auth_updates();
+        let auth_session = *session.borrow();
         let api = self.clone();
         tokio::spawn(async move {
             let result = tokio::time::timeout(Duration::from_secs(60), async {
@@ -72,7 +157,10 @@ impl ProjectsApi {
                         .lock()
                         .unadmitted
                         .insert(id.clone(), request.clone());
-                    api.inner.client.send_socket("jobRequest", &request).await?;
+                    api.inner
+                        .client
+                        .send_socket_tracked_in_session("jobRequest", &request, auth_session)
+                        .await?;
                     api.inner
                         .submission
                         .lock()

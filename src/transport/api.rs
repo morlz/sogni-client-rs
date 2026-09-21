@@ -115,6 +115,24 @@ impl ApiClient {
         self.auth.version().session
     }
 
+    pub(crate) fn socket_generation(&self) -> Option<u64> {
+        self.socket.as_ref().map(SocketTransport::generation)
+    }
+
+    pub(crate) async fn send_socket_tracked_in_session(
+        &self,
+        message_type: &str,
+        data: &Value,
+        session: u64,
+    ) -> Result<u64> {
+        let socket = self.socket.as_ref().ok_or_else(|| {
+            Error::InvalidInput("this client was created with disable_socket=true".into())
+        })?;
+        socket
+            .send_tracked_in_session(message_type, data, session)
+            .await
+    }
+
     pub async fn start(&self) -> Result<()> {
         if self.closed.load(Ordering::Acquire) {
             return Err(Error::Closed);
