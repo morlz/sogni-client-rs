@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 mod media_timeout;
+mod request_session;
 mod socket_abort;
 mod socket_readiness;
 

@@ -7,10 +7,14 @@ pub(in crate::projects) struct SubmissionRecovery {
     pub(in crate::projects) submitted_at: HashMap<String, DateTime<Utc>>,
     /// Connection generation and account session of a completed socket write.
     pub(in crate::projects) sent_on: HashMap<String, (u64, u64)>,
+    pub(super) handled_session: Option<u64>,
     recheck_epoch: u64,
 }
 
 impl SubmissionRecovery {
+    pub(super) fn invalidate_rechecks(&mut self) {
+        self.recheck_epoch = self.recheck_epoch.wrapping_add(1);
+    }
     pub(in crate::projects) fn observed(&mut self, id: &str) {
         self.unadmitted.remove(id);
         self.sent_on.remove(id);
@@ -28,12 +32,12 @@ impl ProjectsApi {
         let Some(generation) = self.inner.client.socket_generation() else {
             return false;
         };
-        let session = self.inner.client.auth_session();
+        let guard = self.inner.client.rest.request_session();
+        let session = guard.id();
         let project = self.inner.projects.read().get(&id).cloned();
-        if project
-            .as_ref()
-            .is_none_or(|project| project.status().is_finished())
-        {
+        if project.as_ref().is_none_or(|project| {
+            project.status().is_finished() || project.check_session().is_err()
+        }) {
             return false;
         }
         let request = {
@@ -56,11 +60,17 @@ impl ProjectsApi {
             state.sent_on.remove(&id);
             request
         };
-        let result = self
-            .inner
-            .client
-            .send_socket_tracked_in_session("jobRequest", &request, session)
+        let result = guard
+            .run(
+                self.inner
+                    .client
+                    .send_socket_tracked_in_session("jobRequest", &request, session),
+            )
             .await;
+        if guard.check().is_err() {
+            self.clear_previous_sessions();
+            return false;
+        }
         // Even a failed write may have arrived; leave a grace window and use
         // read-only recovery. Never issue a second automatic resend.
         self.inner
@@ -115,7 +125,7 @@ impl ProjectsApi {
             .read()
             .get(&id)
             .cloned()
-            .filter(|project| !project.status().is_finished())
+            .filter(|project| !project.status().is_finished() && project.check_session().is_ok())
         else {
             return false;
         };
@@ -130,48 +140,68 @@ impl ProjectsApi {
             state.awaiting.insert(id.clone());
             request
         };
-        let mut events = self.inner.client.subscribe();
-        let session = self.inner.client.rest.auth_updates();
-        let auth_session = *session.borrow();
+        let mut events = self.inner.client.subscribe_scoped();
+        let session = self.inner.client.rest.request_session();
+        let auth_session = session.id();
+        if project.auth_session() != auth_session {
+            return false;
+        }
         let api = self.clone();
         tokio::spawn(async move {
-            let result = tokio::time::timeout(Duration::from_secs(60), async {
-                loop {
-                    let event = events.recv().await.map_err(|_| Error::Closed)?;
-                    if session.has_changed().unwrap_or(true) {
-                        return Err(Error::Closed);
-                    }
-                    if event.name == "disconnected" {
-                        return Err(Error::Closed);
-                    }
-                    if event.name != "connected" {
-                        continue;
-                    }
-                    if project.status().is_finished() {
-                        return Ok(());
-                    }
-                    // Record before sending: an acknowledgement can arrive
-                    // immediately after the socket write.
-                    api.inner
-                        .submission
-                        .lock()
-                        .unadmitted
-                        .insert(id.clone(), request.clone());
-                    api.inner
-                        .client
-                        .send_socket_tracked_in_session("jobRequest", &request, auth_session)
-                        .await?;
-                    api.inner
-                        .submission
-                        .lock()
-                        .submitted_at
-                        .insert(id.clone(), Utc::now());
-                    return Ok(());
-                }
-            })
-            .await;
+            let result = session
+                .run(async {
+                    tokio::time::timeout(Duration::from_secs(60), async {
+                        loop {
+                            let event = events.recv().await.map_err(|_| Error::Closed)?;
+                            session.check()?;
+                            if event.session.is_some_and(|owner| owner != auth_session) {
+                                continue;
+                            }
+                            let event = event.event;
+                            if event.name == "disconnected" {
+                                return Err(Error::Closed);
+                            }
+                            if event.name != "connected" {
+                                continue;
+                            }
+                            if project.status().is_finished() {
+                                return Ok(());
+                            }
+                            // Record before sending: an acknowledgement can arrive
+                            // immediately after the socket write.
+                            api.inner
+                                .submission
+                                .lock()
+                                .unadmitted
+                                .insert(id.clone(), request.clone());
+                            api.inner
+                                .client
+                                .send_socket_tracked_in_session(
+                                    "jobRequest",
+                                    &request,
+                                    auth_session,
+                                )
+                                .await?;
+                            session.check()?;
+                            api.inner
+                                .submission
+                                .lock()
+                                .submitted_at
+                                .insert(id.clone(), Utc::now());
+                            return Ok(());
+                        }
+                    })
+                    .await
+                    .map_err(|_| Error::Timeout("waiting to resubmit after restart".into()))?
+                })
+                .await;
+            if session.check().is_err() {
+                api.clear_previous_sessions();
+                project.end_session();
+                return;
+            }
             api.inner.submission.lock().awaiting.remove(&id);
-            if matches!(result, Ok(Ok(()))) {
+            if result.is_ok() {
                 api.schedule_recheck(RECENTLY_CREATED_GRACE);
             } else {
                 api.inner.submission.lock().unadmitted.remove(&id);
@@ -195,6 +225,7 @@ impl ProjectsApi {
     }
 
     pub(in crate::projects) fn schedule_recheck(&self, delay: Duration) {
+        let session = self.inner.client.rest.request_session();
         let epoch = {
             let mut state = self.inner.submission.lock();
             state.recheck_epoch = state.recheck_epoch.wrapping_add(1);
@@ -202,7 +233,16 @@ impl ProjectsApi {
         };
         let weak = Arc::downgrade(&self.inner);
         tokio::spawn(async move {
-            tokio::time::sleep(delay + Duration::from_millis(250)).await;
+            if session
+                .run(async {
+                    tokio::time::sleep(delay + Duration::from_millis(250)).await;
+                    Ok(())
+                })
+                .await
+                .is_err()
+            {
+                return;
+            }
             if let Some(inner) = weak.upgrade() {
                 if inner.submission.lock().recheck_epoch != epoch {
                     return;

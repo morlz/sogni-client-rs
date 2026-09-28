@@ -85,6 +85,8 @@ impl SocketTransport {
         let rest = RestClient::new(socket_rest_url, auth.clone(), http, config.request_timeout);
         let (commands, command_receiver) = mpsc::channel(256);
         let (connected, _) = watch::channel(false);
+        let mut subscriptions = config.socket_event_subscriptions.clone();
+        subscriptions.entry("projectQueue".into()).or_insert(true);
         Ok(Self {
             inner: Arc::new(SocketInner {
                 url: config.socket_endpoint.clone(),
@@ -97,7 +99,7 @@ impl SocketTransport {
                     .filter(|value| !value.is_empty()),
                 attribution: config.attribution.clone(),
                 network: RwLock::new(config.network),
-                subscriptions: RwLock::new(config.socket_event_subscriptions.clone()),
+                subscriptions: RwLock::new(subscriptions),
                 rest,
                 events,
                 commands,
@@ -121,6 +123,7 @@ impl SocketTransport {
 
     pub(super) fn is_connected(&self) -> bool {
         *self.inner.connected.borrow()
+            && self.inner.session.load(Ordering::Acquire) == self.inner.auth.version().session
     }
 
     pub(super) fn is_authenticated(&self) -> bool {
@@ -157,30 +160,22 @@ impl SocketTransport {
     }
 
     pub(super) async fn start(&self) -> Result<()> {
+        let mut receiver = self.inner.command_receiver.lock().await;
         if self.inner.closed.load(Ordering::Acquire) {
             return Err(Error::Closed);
         }
-        let needs_start = self
-            .inner
-            .task
-            .lock()
+        let mut task = self.inner.task.lock();
+        let needs_start = task
             .as_ref()
             .is_none_or(tokio::task::JoinHandle::is_finished);
         if !needs_start {
             return Ok(());
         }
-        let receiver = self
-            .inner
-            .command_receiver
-            .lock()
-            .await
-            .take()
-            .ok_or(Error::Closed)?;
+        let receiver = receiver.take().ok_or(Error::Closed)?;
         let inner = self.inner.clone();
-        let task = tokio::spawn(async move {
+        *task = Some(tokio::spawn(async move {
             socket_manager(inner, receiver).await;
-        });
-        *self.inner.task.lock() = Some(task);
+        }));
         Ok(())
     }
 
@@ -274,6 +269,10 @@ impl SocketTransport {
         &self,
         subscriptions: BTreeMap<String, bool>,
     ) -> Result<()> {
+        self.inner
+            .subscriptions
+            .write()
+            .extend(subscriptions.clone());
         let payload = json!({"subscriptions": subscriptions});
         self.send("setSocketEventSubscriptions", &payload).await
     }

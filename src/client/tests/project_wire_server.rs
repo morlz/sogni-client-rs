@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::{collections::BTreeMap, net::SocketAddr, sync::Arc};
 
 use futures_util::{SinkExt, StreamExt};
@@ -7,7 +7,7 @@ use serde_json::{Value, json};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},
-    sync::mpsc,
+    sync::{Notify, mpsc},
     task::JoinHandle,
 };
 use tokio_tungstenite::tungstenite::Message;
@@ -30,7 +30,16 @@ pub(super) struct Fixture {
     pub wire: mpsc::Receiver<Value>,
     pub active: Arc<Mutex<Value>>,
     pub status: Arc<Mutex<Option<Value>>>,
+    pub signing: Arc<SigningControl>,
     task: JoinHandle<()>,
+}
+
+#[derive(Default)]
+pub(super) struct SigningControl {
+    pub hold_first: AtomicBool,
+    pub entered: Notify,
+    pub release: Notify,
+    requests: AtomicUsize,
 }
 
 struct Faults {
@@ -39,6 +48,7 @@ struct Faults {
     acknowledge: bool,
     active: Arc<Mutex<Value>>,
     status: Arc<Mutex<Option<Value>>>,
+    signing: Arc<SigningControl>,
 }
 
 impl Fixture {
@@ -62,12 +72,14 @@ impl Fixture {
         let (sender, wire) = mpsc::channel(4);
         let active = Arc::new(Mutex::new(json!({"projects":[]})));
         let status = Arc::new(Mutex::new(None));
+        let signing = Arc::new(SigningControl::default());
         let faults = Arc::new(Faults {
             restarts: AtomicUsize::new(restarts),
             disconnects: AtomicUsize::new(disconnects),
             acknowledge,
             active: active.clone(),
             status: status.clone(),
+            signing: signing.clone(),
         });
         let task = tokio::spawn(async move {
             loop {
@@ -86,6 +98,7 @@ impl Fixture {
             wire,
             active,
             status,
+            signing,
             task,
         }
     }
@@ -154,18 +167,28 @@ async fn serve_connection(
         headers,
         body,
     };
-    let (code, response) =
-        if request.path.starts_with("/v2/projects/") || request.path.starts_with("/v1/projects/") {
-            faults.status.lock().as_ref().map_or_else(
-                || ("404 Not Found", json!({"error":102})),
-                |status| ("200 OK", json!({"data":{"project":status}})),
-            )
-        } else if request.path == "/api/v1/artist/projects/active" {
-            ("200 OK", faults.active.lock().clone())
-        } else {
-            ("200 OK", response(&request, address))
-        };
-    captured.lock().push(request);
+    captured.lock().push(request.clone());
+    let (code, response) = if request.path == "/v1/image/downloadUrl"
+        && faults.signing.hold_first.load(Ordering::SeqCst)
+        && faults.signing.requests.fetch_add(1, Ordering::SeqCst) == 0
+    {
+        faults.signing.entered.notify_one();
+        faults.signing.release.notified().await;
+        (
+            "503 Service Unavailable",
+            json!({"message":"held fixture signer failed"}),
+        )
+    } else if request.path.starts_with("/v2/projects/") || request.path.starts_with("/v1/projects/")
+    {
+        faults.status.lock().as_ref().map_or_else(
+            || ("404 Not Found", json!({"error":102})),
+            |status| ("200 OK", json!({"data":{"project":status}})),
+        )
+    } else if request.path == "/api/v1/artist/projects/active" {
+        ("200 OK", faults.active.lock().clone())
+    } else {
+        ("200 OK", response(&request, address))
+    };
     let body = response.to_string();
     stream.write_all(format!(
         "HTTP/1.1 {code}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
@@ -174,6 +197,9 @@ async fn serve_connection(
 }
 
 fn response(request: &HttpCapture, address: SocketAddr) -> Value {
+    if request.path == "/fixture-result" {
+        return json!({"synthetic":"image bytes"});
+    }
     if request.path == "/fixture-upload" {
         assert_eq!(request.method, "PUT");
         assert!(!request.headers.contains_key("api-key"));
@@ -194,7 +220,13 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
             {"id":"flux1-schnell-fp8","SID":1,"tier":"fixture"},
             {"id":"z_image_turbo_bf16","SID":2,"tier":"comfy-fixture"},
             {"id":"sam3_image_segment_bf16","SID":3,"tier":"utility","media":"image"},
-            {"id":"pixal3d_int8_i23d","SID":4,"tier":"utility","media":"model"}
+            {"id":"pixal3d_int8_i23d","SID":4,"tier":"utility","media":"model"},
+            {"id":"minimax-h3-fl2va-fp8_i2v","tier":"h3","media":"video"},
+            {"id":"minimax-h3-fl2va-fp8_t2v","tier":"h3","media":"video"},
+            {"id":"minimax-h3-ref2va-fp8_r2v","tier":"h3","media":"video"},
+            {"id":"fixture-enhancement-parent","tier":"comfy-fixture","media":"image"},
+            {"id":"fixture-held-result-parent","tier":"comfy-fixture","media":"image"},
+            {"id":"krea2_turbo_fp8_scaled","tier":"comfy-fixture","media":"image"}
         ]),
         "/api/v2/models/tiers" => json!({"fixture": {
             "steps":{"min":1,"max":5,"default":4},
@@ -206,7 +238,7 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
             "guidance":{"min":0,"max":1,"default":0},
             "sampler":{"allowed":[],"default":null},
             "scheduler":{"allowed":[],"default":null}
-        }, "comfy-fixture": {
+        }, "h3": {"type":"video", "steps":{"min":20,"max":20,"default":20},"guidance":{"min":1,"max":1,"default":1}}, "comfy-fixture": {
             "type":"image", "steps":{"min":4,"max":12,"default":8},
             "guidance":{"min":1,"max":1,"default":1},
             "comfySampler":{"allowed":["res_multistep","Euler"],"default":"res_multistep"},
@@ -218,11 +250,23 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
         "/v1/image/uploadUrl" => {
             json!({"status":"success","data":{"uploadUrl":format!("http://{address}/fixture-upload")}})
         }
+        "/v1/image/downloadUrl" => {
+            json!({"status":"success","data":{"downloadUrl":format!("http://{address}/fixture-result")}})
+        }
+        path if path.starts_with("/api/v1/size-presets/network/") => {
+            json!([{"id":"portrait","width":896,"height":1152}])
+        }
+        path if path.starts_with("/api/v2/job/estimate/")
+            || path.starts_with("/api/v1/job-video/estimate/") =>
+        {
+            json!({"quote":{"project":{"costInToken":"1","costInUSD":"0.01"}}})
+        }
         other => panic!("unexpected local fixture path {other}"),
     }
 }
 
 async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, faults: Arc<Faults>) {
+    let address = stream.local_addr().unwrap();
     let mut socket = tokio_tungstenite::accept_async(stream).await.unwrap();
     let payload = crate::utils::b64_json_encode(&json!({
         "username":"fixture", "address":"fixture", "subscriptionEntitlement":{}
@@ -297,6 +341,28 @@ async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, faults: Ar
                             }
                         }
                         return;
+                    }
+                    if matches!(
+                        value["keyFrames"][0]["modelID"].as_str(),
+                        Some(
+                            "fixture-enhancement-parent"
+                                | "fixture-held-result-parent"
+                                | "krea2_turbo_fp8_scaled"
+                        )
+                    ) {
+                        let mut result = json!({"jobID":value["jobID"],"imgID":"IMAGE","jobIndex":0,"lastSeed":0,"performedStepCount":7});
+                        if value["keyFrames"][0]["modelID"] != "fixture-held-result-parent" {
+                            result["resultUrl"] = json!(format!("http://{address}/fixture-result"));
+                        }
+                        for (name, data) in [
+                            ("jobResult", result),
+                            (
+                                "jobState",
+                                json!({"jobID":value["jobID"],"type":"jobCompleted"}),
+                            ),
+                        ] {
+                            socket.send(Message::Text(json!({"type":name,"data":crate::utils::b64_json_encode(&data).unwrap()}).to_string().into())).await.unwrap();
+                        }
                     }
                     if matches!(
                         value["keyFrames"][0]["modelID"].as_str(),

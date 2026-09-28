@@ -1,47 +1,66 @@
 use super::*;
+use crate::auth::RequestSession;
 
 impl ProjectsApi {
     /// Rehydrate one application-owned project without submitting new work.
     /// Keep the same app id across restarts for active-project recovery.
     pub async fn recover_project(&self, project_id: &str) -> Result<Project> {
-        require_nonempty(project_id, "project_id")?;
-        let project_id = project_id.to_uppercase();
-        let tracked = { self.inner.projects.read().get(&project_id).cloned() };
-        if let Some(project) = tracked.filter(incomplete_results) {
-            let raw = self.get_status(&project_id).await?;
-            if is_llm_recovery(&raw) {
-                return Err(Error::Protocol(
-                    "recovered project type does not match".into(),
-                ));
-            }
-            replay_recovered(&project, &raw, false);
-            self.resolve_recovered_urls(&project).await;
-            return Ok(project);
-        }
-        self.sync("application-recovery").await?;
-        let tracked = { self.inner.projects.read().get(&project_id).cloned() };
-        if let Some(project) = tracked {
-            return Ok(project);
-        }
-        let raw = self.get_status(&project_id).await?;
-        if recovery_id(&raw).as_deref() != Some(&project_id) || is_llm_recovery(&raw) {
-            return Err(Error::Protocol(
-                "recovered project identity does not match".into(),
-            ));
-        }
-        let project = Project::new(
-            project_id.clone(),
-            recovered_params(&raw),
-            true,
-            Arc::downgrade(&self.inner),
-        );
-        replay_recovered(&project, &raw, false);
-        self.resolve_recovered_urls(&project).await;
-        self.inner
-            .projects
-            .write()
-            .insert(project_id, project.clone());
-        Ok(project)
+        self.clear_previous_sessions();
+        let session = self.inner.client.rest.request_session();
+        let revisions = self.queue_revisions();
+        session
+            .run(async {
+                require_nonempty(project_id, "project_id")?;
+                let project_id = project_id.to_uppercase();
+                let tracked = { self.inner.projects.read().get(&project_id).cloned() };
+                if let Some(project) = tracked.filter(incomplete_results) {
+                    let raw = self.get_status(&project_id).await?;
+                    if is_llm_recovery(&raw) {
+                        return Err(Error::Protocol(
+                            "recovered project type does not match".into(),
+                        ));
+                    }
+                    replay_recovered_at_revision(
+                        &project,
+                        &raw,
+                        false,
+                        revisions.get(&project_id).copied().unwrap_or(0),
+                    );
+                    self.resolve_recovered_urls(&project, &session).await?;
+                    return Ok(project);
+                }
+                self.sync("application-recovery").await?;
+                let tracked = { self.inner.projects.read().get(&project_id).cloned() };
+                if let Some(project) = tracked {
+                    return Ok(project);
+                }
+                let raw = self.get_status(&project_id).await?;
+                if recovery_id(&raw).as_deref() != Some(&project_id) || is_llm_recovery(&raw) {
+                    return Err(Error::Protocol(
+                        "recovered project identity does not match".into(),
+                    ));
+                }
+                let project = Project::new(
+                    project_id.clone(),
+                    recovered_params(&raw),
+                    true,
+                    Arc::downgrade(&self.inner),
+                );
+                replay_recovered_at_revision(
+                    &project,
+                    &raw,
+                    false,
+                    revisions.get(&project_id).copied().unwrap_or(0),
+                );
+                self.resolve_recovered_urls(&project, &session).await?;
+                session.check()?;
+                self.inner
+                    .projects
+                    .write()
+                    .insert(project_id, project.clone());
+                Ok(project)
+            })
+            .await
     }
 
     /// Reconcile tracked projects with the socket server's durable snapshot.
@@ -49,24 +68,44 @@ impl ProjectsApi {
     /// The returned JSON follows the JavaScript and Python `ProjectSyncResult`
     /// shape and is also emitted as `projectsSynced`.
     pub async fn sync(&self, reason: &str) -> Result<Value> {
-        let requested_at = Utc::now();
-        let query = json!({"appId": self.inner.client.app_id()});
-        let snapshot = self
-            .inner
-            .client
-            .socket_get("/api/v1/artist/projects/sync", Some(&query))
-            .await?;
-        let _sync_guard = self.inner.sync_lock.lock().await;
-        self.reconcile(snapshot, reason, requested_at).await
+        self.clear_previous_sessions();
+        let session = self.inner.client.rest.request_session();
+        let revisions = self.queue_revisions();
+        session
+            .run(async {
+                let requested_at = Utc::now();
+                let query = json!({"appId": self.inner.client.app_id()});
+                let snapshot = self
+                    .inner
+                    .client
+                    .socket_get("/api/v1/artist/projects/sync", Some(&query))
+                    .await?;
+                let _sync_guard = self.inner.sync_lock.lock().await;
+                session.check()?;
+                self.reconcile(snapshot, reason, requested_at, &session, &revisions)
+                    .await
+            })
+            .await
+    }
+
+    fn queue_revisions(&self) -> HashMap<String, u64> {
+        self.inner
+            .projects
+            .read()
+            .iter()
+            .map(|(id, project)| (id.clone(), project.queue_revision()))
+            .collect()
     }
 
     /// Return in-flight projects owned by other app instances for this account.
     pub async fn list_projects_elsewhere(&self) -> Result<Vec<Value>> {
+        let session = self.inner.client.rest.request_session();
         let response = self
             .inner
             .client
             .socket_get("/api/v1/artist/projects/sync", None)
             .await?;
+        session.check()?;
         for raw in recovery_records(&response, "activeProjects")
             .chain(recovery_records(&response, "unclaimedCompletedProjects"))
         {
@@ -101,6 +140,33 @@ impl ProjectsApi {
         project_ids: &[S],
         options: Option<ResolveMissingOptions>,
     ) -> BTreeMap<String, ProjectResolution> {
+        let session = self.inner.client.rest.request_session();
+        match session
+            .run(self.resolve_missing_in_session(project_ids, options, &session))
+            .await
+        {
+            Ok(result) => result,
+            Err(_) => project_ids
+                .iter()
+                .map(|id| {
+                    (
+                        id.as_ref().to_owned(),
+                        ProjectResolution::Unknown {
+                            error: "project status could not be verified in its account session"
+                                .into(),
+                        },
+                    )
+                })
+                .collect(),
+        }
+    }
+
+    async fn resolve_missing_in_session<S: AsRef<str>>(
+        &self,
+        project_ids: &[S],
+        options: Option<ResolveMissingOptions>,
+        session: &RequestSession,
+    ) -> Result<BTreeMap<String, ProjectResolution>> {
         let options = options.unwrap_or_default();
         let attempts = options.attempts.max(1);
         let mut seen = HashSet::new();
@@ -118,6 +184,7 @@ impl ProjectsApi {
             if attempt != 0 && !options.retry_delay.is_zero() {
                 tokio::time::sleep(options.retry_delay).await;
             }
+            session.check()?;
             let mut still_missing = Vec::new();
             for project_id in pending {
                 match self.get_status(&project_id.to_uppercase()).await {
@@ -144,12 +211,14 @@ impl ProjectsApi {
                         );
                     }
                 }
+                session.check()?;
             }
             pending = still_missing;
         }
 
         if !pending.is_empty() {
             let active = self.list_active_project_ids().await;
+            session.check()?;
             classify_exhausted_404s(&mut result, pending, active.as_ref());
             let absent = result
                 .iter()
@@ -158,12 +227,14 @@ impl ProjectsApi {
                 })
                 .collect::<Vec<_>>();
             for id in absent {
+                session.check()?;
                 if self.resend_undelivered(&id).await || self.recently_resubmitted(&id) {
                     result.insert(id, ProjectResolution::Active);
                 }
             }
         }
-        result
+        session.check()?;
+        Ok(result)
     }
 
     async fn list_active_project_ids(&self) -> Option<HashSet<String>> {
@@ -189,7 +260,10 @@ impl ProjectsApi {
         snapshot: Value,
         reason: &str,
         requested_at: DateTime<Utc>,
+        session: &RequestSession,
+        revisions: &HashMap<String, u64>,
     ) -> Result<Value> {
+        session.check()?;
         let mut active = Vec::new();
         let mut completed = Vec::new();
         let mut lost = Vec::new();
@@ -199,6 +273,7 @@ impl ProjectsApi {
         let mut seen = HashSet::new();
 
         for raw in recovery_records(&snapshot, "activeProjects") {
+            session.check()?;
             let Some(id) = recovery_id(raw) else {
                 continue;
             };
@@ -206,11 +281,12 @@ impl ProjectsApi {
                 continue;
             }
             self.inner.submission.lock().observed(&id);
+            let revision = revisions.get(&id).copied().unwrap_or(0);
             let tracked = { self.inner.projects.read().get(&id).cloned() };
             if let Some(project) = tracked {
                 if !project.status().is_finished() {
-                    replay_recovered(&project, raw, false);
-                    self.resolve_recovered_urls(&project).await;
+                    replay_recovered_at_revision(&project, raw, false, revision);
+                    self.resolve_recovered_urls(&project, session).await?;
                     active.push(json!(id));
                 }
             } else {
@@ -221,13 +297,14 @@ impl ProjectsApi {
                     Arc::downgrade(&self.inner),
                 );
                 self.inner.projects.write().insert(id, project.clone());
-                replay_recovered(&project, raw, false);
-                self.resolve_recovered_urls(&project).await;
+                replay_recovered_at_revision(&project, raw, false, revision);
+                self.resolve_recovered_urls(&project, session).await?;
                 recovered_active.push(raw.clone());
             }
         }
 
         for raw in recovery_records(&snapshot, "unclaimedCompletedProjects") {
+            session.check()?;
             let Some(id) = recovery_id(raw) else {
                 continue;
             };
@@ -235,11 +312,12 @@ impl ProjectsApi {
                 continue;
             }
             self.inner.submission.lock().observed(&id);
+            let revision = revisions.get(&id).copied().unwrap_or(0);
             let tracked = { self.inner.projects.read().get(&id).cloned() };
             if let Some(project) = tracked {
                 if !project.status().is_finished() || incomplete_results(&project) {
-                    replay_recovered(&project, raw, true);
-                    self.resolve_recovered_urls(&project).await;
+                    replay_recovered_at_revision(&project, raw, true, revision);
+                    self.resolve_recovered_urls(&project, session).await?;
                     completed.push(json!(id));
                 }
                 continue;
@@ -260,8 +338,8 @@ impl ProjectsApi {
                 Arc::downgrade(&self.inner),
             );
             self.inner.projects.write().insert(id, project.clone());
-            replay_recovered(&project, raw, true);
-            self.resolve_recovered_urls(&project).await;
+            replay_recovered_at_revision(&project, raw, true, revision);
+            self.resolve_recovered_urls(&project, session).await?;
             let mut record = raw.as_object().cloned().unwrap_or_default();
             record.insert("resultUrls".into(), json!(project.result_urls()));
             recovered_completed.push(Value::Object(record));
@@ -312,14 +390,20 @@ impl ProjectsApi {
         if !missing.is_empty() {
             let ids = missing.iter().map(Project::id).collect::<Vec<_>>();
             let resolutions = self.resolve_missing(&ids, None).await;
+            session.check()?;
             for project in missing {
                 if project.status().is_finished() && !incomplete_results(&project) {
                     continue;
                 }
                 match resolutions.get(&project.id()) {
                     Some(ProjectResolution::Finished { project: raw }) => {
-                        replay_recovered(&project, raw, false);
-                        self.resolve_recovered_urls(&project).await;
+                        replay_recovered_at_revision(
+                            &project,
+                            raw,
+                            false,
+                            revisions.get(&project.id()).copied().unwrap_or(0),
+                        );
+                        self.resolve_recovered_urls(&project, session).await?;
                         completed.push(json!(project.id()));
                     }
                     Some(ProjectResolution::Active) => active.push(json!(project.id())),
@@ -353,6 +437,7 @@ impl ProjectsApi {
             }
         }
 
+        session.check()?;
         if !recovered_active.is_empty() {
             self.inner.events.emit(
                 ACTIVE_PROJECTS_RECOVERED_EVENT,
@@ -379,16 +464,23 @@ impl ProjectsApi {
         Ok(result)
     }
 
-    async fn resolve_recovered_urls(&self, project: &Project) {
+    async fn resolve_recovered_urls(
+        &self,
+        project: &Project,
+        session: &RequestSession,
+    ) -> Result<()> {
         for job in project.jobs() {
+            session.check()?;
             if job.status() == JobStatus::Completed
                 && !job.is_withheld()
                 && job.result_url().is_none()
                 && job.get_result_url().await.is_err()
             {
+                session.check()?;
                 tracing::debug!("recovered result URL unavailable");
             }
         }
+        session.check()
     }
 }
 

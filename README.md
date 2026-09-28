@@ -3,9 +3,9 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.54.0** implements the TypeScript **5.54.0** public contract through
-[`4147e8d`](https://github.com/Sogni-AI/sogni-client/commit/4147e8dfeed5632ef8a8c648614ab476e924a0e1),
-including hosted tool definitions from Sogni Protocol `1.0.0-alpha.45`.
+Version **5.58.1** implements the TypeScript **5.58.1** public contract through
+[`25b5d46`](https://github.com/Sogni-AI/sogni-client/commit/25b5d46100e4ec764e8d063c19ad4eb141664cbf),
+including hosted tool definitions from Sogni Protocol `1.0.0-alpha.46`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
 See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
@@ -20,11 +20,11 @@ the previous `sogni-client` package.
 - API-key, JWT/refresh-token, cookie, and username/password authentication
 - Reconnecting authenticated WebSocket transport with exponential backoff
 - Image, video, and audio project submission, progress, results, cancellation,
-  uploads, cost estimates, model metadata, LoRAs, and reconnect recovery
+  queue explanations, durable result lookup, uploads, estimates, and recovery
 - SAM3 segmentation/cutouts, BiRefNet background removal, Pixal3D multi-view
   GLB reconstruction, GPT Image 2.5 editing, and worker result provenance
-- Speech/voice cloning, FlashVSR video upscaling, FastH3 two-stage and
-  audio-guide video, Seedance 2.5 exports, and reusable private uploads
+- Speech/voice cloning, FlashVSR video upscaling, MiniMax H3 keyframes,
+  two-stage/audio-guide video with LoRAs, Seedance exports, and private uploads
 - Socket-native streaming LLM chat, hosted chat completions, hosted tools, and
   durable chat runs with resumable SSE
 - Durable creative workflows, cost confirmation, reseeding, SSE, and template
@@ -51,7 +51,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client-by-morlz = { version = "5.54.0", default-features = false }
+sogni-client-by-morlz = { version = "5.58.1", default-features = false }
 ```
 
 For development against the repository:
@@ -116,6 +116,12 @@ Token authentication is available through
 username/password flow, create a token-auth client and call
 `client.account.login(username, password)`.
 
+Logout or an account switch ends pending REST, SSE, chat, and project operations
+from the previous account. Old `Project` and `Job` handles cannot start operations
+for the new account; existing waiters receive a session-ended error. This does
+not cancel remote generation. Refreshing tokens for the same wallet preserves
+ongoing work.
+
 Supply a stable `app_id` for WebSocket clients and persist it across restarts.
 Blank IDs now fail locally when sockets are enabled, including deferred socket
 startup; the builder no longer creates a random ID on every run. IDs need to be
@@ -170,6 +176,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+Image requests accept `.embed_prompt_metadata(false)` to omit generation
+prompt/settings from worker image metadata; omission leaves the worker default
+enabled. `startingImageStrength` is source-image influence from 0 to 1: 0 requests
+full denoising and 1 preserves the input. Omission or null uses 0.5. Explicit
+zero values for strength, guidance, seed, and preview count remain on the wire.
+
 `wait_for_completion` never cancels the remote generation when its local
 timeout expires. Call `project.cancel()` explicitly when cancellation is the
 desired outcome. Cancellation waits for owner-scoped status to confirm
@@ -204,6 +216,14 @@ do not qualify.
 
 Completed generated-image jobs also support `job.enhance("light", overrides).await`;
 the returned enhancement is tracked through `job.enhancement_project()`.
+Enhancement uses Krea 2 Turbo (`krea2_turbo_fp8_scaled`) at 8 steps on Fast.
+`light`, `medium`, and `heavy` apply denoising strengths 0.15, 0.35, and 0.49.
+The source job's seed, including zero, is retained. Explicit dimensions and
+named size presets are resolved from the parent model and preserved; an unknown
+preset fails before downloading the source or creating an enhancement.
+Quote the same canvas with
+`projects.estimate_enhancement_cost_with_size(strength, token_type, width, height)`;
+the existing `estimate_enhancement_cost(strength, token_type)` uses default size.
 Segmentation masks/cutouts and 3D artifacts reject enhancement before download.
 
 `job.preparation()` and `job.snapshot().preparation()` expose `JobPreparation`
@@ -211,6 +231,48 @@ while a worker downloads LoRAs, unloads a model, or loads the next model. Match
 the enum variant before reading its fields. Model phases include a `Start` or
 `End` step and optional elapsed seconds. Raw preparation data remains in the
 snapshot's `extra` map, including future phases.
+
+## Look up results and queue state
+
+`projects.get_result(id, None)` reads an account-owned project from durable
+status and returns `ProjectResult` with current status, jobs, and available
+completed-result URLs. It works after a process restart or socket recovery
+expiry, without creating a project or changing local tracking.
+
+```rust,no_run
+use sogni_client::{ListRecentProjectsOptions, SogniClient};
+
+async fn recent_results(client: &SogniClient) -> sogni_client::Result<()> {
+    let recent = client.projects.list_recent(Some(ListRecentProjectsOptions {
+        limit: Some(20),
+        ..Default::default()
+    })).await?;
+    for project in recent {
+        let result = client.projects.get_result(&project.id, None).await?;
+        println!("{}: {} jobs", result.id, result.jobs.len());
+    }
+    Ok(())
+}
+```
+
+`list_recent` defaults to the last 24 hours, accepts `since` in epoch
+milliseconds and an optional `app_source`, and clamps history to seven days.
+Its `limit` is 1–100 renders (default 50), grouped into projects newest first.
+It does not mint download URLs. Result URLs expire; call `get_result` again for
+fresh URLs. A result job's `url_unavailable` explains withheld media, unknown
+media kind, or a failed URL lookup. `GetProjectResultOptions.kind` supplies a
+fallback `ResultMediaKind` only when stored evidence and model metadata cannot
+identify the media. Unknown media is never assumed to be an image.
+
+Queue explanations are available through `project.waiting_reason()`,
+`project.job_waiting_reasons()`, `job.waiting_reason()`, and their snapshots.
+The `queueChanged` event from `projects.subscribe()` carries
+`ProjectQueueChanged`. Display `WaitingReason.message` as plain text. A batch
+can keep queued jobs while another job runs; missing explanations on older
+servers do not imply an error or promise immediate processing.
+The socket subscribes to `projectQueue` by default. Opt out with
+`.socket_event_subscription("projectQueue", false)` or an explicit false in
+`client.set_socket_event_subscriptions(...)`.
 
 ## Segment an image or reconstruct a 3D object
 
@@ -342,9 +404,45 @@ references, sampling and LoRAs as the corresponding one-stage R2V model, at
 Audio-guide modes require uploaded audio: `ia2v` also requires a first image,
 `flfa2v` requires first and last images, and `a2v` takes audio alone. They use
 4 steps, guidance 1, 24 FPS, and frames `124 + n*17` in 124–362. Output always
-carries the uploaded audio; `audioStart` selects its offset. `audioDuration`,
-LoRAs, and `generateAudio:false` are rejected. Use
+carries the uploaded audio; `audioStart` selects its offset. `audioDuration`
+and `generateAudio:false` are rejected. `loras` and matching `loraStrengths`
+are supported, preserving caller order. Use
 `get_minimax_h3_frames_for_audio_duration(seconds)` for a covering frame count.
+
+MiniMax H3 image-to-video, first/last-frame, audio-guide, and reference-to-video
+models accept up to `MINIMAX_H3_MAX_KEYFRAMES` (8) intermediate stills. Check
+`is_minimax_h3_keyframe_model(model_id)` for the supported models.
+
+```rust,no_run
+use sogni_client::{AssetRole, MediaSource, MinimaxH3Keyframe, ProjectRequest};
+
+fn pinned_video() -> ProjectRequest {
+    ProjectRequest::video(
+        "minimax-h3-ref2va-fp8_r2v",
+        "Use <Picture 1> for the subject. At 2 seconds, cut to the close-up \
+         in <Picture 2>; at 4 seconds, cut to the wide shot in <Picture 3>.",
+    )
+        .duration(6.0)
+        .asset(AssetRole::ReferenceImage, MediaSource::Path("subject.png".into()))
+        .keyframes(vec![
+            MinimaxH3Keyframe::new(MediaSource::Path("close-up.png".into()), 48),
+            MinimaxH3Keyframe::new(MediaSource::Path("wide.png".into()), 96),
+        ])
+}
+```
+
+`frame_index` is a unique zero-based frame at 24 FPS, from 1 through the resolved
+frame count minus 2. Keep first/last anchors in their workflow's reference-image
+roles. `duration` overrides `frames` and snaps to the H3 grid: 6 seconds produces
+141 frames. The builder preserves caller order, even when indices are unsorted;
+it registers separate `keyframeImage1..8` uploads in that order without replacing
+reference slots. Use `<Picture N>` in chronological order after the workflow's
+own pictures and describe each still at its time. Changes of framing or lighting
+should start a new shot. Keyframes do not count as reference images. Invalid
+models, indices, duplicate frames, or oversized lists fail before any upload.
+`estimate_video_cost` accepts `keyframeCount` or derives it from a `keyframes`
+array; an explicit count takes precedence, including zero. Pricing remains
+service-owned.
 
 Seedance 2.5 defaults to 1080p and accepts 480p/720p/1080p, without 4K.
 It accepts `.param("outputFormat", "mov")` and

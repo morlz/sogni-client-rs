@@ -144,6 +144,14 @@ pub(super) fn build_job_request(
             object.insert(field.into(), value.clone());
         }
     }
+    if media_type == "image" {
+        if let Some(value) = params.get("embedPromptMetadata") {
+            let value = value.as_bool().ok_or_else(|| {
+                Error::InvalidInput("embedPromptMetadata must be a boolean".into())
+            })?;
+            object.insert("embedPromptMetadata".into(), json!(value));
+        }
+    }
     if let Some(attribution) = attribution {
         for (key, value) in attribution.wire_fields() {
             object.insert(key, json!(value));

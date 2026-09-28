@@ -9,6 +9,8 @@ pub const MINIMAX_H3_FRAME_STEP: i64 = 17;
 pub const MINIMAX_H3_BASE_FRAMES: i64 = 124;
 pub const MINIMAX_H3_MIN_FRAMES: i64 = 124;
 pub const MINIMAX_H3_MAX_FRAMES: i64 = 362;
+/// Maximum number of intermediate still images pinned within a MiniMax H3 video.
+pub const MINIMAX_H3_MAX_KEYFRAMES: usize = 8;
 pub const MINIMAX_H3_DIMENSION_STEP: i64 = 32;
 pub const MINIMAX_H3_MAX_DIMENSION: i64 = 1_344;
 pub const MINIMAX_H3_MAX_PIXELS: i64 = 1_032_192;
@@ -136,6 +138,16 @@ pub fn is_minimax_h3_reference_model(model_id: &str) -> bool {
     is_minimax_h3_model(model_id) && get_video_workflow_type(model_id) == Some("r2v")
 }
 
+/// Whether a public MiniMax H3 workflow accepts intermediate keyframe images.
+#[must_use]
+pub fn is_minimax_h3_keyframe_model(model_id: &str) -> bool {
+    is_minimax_h3_model(model_id)
+        && (matches!(
+            get_video_workflow_type(model_id),
+            Some("i2v" | "flf2v" | "r2v")
+        ) || is_minimax_h3_audio_guide_model(model_id))
+}
+
 #[must_use]
 pub fn is_external_video_model(model_id: &str) -> bool {
     is_seedance_model(model_id) || is_happyhorse_model(model_id) || is_wan3_model(model_id)
@@ -160,7 +172,36 @@ pub fn is_model_artifact_model(model_id: &str) -> bool {
 
 #[must_use]
 pub fn is_audio_model(model_id: &str) -> bool {
-    model_id.starts_with("ace_step") || model_id == "minimax_music3"
+    model_id.starts_with("ace_step")
+        || model_id.starts_with("qwen3_tts_")
+        || model_id == "minimax_music3"
+}
+
+#[cfg(test)]
+#[test]
+fn speech_models_are_audio_and_h3_keyframes_exclude_text_generation() {
+    for model in [
+        "qwen3_tts_1.7b_custom_voice_bf16",
+        "qwen3_tts_1.7b_voice_clone_bf16",
+        "qwen3_tts_future",
+    ] {
+        assert!(is_audio_model(model));
+        assert!(!is_video_model(model));
+    }
+    assert_eq!(
+        MINIMAX_H3_MODELS
+            .iter()
+            .filter(|model| is_minimax_h3_keyframe_model(model))
+            .count(),
+        21
+    );
+    assert!(!is_minimax_h3_keyframe_model(
+        "minimax-h3-fastvideo-int8_t2v_turbo"
+    ));
+    assert!(!is_minimax_h3_keyframe_model(
+        "minimax-h3-fl2va-fp8_ia2v_turbo"
+    ));
+    assert!(!is_minimax_h3_keyframe_model("ltx23-22b-fp8_i2v_distilled"));
 }
 
 #[must_use]

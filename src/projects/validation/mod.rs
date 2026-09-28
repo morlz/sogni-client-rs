@@ -3,11 +3,13 @@ mod assets;
 mod external;
 mod gpt_image;
 mod h3;
+mod keyframes;
 pub(super) use assets::{custom_image_size_bounds, video_asset_requirements};
 use external::{seedance_reference_limits, validate_seedance_task, validate_wan3_references};
 pub(super) use gpt_image::validate_gpt_image_options;
 pub(super) use h3::validate_h3_params;
 use h3::validate_h3_references;
+pub(super) use keyframes::keyframe_indices;
 
 pub(in crate::projects) const RETIRED_OUTPUT_SCALE_MESSAGE: &str = "outputScale is no longer supported. For MiniMax H3 1080p or 2K output use the two-stage model ids minimax-h3-fastvideo-int8_t2v_turbo_2stage, minimax-h3-fastvideo-int8_i2v_turbo_2stage or minimax-h3-fastvideo-int8_flf2v_turbo_2stage.";
 
@@ -56,6 +58,7 @@ pub(super) fn validate_video_assets(params: &Map<String, Value>, model_id: &str)
             ));
         }
     }
+    keyframes::validate_keyframes(params, model_id)?;
     for field in ["contextImages", "referenceVideos", "referenceAudios"] {
         if let Some(value) = params.get(field).filter(|value| !value.is_null()) {
             let values = value.as_array().ok_or_else(|| {

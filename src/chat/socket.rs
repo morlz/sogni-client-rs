@@ -31,20 +31,32 @@ impl ChatApi {
         params: &Value,
         cancellation: Option<&ChatAutoToolCancellation>,
     ) -> Result<ChatCompletion> {
+        let owner = self.inner.client.rest.request_session();
         if cancellation.is_some_and(ChatAutoToolCancellation::is_cancelled) {
             return Err(auto_tool_cancelled());
         }
         let stream = self.start_completion(params, false).await?;
         let job_id = stream.job_id.clone();
-        let result = if let Some(cancellation) = cancellation {
-            tokio::select! {
-                biased;
-                () = cancellation.cancelled() => Err(auto_tool_cancelled()),
-                result = stream.wait(Some(CHAT_TIMEOUT)) => result,
-            }
-        } else {
-            stream.wait(Some(CHAT_TIMEOUT)).await
-        };
+        let result = owner
+            .run(async {
+                if let Some(cancellation) = cancellation {
+                    tokio::select! {
+                        biased;
+                        () = cancellation.cancelled() => Err(auto_tool_cancelled()),
+                        result = stream.wait(Some(CHAT_TIMEOUT)) => result,
+                    }
+                } else {
+                    stream.wait(Some(CHAT_TIMEOUT)).await
+                }
+            })
+            .await
+            .map_err(|error| {
+                if owner.check().is_err() {
+                    super::events::session_error(Some(&job_id))
+                } else {
+                    error
+                }
+            });
         match result {
             Ok(completion) => Ok(completion),
             Err(error) => {
@@ -62,15 +74,25 @@ impl ChatApi {
     }
 
     async fn start_completion(&self, params: &Value, stream: bool) -> Result<ChatStream> {
-        let session = self.inner.client.auth_session();
+        let owner = self.inner.client.rest.request_session();
+        let session = owner.id();
+        let job_id = new_id();
         require_object(params, "chat params")?;
         let model = required_str(params, "model")?;
         let messages = params
             .get("messages")
             .and_then(Value::as_array)
             .ok_or_else(|| Error::InvalidInput("messages must be an array".into()))?;
-        let messages = normalize_vision_messages(messages).await?;
-        let job_id = new_id();
+        let messages = owner
+            .run(normalize_vision_messages(messages))
+            .await
+            .map_err(|error| {
+                if owner.check().is_err() {
+                    super::events::session_error(Some(&job_id))
+                } else {
+                    error
+                }
+            })?;
         let app_source = params
             .get("appSource")
             .or_else(|| params.get("app_source"))
@@ -135,14 +157,22 @@ impl ChatApi {
                 changed: changed.clone(),
             },
         );
-        if let Err(error) = self
-            .inner
-            .client
-            .send_socket_in_session("llmJobRequest", &request, session)
+        if let Err(error) = owner
+            .run(
+                self.inner
+                    .client
+                    .send_socket_in_session("llmJobRequest", &request, session),
+            )
             .await
         {
             self.inner.active.write().remove(&job_id);
             self.inner.recovery.lock().forget(&job_id);
+            if owner.check().is_err() {
+                return Err(super::events::session_error(Some(&job_id)));
+            }
+            if let Some(error) = &state.read().error {
+                return Err(error.clone().into());
+            }
             if matches!(error, Error::InvalidInput(_)) {
                 return Err(error);
             }
@@ -158,66 +188,71 @@ impl ChatApi {
     }
 
     pub async fn estimate_cost(&self, params: &Value) -> Result<Value> {
-        let model = required_str(params, "model")?;
-        let messages = params
-            .get("messages")
-            .and_then(Value::as_array)
-            .ok_or_else(|| Error::InvalidInput("messages must be an array".into()))?;
-        let mut messages = normalize_vision_messages(messages).await?;
-        redact_inline_images(&mut messages);
-        let serialized = serde_json::to_string(&messages)?;
-        let javascript_length = serialized.encode_utf16().count();
-        let input_tokens = javascript_length.div_ceil(4);
-        let max_output = alias(params, "maxTokens", "max_tokens")
-            .and_then(Value::as_u64)
-            .or_else(|| {
-                let models = self.inner.models.read();
-                let info = models.get(model)?;
-                let complex = params.get("think").and_then(Value::as_bool) == Some(true)
-                    && matches!(
-                        params.get("taskProfile").and_then(Value::as_str),
-                        Some("coding" | "reasoning")
-                    );
-                if complex {
-                    info.pointer("/maxOutputTokens/thinkingComplexDefault")
-                        .and_then(Value::as_u64)
-                } else {
-                    None
-                }
-                .or_else(|| {
-                    info.pointer("/maxOutputTokens/default")
-                        .and_then(Value::as_u64)
-                })
+        let session = self.inner.client.rest.request_session();
+        session
+            .run(async {
+                let model = required_str(params, "model")?;
+                let messages = params
+                    .get("messages")
+                    .and_then(Value::as_array)
+                    .ok_or_else(|| Error::InvalidInput("messages must be an array".into()))?;
+                let mut messages = normalize_vision_messages(messages).await?;
+                redact_inline_images(&mut messages);
+                let serialized = serde_json::to_string(&messages)?;
+                let javascript_length = serialized.encode_utf16().count();
+                let input_tokens = javascript_length.div_ceil(4);
+                let max_output = alias(params, "maxTokens", "max_tokens")
+                    .and_then(Value::as_u64)
+                    .or_else(|| {
+                        let models = self.inner.models.read();
+                        let info = models.get(model)?;
+                        let complex = params.get("think").and_then(Value::as_bool) == Some(true)
+                            && matches!(
+                                params.get("taskProfile").and_then(Value::as_str),
+                                Some("coding" | "reasoning")
+                            );
+                        if complex {
+                            info.pointer("/maxOutputTokens/thinkingComplexDefault")
+                                .and_then(Value::as_u64)
+                        } else {
+                            None
+                        }
+                        .or_else(|| {
+                            info.pointer("/maxOutputTokens/default")
+                                .and_then(Value::as_u64)
+                        })
+                    })
+                    .unwrap_or(4096);
+                let token_type = alias(params, "tokenType", "token_type")
+                    .and_then(Value::as_str)
+                    .unwrap_or("sogni");
+                let path = [
+                    token_type.to_owned(),
+                    model.to_owned(),
+                    input_tokens.to_string(),
+                    max_output.to_string(),
+                ]
+                .iter()
+                .map(|part| path_segment(part))
+                .collect::<Vec<_>>()
+                .join("/");
+                let response = self
+                    .inner
+                    .client
+                    .socket_get(&format!("/api/v1/job-llm/estimate/{path}"), None)
+                    .await?;
+                let quote = response.get("quote").ok_or_else(|| {
+                    Error::Protocol("chat estimate response missing quote".into())
+                })?;
+                Ok(json!({
+                    "costInUSD": quote.get("costInUSD"),
+                    "costInSogni": quote.get("costInSogni"),
+                    "costInSpark": quote.get("costInSpark"),
+                    "costInToken": quote.get("costInToken"),
+                    "inputTokens": quote.get("inputTokens"),
+                    "outputTokens": quote.get("outputTokens"),
+                }))
             })
-            .unwrap_or(4096);
-        let token_type = alias(params, "tokenType", "token_type")
-            .and_then(Value::as_str)
-            .unwrap_or("sogni");
-        let path = [
-            token_type.to_owned(),
-            model.to_owned(),
-            input_tokens.to_string(),
-            max_output.to_string(),
-        ]
-        .iter()
-        .map(|part| path_segment(part))
-        .collect::<Vec<_>>()
-        .join("/");
-        let response = self
-            .inner
-            .client
-            .socket_get(&format!("/api/v1/job-llm/estimate/{path}"), None)
-            .await?;
-        let quote = response
-            .get("quote")
-            .ok_or_else(|| Error::Protocol("chat estimate response missing quote".into()))?;
-        Ok(json!({
-            "costInUSD": quote.get("costInUSD"),
-            "costInSogni": quote.get("costInSogni"),
-            "costInSpark": quote.get("costInSpark"),
-            "costInToken": quote.get("costInToken"),
-            "inputTokens": quote.get("inputTokens"),
-            "outputTokens": quote.get("outputTokens"),
-        }))
+            .await
     }
 }

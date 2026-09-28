@@ -1,12 +1,12 @@
 # sogni-client-by-morlz Rust SDK complete agent reference
 
-Crate version: 5.54.0. Compatible with TypeScript 5.54.0 at upstream commit
-4147e8dfeed5632ef8a8c648614ab476e924a0e1; hosted protocol 1.0.0-alpha.45.
+Crate version: 5.58.1. Compatible with TypeScript 5.58.1 at upstream commit
+25b5d46100e4ec764e8d063c19ad4eb141664cbf; hosted protocol 1.0.0-alpha.46.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client-by-morlz = "5.54.0"`; disable default features for clients
+Dependency: `sogni-client-by-morlz = "5.58.1"`; disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
@@ -39,8 +39,13 @@ Authorization value and refresh token; JWT expiry drives refresh through
 Username/password authentication requires the default `wallet` feature and is
 available through `account.login` or `account.create_account`.
 Replacing the account reconnects the WebSocket and rejects commands queued by
-the prior session. Delayed token refreshes and unauthorized responses cannot
-replace or clear a newer session. Cookie-auth sockets send only cookies matching
+the prior session. Logout/account replacement also ends pending REST, SSE, chat,
+asset preparation and project recovery operations. Old Project/Job handles cannot
+issue account-scoped operations for a different account, and retained waiters
+receive a coarse session-ended error; remote server work may continue. Renewing
+tokens for the same wallet preserves ongoing work. Delayed token refreshes and
+unauthorized responses cannot replace or clear a newer session. Cookie-auth
+sockets send only cookies matching
 the WebSocket's host, path, and security requirements. EIP-712 signatures retain
 the wire-required 0x prefix.
 
@@ -69,7 +74,7 @@ older in-flight REST refreshes. `subscribe()` emits updates.
 Construct requests with `ProjectRequest::image`, `video`, or `audio`. All set
 `type`, `modelId`, `positivePrompt`, and default `numberOfMedia=1`. Builder
 methods: `param`, `number_of_media`, `steps`, `guidance`, `dimensions`,
-`duration`, `fps`, `network`, `asset`, `sam3_prompt`,
+`duration`, `fps`, `network`, `asset`, `keyframes`, `embed_prompt_metadata`, `sam3_prompt`,
 `pixal3d_options`, `world_generation_receipt`, and `attribution`.
 
 `MediaSource::Path` performs async file I/O. `MediaSource::bytes` and
@@ -81,15 +86,26 @@ forward-compatible wire name and whether the media endpoint is required.
 `GptImageMask` marks a PNG alpha edit mask in the referenceMask slot.
 `Pixal3dLeftView`, `Pixal3dBackView`, and `Pixal3dRightView` use fixed context
 slots 1, 2, and 3; subsets retain the named view's slot.
+`KeyframeImage(1..=8)` uses independent MiniMax H3 intermediate-image slots.
+Prefer `.keyframes(Vec<MinimaxH3Keyframe>)` to set the images and frame indices
+together, preserving caller order. It replaces only prior keyframe assets.
 
 `projects.create(request)` uploads assets, submits `jobRequest`, and returns a
 cloneable `Project`. `Project` methods: `id`, `status`, `jobs`, `progress`,
-`result_urls`, `snapshot`, `subscribe`, `wait_for_completion`, `cancel`.
+`result_urls`, `snapshot`, `subscribe`, `wait_for_completion`, `cancel`,
+`waiting_reason`, and `job_waiting_reasons`.
 `Job` methods: `snapshot`, `id`, `status`, `progress`, `result_url`,
 `is_withheld`, `has_result_media`, `subscribe`, `get_result_url`,
 `get_result_data`, `enhance`, `enhancement_project`, `media_type`,
 `preparation`, `provenance`, `job_index`, `last_frame_url`, and
-`get_last_frame_url`.
+`get_last_frame_url`, and `waiting_reason`.
+
+Image `.embed_prompt_metadata(false)` sends root embedPromptMetadata=false to
+omit generation prompt/settings metadata from worker output. Omission leaves
+the worker default true. Only booleans are accepted; this is an image field.
+startingImageStrength is source influence in [0,1], mapped to denoising strength
+1-influence. Omission or null means 0.5. Malformed/out-of-range values fail before
+upload; explicit zero strength, guidance, seed and preview count are preserved.
 
 SAM3: use `ProjectRequest::image("sam3_image_segment_bf16", "")` with
 `AssetRole::StartingImage` and `Sam3ImagePrompt`. It forces numberOfMedia=1,
@@ -158,7 +174,26 @@ Discovery/metadata: `wait_for_models`, `get_supported_models`,
 `lora_constraints`.
 
 Costs: `estimate_cost` (image), `estimate_video_cost`, `estimate_audio_cost`,
-`estimate_enhancement_cost`, and low-level forward-compatible `estimate`.
+`estimate_enhancement_cost`, `estimate_enhancement_cost_with_size`, and low-level
+forward-compatible `estimate`.
+
+Image enhancement: `job.enhance(strength, overrides)` creates a Krea 2 Turbo
+(`krea2_turbo_fp8_scaled`) image on Fast at 8 steps/guidance 1, with one output
+and no previews. light/medium/heavy use denoising 0.15/0.35/0.49. The source seed,
+including zero, survives. Parent explicit width/height are preserved; a named
+sizePreset is resolved using the parent model/network and converted to custom
+dimensions. An unknown preset fails before source download or new generation.
+No parent dimensions means enhancer defaults. Supported overrides are
+positivePrompt, stylePrompt and tokenType. enhancement_project() tracks the new
+project. Masks, cutouts and model artifacts cannot be enhanced.
+`estimate_enhancement_cost(strength: &str, token_type: &str)` quotes default
+dimensions. `estimate_enhancement_cost_with_size(strength: &str, token_type: &str,
+width: u32, height: u32)` quotes explicit dimensions with the same model/steps
+and denoising direction.
+
+Video estimates accept keyframeCount, or keyframes (only array length is read).
+A non-null explicit keyframeCount takes precedence, including zero. Only finite
+positive numbers are forwarded, rounded down; the service determines cost.
 
 URLs/uploads: v1 `upload_url`, `download_url`, `media_upload_url`,
 `media_download_url`; v2 `image_upload_post`, `media_upload_post`, and
@@ -182,8 +217,56 @@ jobs, preserving existing errors or the server's reason. Completed jobs remain
 unchanged. Local timeouts never imply server cancellation.
 Worker reassignment retains the same logical Job handle/job_index while its
 attempt ID changes. Old-attempt events cannot overwrite new progress/results.
-Only explicit restart admission refusals can automatically resend the original
-project request; uncertain writes require reconciliation.
+Explicit restart admission refusals can resend the original project request.
+A successfully written request can also be resent once after a dropped
+connection only when both owner status and the live registry confirm absence
+and no server evidence ever admitted it. Uncertain writes and old accounts
+never qualify; every resend preserves the original ID and payload.
+
+## Durable project results and queue explanations
+
+`projects.get_result(id: &str, options: Option<GetProjectResultOptions>)`
+returns ProjectResult using account-owned durable v2 status, without submitting
+work or changing local Project tracking. It also works after socket recovery
+expires. ProjectResult fields: id, status (ProjectStatus), finished,
+model_id: Option<String>, waiting_reason: Option<WaitingReason>, jobs.
+Each ProjectResultJob has id, status (String), optional reason, kind, url,
+url_unavailable and seed. Unfinished and failed jobs remain in the projection;
+URLs are requested only for completed available media.
+
+ResultMediaKind is Image/Video/Audio/Model. Endpoint selection uses model metadata
+and stored result evidence; unknown media is never assumed to be image.
+GetProjectResultOptions { kind: Option<ResultMediaKind> } supplies a fallback
+only when those sources cannot identify it. Provider result URLs are preserved.
+ResultUrlUnavailable is SensitiveContent, UnknownMediaKind, or DownloadUrlFailed.
+A failed URL lookup leaves other jobs available; an account change ends the
+whole operation. Signed URLs expire: call get_result again to mint fresh ones.
+
+`projects.list_recent(options: Option<ListRecentProjectsOptions>)` returns
+Vec<RecentProject> from the current account's completed media history, newest
+first. Options: since: Option<i64> (epoch milliseconds, default 24 hours ago),
+limit: Option<u32> (1–100 renders, default 50), app_source: Option<String>.
+History older than seven days is clamped inside the supported window. The limit
+counts renders before grouping into projects, so a group can contain only part
+of a larger batch. RecentProject fields: id, optional model_id, model_name,
+app_source, finished_at, and jobs. Each RecentProjectJob has id, status,
+sensitive_content_withheld, and optional finished_at (epoch milliseconds).
+This call returns no download URLs; use get_result for a selected project.
+
+Project.waiting_reason()/job_waiting_reasons() and Job.waiting_reason() expose
+the current queue explanation, also available on their snapshots. WaitingReason
+contains reason, message and optional media_type, payment_model,
+subscription_tier, model_family. Display message as plain text. JobWaitingReason
+contains job_index, optional img_id, and waiting_reason. Unassigned queue rows
+do not create Job handles. A partially running batch can retain queued entries.
+Older servers may omit explanations; a free slot does not promise immediate
+processing. projects.subscribe() emits queueChanged with ProjectQueueChanged:
+project_id, waiting_reason, job_waiting_reasons. Recovery preserves a newer live
+queue update instead of replacing it with an older snapshot.
+
+The projectQueue socket subscription defaults to true. At construction use
+socket_event_subscription("projectQueue", false) to opt out; at runtime pass
+an explicit false through client.set_socket_event_subscriptions(...).
 
 ## GPT Image and speech controls
 
@@ -235,14 +318,37 @@ and rejected whenever present, including false/null. _turbo_2stage_720p IDs
 are retired and cannot be submitted.
 
 Audio-guide ia2v requires referenceImage + referenceAudio; flfa2v also requires
-referenceImageEnd; a2v requires only referenceAudio. Each rejects other upload
-roles. Fixed 24fps, 4 steps, guidance 1, and 124+n*17 frames in 124–362, on the
+referenceImageEnd; a2v requires only referenceAudio. Intermediate keyframe images
+are also accepted; unrelated reference roles are rejected. Fixed 24fps, 4 steps,
+guidance 1, and 124+n*17 frames in 124–362, on the
 existing H3 32px canvas grid. get_minimax_h3_frames_for_audio_duration(seconds)
 returns the smallest covering valid count, clamped to the supported range.
 audioStart is a nonnegative offset. Uploaded audio always accompanies output;
-generateAudio=false, audioDuration, loras and loraStrengths are rejected.
-Empty LoRA arrays are harmless and omitted. Other H3 IDs reject audioStart;
+generateAudio=false and audioDuration are rejected. loras and loraStrengths
+are supported and preserve caller order; empty arrays are omitted.
+Other H3 IDs reject audioStart;
 all H3 IDs reject audioDuration.
+
+MiniMax H3 keyframes: `MinimaxH3Keyframe { image: MediaSource, frame_index: u32 }`
+or `MinimaxH3Keyframe::new(image, frame_index)`. `.keyframes(vec![...])` accepts
+at most MINIMAX_H3_MAX_KEYFRAMES=8 on the 21 public i2v/flf2v/ia2v/flfa2v/a2v/r2v
+model IDs selected by is_minimax_h3_keyframe_model; t2v and other families reject
+a nonempty list. Empty lists are equivalent to omission. Every image gets its
+own keyframeImage1..8 upload slot in caller order; the SDK never sorts the list.
+Keyframes do not replace or count against the workflow's reference-image slots.
+Advanced callers can pair AssetRole::KeyframeImage(slot) with a raw keyframes
+array containing image placeholders and frameIndex; the typed builder does both.
+
+frame_index is the zero-based 24 FPS pixel frame, unique in 1..=frames-2. First
+and last anchors remain referenceImage/referenceImageEnd where supported; a2v
+and r2v cannot pin those endpoints. An exact frames count follows the H3 grid;
+duration takes precedence and snaps, so duration 6 gives 141 frames. Use
+calculate_video_frames(model_id, seconds, 24, None, None) to find the count.
+The prompt names keyframes <Picture N> chronologically after the workflow's own
+pictures, describes each at frame_index/24 seconds, and includes the appropriate
+alignment/retention instructions for that workflow. Different framing or light
+should begin a new shot at that time. Validation checks model, count, images,
+indices and duplicates before any file transfer or generation submission.
 
 FlashVSR: FLASHVSR_VIDEO_UPSCALE_MODEL_ID = flashvsr_v1.1_tiny_long_bf16.
 Use one video project, empty prompt, ReferenceVideo, upscaleResolution 1080/1440.
@@ -298,7 +404,11 @@ read through `HostedTools` rather than copying schemas.
 Current hosted definitions include generate_speech, upscale_video, image_to_3d,
 remove_background and segment_image, plus
 FastH3 audio-guide/two-stage and GPT Image 2.5 selectors. These definitions
-come from protocol alpha.45. chat.execute_tool_call directly executes six
+come from protocol alpha.46. Hosted sound_to_video accepts ordered loras and
+loraStrengths arrays (1–8 entries) for audio-guide generation. The direct local
+sound_to_video tool handler does not forward those LoRA fields; use an explicit
+ProjectRequest or hosted execution when they are needed.
+chat.execute_tool_call directly executes six
 media tools: generate_image, edit_image, generate_video, sound_to_video,
 video_to_video, generate_music. Other tools use hosted chat or durable runs.
 
@@ -345,7 +455,7 @@ Reseeding accepts WorkflowBillingOptions.idempotency_key. Reuse a key only for
 the same take; it is sent as Idempotency-Key. ReseedWorkflowResult.idempotent is
 Some(true) only when data.idempotent is true; other responses leave it absent.
 
-## TypeScript 5.54 additions
+## Personal LoRAs and billing metadata
 
 Personal LoRAs: projects.personal_loras() exposes list() -> PersonalLoraLibrary,
 get(id)/import(&ImportPersonalLoraParams) -> PersonalLora, remove(id) -> (),

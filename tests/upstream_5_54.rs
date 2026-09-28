@@ -497,7 +497,13 @@ async fn personal_reads_and_imports_cannot_return_the_previous_accounts_data() {
         fixture.client.account.logout().await.unwrap();
         fixture.state.release.notify_one();
         let error = pending.await.unwrap().unwrap_err();
-        assert!(error.to_string().contains("account changed"), "{error}");
+        // The transport now rejects the ended session before returning the
+        // held response to the LoRA-specific post-response ownership check.
+        assert!(
+            matches!(&error, Error::InvalidInput(message)
+                if message == "account session changed; submit this request again"),
+            "expected an account-session rejection, got {error:?}"
+        );
         fixture.client.close().await.unwrap();
     }
 }

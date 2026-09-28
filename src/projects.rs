@@ -22,16 +22,16 @@ use crate::{
     utils::{
         BIREFNET_BACKGROUND_REMOVAL_MODEL_ID, MINIMAX_H3_BASE_FRAMES, MINIMAX_H3_DIMENSION_STEP,
         MINIMAX_H3_FRAME_STEP, MINIMAX_H3_MAX_DIMENSION, MINIMAX_H3_MAX_DURATION,
-        MINIMAX_H3_MAX_FRAMES, MINIMAX_H3_MAX_PIXELS, MINIMAX_H3_MIN_DURATION,
-        MINIMAX_H3_MIN_FRAMES, PIXAL3D_IMAGE_TO_3D_MODEL_ID,
+        MINIMAX_H3_MAX_FRAMES, MINIMAX_H3_MAX_KEYFRAMES, MINIMAX_H3_MAX_PIXELS,
+        MINIMAX_H3_MIN_DURATION, MINIMAX_H3_MIN_FRAMES, PIXAL3D_IMAGE_TO_3D_MODEL_ID,
         PIXAL3D_MULTIVIEW_IMAGE_TO_3D_MODEL_ID, PIXAL3D_ORBIT_VIEW_SLOTS, calculate_video_frames,
         detect_content_type, get_video_workflow_type, is_audio_model, is_external_video_model,
         is_gpt_image_model, is_happyhorse_model, is_ltx_model, is_minimax_h3_audio_guide_model,
-        is_minimax_h3_balanced_model, is_minimax_h3_model, is_minimax_h3_reference_model,
-        is_minimax_h3_turbo_model, is_model_artifact_model, is_pixal3d_model,
-        is_pixal3d_multi_view_model, is_seedance_model, is_seedance25_model, is_segmentation_model,
-        is_video_model, is_video_upscale_model, is_wan3_enhanced_model, is_wan3_model, new_id,
-        path_segment, scalar_string,
+        is_minimax_h3_balanced_model, is_minimax_h3_keyframe_model, is_minimax_h3_model,
+        is_minimax_h3_reference_model, is_minimax_h3_turbo_model, is_model_artifact_model,
+        is_pixal3d_model, is_pixal3d_multi_view_model, is_seedance_model, is_seedance25_model,
+        is_segmentation_model, is_video_model, is_video_upscale_model, is_wan3_enhanced_model,
+        is_wan3_model, new_id, path_segment, scalar_string,
     },
 };
 
@@ -44,6 +44,7 @@ mod mapping;
 mod preparation;
 mod project;
 mod provenance;
+mod queue;
 mod recovery;
 mod request;
 mod sam3;
@@ -56,20 +57,23 @@ mod wire;
 mod tests;
 
 pub use api::{
-    ImportPersonalLoraParams, PersonalLora, PersonalLoraLibrary, PersonalLoraLimits, PersonalLoras,
-    ProjectsApi, ReusableUploads, SavedUpload, SavedUploadBinding,
+    GetProjectResultOptions, ImportPersonalLoraParams, ListRecentProjectsOptions, PersonalLora,
+    PersonalLoraLibrary, PersonalLoraLimits, PersonalLoras, ProjectResult, ProjectResultJob,
+    ProjectsApi, RecentProject, RecentProjectJob, ResultMediaKind, ResultUrlUnavailable,
+    ReusableUploads, SavedUpload, SavedUploadBinding,
 };
 pub use generation::{Pixal3dGenerationOptions, Pixal3dTemplateVariant};
 pub use job::Job;
 pub use preparation::{JobModelPhaseStep, JobPreparation};
 pub use project::Project;
 pub use provenance::{JobProvenance, WorldGenerationReceiptRequest};
+pub use queue::{JobWaitingReason, ProjectQueueChanged, WaitingReason};
 pub use recovery::{
     ACTIVE_PROJECTS_RECOVERED_EVENT, COMPLETED_PROJECTS_RECOVERED_EVENT,
     PROJECT_LOST_ORIGINAL_CODE, ProjectResolution, ResolveMissingOptions, is_project_lost_error,
     is_project_lost_payload,
 };
-pub use request::{AssetRole, MediaSource, ProjectRequest};
+pub use request::{AssetRole, MediaSource, MinimaxH3Keyframe, ProjectRequest};
 pub use sam3::{Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint, Sam3Selection};
 pub use snapshots::{
     CostEstimate, JobSnapshot, JobStatus, ModelOptions, PresignedPost, ProjectSnapshot,
@@ -82,6 +86,7 @@ use helpers::*;
 use mapping::*;
 use recovery::{
     is_llm_recovery, project_lost_payload, raw_result_url, recovered_params, replay_recovered,
+    replay_recovered_at_revision,
 };
 use request::{effective_asset_wire_name, mark_asset_param, validate_asset_roles};
 use validation::{

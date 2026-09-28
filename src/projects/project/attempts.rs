@@ -48,6 +48,11 @@ impl Project {
     }
 
     pub(in crate::projects) fn retry_job(&self, data: &Value) {
+        if let Some(id) = data.get("imgID").and_then(Value::as_str) {
+            self.clear_job_queue(id, data.get("jobIndex").and_then(Value::as_u64));
+        } else {
+            self.clear_job_queue("", data.get("jobIndex").and_then(Value::as_u64));
+        }
         let _guard = self.inner.attempt_lock.lock();
         if self.status().is_finished() {
             return;

@@ -1,6 +1,6 @@
 {
-  "version": "5.54.0",
-  "commit": "4147e8dfeed5632ef8a8c648614ab476e924a0e1",
+  "version": "5.58.1",
+  "commit": "25b5d46100e4ec764e8d063c19ad4eb141664cbf",
   "selectors": [
     {
       "tool": "generate_image",
@@ -4628,7 +4628,7 @@
     },
     {
       "name": "sound_to_video",
-      "sha256": "179f0e4563b935747d5e7213b9b5f1057a5aa9607f6311d67afd69fefc7ab4a8"
+      "sha256": "3d6e954303b85429b2fb6604aabbd5f51bbf160a7fba3d3269a3bfc9c66a7fbb"
     },
     {
       "name": "extend_video",

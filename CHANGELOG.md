@@ -8,6 +8,17 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.58.1] - 2026-09-28
+
+- Port the public TypeScript 5.58.1 contract through `25b5d46100e4ec764e8d063c19ad4eb141664cbf`, including hosted tool definitions from Sogni Protocol 1.0.0-alpha.46.
+- Add up to eight intermediate MiniMax H3 keyframes with typed builders, independent image uploads, caller-order preservation, frame validation before uploads, and keyframe-aware video estimates. Support LoRAs on H3 audio-guide workflows.
+- Preserve explicit zero image controls, validate source-image strength, and expose the worker image prompt/settings metadata opt-out.
+- Use Krea 2 Turbo at eight steps for image enhancement, preserve parent canvas dimensions and zero seeds, resolve named parent presets before downloading, and add an estimator accepting explicit dimensions.
+- Expose durable account-owned project results and recent history, refreshed result URLs with media-aware routing, and coarse reasons when URLs are unavailable. Recognize Qwen3-TTS as audio.
+- Expose project/job queue explanations, per-job queue entries and `queueChanged` events; subscribe to queue updates by default while preserving explicit opt-out and newer live state during recovery.
+- End stale REST, SSE, chat, project creation, media upload and recovery operations on account changes. Prevent old project/job handles from acting for another account while allowing same-wallet token renewal, and share one socket writer across concurrent cold starts.
+- Retain Rust-specific recovery and transport features, the `sogni-client-by-morlz` package and `sogni_client` import identity, automatic crates.io release policy, and Rust 1.88 minimum.
+
 ## [5.54.0] - 2026-09-21
 
 - Port the public TypeScript 5.54.0 contract through `4147e8dfeed5632ef8a8c648614ab476e924a0e1`. The Rust fork remains fully handled through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (5.50.3-alpha.1), with no new fork commits to merge.

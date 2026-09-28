@@ -145,3 +145,69 @@ async fn terminal_close_ends_wait_for_readiness() {
     server.await.unwrap();
     client.close().await.unwrap();
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn concurrent_first_sends_share_the_initial_socket_writer() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let client = std::sync::Arc::new(client(
+        listener.local_addr().unwrap(),
+        Duration::from_secs(5),
+    ));
+    let server = tokio::spawn(async move {
+        let mut socket = accept_async(listener.accept().await.unwrap().0)
+            .await
+            .unwrap();
+        authenticate(&mut socket).await;
+        let mut ids = std::collections::BTreeSet::new();
+        while ids.len() < 16 {
+            let message = socket.next().await.unwrap().unwrap();
+            if let Message::Text(text) = message {
+                let frame: Value = serde_json::from_str(&text).unwrap();
+                ids.insert(
+                    b64_json_decode(frame["data"].as_str().unwrap()).unwrap()["index"]
+                        .as_u64()
+                        .unwrap(),
+                );
+            }
+        }
+        assert_eq!(ids, (0..16).collect());
+    });
+    let barrier = std::sync::Arc::new(tokio::sync::Barrier::new(16));
+    let mut requests = Vec::new();
+    for index in 0..16 {
+        let client = client.clone();
+        let barrier = barrier.clone();
+        requests.push(tokio::spawn(async move {
+            barrier.wait().await;
+            client
+                .send_socket("fixtureRequest", &json!({"index":index}))
+                .await
+        }));
+    }
+    for request in requests {
+        tokio::time::timeout(Duration::from_secs(5), request)
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+    }
+    server.await.unwrap();
+    client.close().await.unwrap();
+}
+
+#[tokio::test]
+async fn close_cancels_an_unfinished_websocket_handshake_promptly() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let client = client(listener.local_addr().unwrap(), Duration::from_secs(60));
+    client.start().await.unwrap();
+    let (_stream, _) = tokio::time::timeout(Duration::from_secs(5), listener.accept())
+        .await
+        .unwrap()
+        .unwrap();
+    tokio::time::timeout(Duration::from_secs(5), client.close())
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(!client.is_authenticated());
+    assert!(!client.is_socket_connected());
+}

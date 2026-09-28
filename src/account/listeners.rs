@@ -10,7 +10,10 @@ use tokio_util::sync::CancellationToken;
 
 use super::{
     AccountApi, AuthProjectionState, CurrentAccount, SubscriptionProjectionState,
-    authentication::{apply_current_account, fetch_current_account, reset_account_projection},
+    authentication::{
+        apply_current_account, fetch_current_account, record_cookie_identity,
+        reset_account_projection,
+    },
     projection::{
         SubscriptionSource, apply_free_spark_projection, apply_subscription_projection,
         event_network, map_socket_subscription, refresh_subscription_projection,
@@ -108,7 +111,14 @@ struct AccountListenerContext {
 
 impl AccountListenerContext {
     async fn handle_authenticated(&self, client: &ApiClient) -> Result<()> {
+        let session = client.rest.request_session();
         let mut projection = self.auth_projection.lock().await;
+        session.check()?;
+        if projection.session != Some(session.id()) {
+            reset_account_projection(&self.current, &self.subscription_projection);
+            projection.hydrated = false;
+            projection.session = Some(session.id());
+        }
         if projection.skip_next_authenticated_update {
             projection.skip_next_authenticated_update = false;
             return Ok(());
@@ -116,10 +126,20 @@ impl AccountListenerContext {
         if projection.hydrated || !client.is_authenticated() {
             return Ok(());
         }
-        let payload = fetch_current_account(client).await?;
+        drop(projection);
+        let payload = session.run(fetch_current_account(client)).await?;
+        let mut projection = session
+            .run(async { Ok(self.auth_projection.lock().await) })
+            .await?;
         if !client.is_authenticated() {
             return Ok(());
         }
+        record_cookie_identity(client, &payload);
+        let current_session = client.auth_session();
+        if current_session != session.id() {
+            reset_account_projection(&self.current, &self.subscription_projection);
+        }
+        projection.session = Some(current_session);
         apply_current_account(&self.current, &payload);
         projection.hydrated = true;
         Ok(())
@@ -155,7 +175,7 @@ impl AccountApi {
     }
 
     fn listen_socket_events(&self) {
-        let mut events = self.client.subscribe();
+        let mut events = self.client.subscribe_scoped();
         let client = Arc::downgrade(&self.client);
         let lifecycle = Arc::downgrade(&self.listener_lifecycle);
         let context = self.listener_context();
@@ -167,6 +187,16 @@ impl AccountApi {
                     Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
                     Err(tokio::sync::broadcast::error::RecvError::Closed) => return,
                 };
+                let Some(owner) = client.upgrade() else {
+                    return;
+                };
+                if event
+                    .session
+                    .is_some_and(|session| session != owner.auth_session())
+                {
+                    continue;
+                }
+                let event = event.event;
                 match event.name.as_str() {
                     "balanceUpdate" if event.data.is_object() => {
                         context.current.update(json!({"balance": event.data}));

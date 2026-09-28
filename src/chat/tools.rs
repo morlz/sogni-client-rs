@@ -115,6 +115,8 @@ impl ChatApi {
         tool_call: &Value,
         options: Option<&Value>,
     ) -> Result<Value> {
+        let session = self.inner.client.rest.request_session();
+        session.run(async {
         if !is_sogni_tool_call(tool_call) {
             return Err(Error::InvalidInput("not a Sogni tool call".into()));
         }
@@ -147,6 +149,7 @@ impl ChatApi {
         let model_id = plan.params["modelId"].clone();
         let media_type = plan.params["type"].clone();
         let request = plan.into_request(&self.inner.client.rest).await?;
+        session.check()?;
         let project = self.inner.projects.create(request).await?;
         let timeout = options
             .get("timeoutSeconds")
@@ -162,6 +165,7 @@ impl ChatApi {
         let urls = match wait::wait_for_tool_project(&project, timeout).await {
             Ok(urls) => urls,
             Err(error) => {
+                session.check()?;
                 let _ = project.cancel().await;
                 return Err(error);
             }
@@ -182,6 +186,7 @@ impl ChatApi {
             "toolCallId": tool_call.get("id"), "toolName": name,
             "success": true, "resultUrls": urls, "content": serde_json::to_string(&content)?,
         }))
+        }).await
     }
 }
 

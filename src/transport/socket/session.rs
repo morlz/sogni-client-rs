@@ -75,7 +75,15 @@ pub(super) async fn socket_manager(
             json!({"network": inner.network.read().as_str()}),
             inner.auth.version().session,
         );
-        match connect_socket(&inner).await {
+        let connection = tokio::select! {
+            biased;
+            () = inner.cancel.cancelled() => {
+                fail_pending(&mut pending, Error::Closed);
+                return;
+            },
+            result = connect_socket(&inner) => result,
+        };
+        match connection {
             Ok((mut socket, version)) => {
                 if version.session != inner.auth.version().session {
                     let _ = socket.close(None).await;
@@ -176,6 +184,7 @@ async fn connect_socket(
     tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>,
     AuthVersion,
 )> {
+    let session = inner.auth.request_session();
     let mut url = inner.url.clone();
     {
         let mut query = url.query_pairs_mut();
@@ -216,7 +225,7 @@ async fn connect_socket(
         .as_str()
         .into_client_request()
         .map_err(|error| Error::Transport(format!("failed to build WebSocket request: {error}")))?;
-    let (version, mut headers) = inner.auth.headers().await?;
+    let (version, mut headers) = session.run(inner.auth.headers()).await?;
     if let Some(cookie) = inner.auth.socket_cookie(&url) {
         headers.insert(reqwest::header::COOKIE, cookie);
     }
@@ -230,21 +239,25 @@ async fn connect_socket(
     } else {
         None
     };
-    let (socket, _) = tokio::time::timeout(inner.connect_timeout, async {
-        if let Some(proxy) = &inner.proxy {
-            let stream = proxy.connect(&url).await?;
-            client_async_tls_with_config(request, stream, None, connector)
-                .await
-                .map_err(|_| Error::Transport("WebSocket proxy handshake failed".into()))
-        } else {
-            connect_async_tls_with_config(request, None, false, connector)
-                .await
-                .map_err(|_| Error::Transport("WebSocket handshake failed".into()))
-        }
-    })
-    .await
-    .map_err(|_| Error::Timeout("WebSocket connection timed out".into()))?
-    .map_err(|error| Error::Transport(format!("WebSocket connection failed: {error}")))?;
+    let (socket, _) = session
+        .run(async {
+            tokio::time::timeout(inner.connect_timeout, async {
+                if let Some(proxy) = &inner.proxy {
+                    let stream = proxy.connect(&url).await?;
+                    client_async_tls_with_config(request, stream, None, connector)
+                        .await
+                        .map_err(|_| Error::Transport("WebSocket proxy handshake failed".into()))
+                } else {
+                    connect_async_tls_with_config(request, None, false, connector)
+                        .await
+                        .map_err(|_| Error::Transport("WebSocket handshake failed".into()))
+                }
+            })
+            .await
+            .map_err(|_| Error::Timeout("WebSocket connection timed out".into()))?
+            .map_err(|error| Error::Transport(format!("WebSocket connection failed: {error}")))
+        })
+        .await?;
     Ok((socket, version))
 }
 
@@ -431,12 +444,16 @@ fn handle_socket_frame(inner: &SocketInner, bytes: &[u8], session: u64) {
                     .get("socketEventSubscriptions")
                     .and_then(Value::as_object)
                 {
-                    *inner.subscriptions.write() = subscriptions
+                    let mut current = inner.subscriptions.write();
+                    let project_queue = current.get("projectQueue").copied().unwrap_or(true);
+                    let mut next: std::collections::BTreeMap<_, _> = subscriptions
                         .iter()
                         .filter_map(|(key, value)| {
                             value.as_bool().map(|value| (key.clone(), value))
                         })
                         .collect();
+                    next.entry("projectQueue".into()).or_insert(project_queue);
+                    *current = next;
                 }
             }
         }
@@ -450,6 +467,59 @@ fn handle_socket_frame(inner: &SocketInner, bytes: &[u8], session: u64) {
             inner.events.emit_scoped(message_type, payload, session);
         }
         Err(_) => tracing::warn!("dropped malformed Sogni WebSocket frame"),
+    }
+}
+
+#[cfg(test)]
+mod subscription_tests {
+    use super::*;
+    use crate::{
+        ClientConfig,
+        auth::AuthManager,
+        event::EventBus,
+        transport::{HttpClients, socket::SocketTransport},
+        utils::b64_json_encode,
+    };
+
+    #[tokio::test]
+    async fn project_queue_defaults_on_and_an_older_ack_preserves_explicit_opt_out() {
+        let config = ClientConfig {
+            app_id: "queue-subscription-fixture".into(),
+            ..Default::default()
+        };
+        let http = HttpClients::build(Duration::from_secs(1)).unwrap();
+        let auth = AuthManager::new(
+            crate::AuthKind::ApiKey,
+            config.rest_endpoint.clone(),
+            http.authenticated(),
+            http.cookies(),
+        );
+        auth.authenticate_api_key("fixture").unwrap();
+        let transport = SocketTransport::new(&config, auth, http, EventBus::default()).unwrap();
+        assert_eq!(
+            transport.inner.subscriptions.read().get("projectQueue"),
+            Some(&true)
+        );
+        transport.abort();
+        assert!(
+            transport
+                .set_subscriptions(std::collections::BTreeMap::from([(
+                    "projectQueue".into(),
+                    false
+                )]))
+                .await
+                .is_err()
+        );
+        let ack = json!({"type":"socketEventSubscriptionsUpdated","data":b64_json_encode(&json!({"socketEventSubscriptions":{"jobState":true}})).unwrap()});
+        handle_socket_frame(&transport.inner, ack.to_string().as_bytes(), 1);
+        assert_eq!(
+            transport.inner.subscriptions.read().get("projectQueue"),
+            Some(&false)
+        );
+        assert_eq!(
+            transport.inner.subscriptions.read().get("jobState"),
+            Some(&true)
+        );
     }
 }
 

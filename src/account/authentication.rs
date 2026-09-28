@@ -6,7 +6,7 @@ use super::wallet_crypto::wallet;
 use super::{AccountApi, AuthProjectionState, CurrentAccount, SubscriptionProjectionState, data};
 #[cfg(feature = "wallet")]
 use crate::AuthKind;
-use crate::{Error, Result, transport::ApiClient};
+use crate::{Error, Result, auth::RequestSession, transport::ApiClient};
 
 impl AccountApi {
     pub async fn get_nonce(&self, wallet_address: &str) -> Result<String> {
@@ -44,11 +44,12 @@ impl AccountApi {
     ) -> Result<Value> {
         use ethers_signers::Signer as _;
 
+        let session = self.client.rest.request_session();
         let wallet = wallet(username, password)?;
         let address = format!("{:#x}", wallet.address());
-        let nonce = self.get_nonce(&address).await?;
-        let signature = self
-            .sign_named(
+        let nonce = session.run(self.get_nonce(&address)).await?;
+        let signature = session
+            .run(self.sign_named(
                 &wallet,
                 "Authentication",
                 json!([
@@ -56,7 +57,7 @@ impl AccountApi {
                     {"name": "nonce", "type": "string"}
                 ]),
                 json!({"walletAddress": address, "nonce": nonce}),
-            )
+            ))
             .await?;
         let mut body = json!({
             "walletAddress": address,
@@ -66,9 +67,12 @@ impl AccountApi {
         if let Some(source) = app_source.or_else(|| self.client.app_source()) {
             body["appSource"] = json!(source);
         }
-        let response = self.client.rest.post("/v1/account/login", &body).await?;
+        let response = session
+            .run(self.client.rest.post("/v1/account/login", &body))
+            .await?;
         let payload = data(&response).clone();
-        self.authenticate_response_and_hydrate(&payload).await?;
+        self.authenticate_response_and_hydrate(&payload, &address, &session)
+            .await?;
         self.client.start().await?;
         Ok(payload)
     }
@@ -83,6 +87,7 @@ impl AccountApi {
     ) -> Result<Value> {
         use ethers_signers::Signer as _;
 
+        let session = self.client.rest.request_session();
         if username.is_empty() || email.is_empty() || password.is_empty() {
             return Err(Error::InvalidInput(
                 "username, email, and password are required".into(),
@@ -90,7 +95,7 @@ impl AccountApi {
         }
         let wallet = wallet(username, password)?;
         let address = format!("{:#x}", wallet.address());
-        let nonce = self.get_nonce(&address).await?;
+        let nonce = session.run(self.get_nonce(&address)).await?;
         let subscribe = options
             .get("subscribe")
             .and_then(Value::as_bool)
@@ -104,8 +109,8 @@ impl AccountApi {
             "turnstileToken": options.get("turnstileToken"),
             "rememberMe": options.get("rememberMe").and_then(Value::as_bool).unwrap_or(false),
         });
-        let signature = self
-            .sign_named(
+        let signature = session
+            .run(self.sign_named(
                 &wallet,
                 "Signup",
                 json!([
@@ -124,7 +129,7 @@ impl AccountApi {
                     "walletAddress": address,
                     "nonce": nonce,
                 }),
-            )
+            ))
             .await?;
         body["signature"] = json!(signature);
         if let Some(value) = options.get("referralCode") {
@@ -137,37 +142,72 @@ impl AccountApi {
         {
             body["appSource"] = json!(source);
         }
-        let response = self.client.rest.post("/v1/account/create", &body).await?;
+        let response = session
+            .run(self.client.rest.post("/v1/account/create", &body))
+            .await?;
         let payload = data(&response).clone();
-        self.authenticate_response_and_hydrate(&payload).await?;
+        self.authenticate_response_and_hydrate(&payload, &address, &session)
+            .await?;
         self.client.start().await?;
         Ok(payload)
     }
 
     #[cfg(feature = "wallet")]
-    async fn authenticate_response_and_hydrate(&self, payload: &Value) -> Result<()> {
-        let mut projection = self.auth_projection.lock().await;
+    async fn authenticate_response_and_hydrate(
+        &self,
+        payload: &Value,
+        address: &str,
+        request: &RequestSession,
+    ) -> Result<()> {
+        let mut projection = request
+            .run(async { Ok(self.auth_projection.lock().await) })
+            .await?;
+        let previous_session = self.client.auth_session();
         projection.skip_next_authenticated_update = self.client.auth_kind() != AuthKind::ApiKey;
+        drop(projection);
+        request.check()?;
         if let Err(error) = self.authenticate_response(payload).await {
-            projection.skip_next_authenticated_update = false;
-            if !self.client.is_authenticated() {
-                projection.hydrated = false;
-                self.reset_account_projection();
-            }
+            self.clear_deauthenticated_projection().await;
             return Err(error);
         }
+        self.client.set_cookie_identity(address);
+        let session = self.client.rest.request_session();
+        self.hydrate_installed_authentication(
+            &session,
+            previous_session,
+            self.client.auth_kind() != AuthKind::ApiKey,
+        )
+        .await
+    }
+
+    async fn hydrate_installed_authentication(
+        &self,
+        session: &RequestSession,
+        previous_session: u64,
+        clear_installed_auth: bool,
+    ) -> Result<()> {
+        let mut projection = session
+            .run(async { Ok(self.auth_projection.lock().await) })
+            .await?;
+        projection.session = Some(session.id());
         projection.hydrated = false;
-        self.reset_account_projection_for_authentication();
-        let account = match fetch_current_account(&self.client).await {
+        if session.id() != previous_session {
+            self.reset_account_projection_for_authentication();
+        }
+        drop(projection);
+        let account = match session.run(fetch_current_account(&self.client)).await {
             Ok(account) => account,
             Err(error) => {
-                self.rollback_failed_initial_hydration(
-                    &mut projection,
-                    self.client.auth_kind() != AuthKind::ApiKey,
-                );
+                let mut projection = self.auth_projection.lock().await;
+                if session.check().is_ok() || !self.client.is_authenticated() {
+                    self.rollback_failed_initial_hydration(&mut projection, clear_installed_auth);
+                }
                 return Err(error);
             }
         };
+        let mut projection = session
+            .run(async { Ok(self.auth_projection.lock().await) })
+            .await?;
         apply_current_account(&self.current, &account);
         projection.hydrated = true;
         Ok(())
@@ -197,39 +237,80 @@ impl AccountApi {
     }
 
     pub async fn logout(&self) -> Result<()> {
+        let session = self.client.rest.request_session();
         match self
             .client
             .rest
             .post("/v1/account/logout", &json!({}))
             .await
         {
-            Err(Error::Api(error)) if error.status == 401 => {}
+            Err(Error::Api(error)) if error.status == 401 => {
+                self.clear_deauthenticated_projection().await;
+                return Ok(());
+            }
             Err(error) => return Err(error),
             Ok(_) => {}
         }
+        session.check()?;
         self.client.clear_auth();
         self.clear_deauthenticated_projection().await;
         Ok(())
     }
 
     pub async fn me(&self) -> Result<Value> {
-        let mut projection = self.auth_projection.lock().await;
-        let payload = fetch_current_account(&self.client).await?;
+        let session = self.client.rest.request_session();
+        let payload = session.run(fetch_current_account(&self.client)).await?;
+        let mut projection = session
+            .run(async { Ok(self.auth_projection.lock().await) })
+            .await?;
+        record_cookie_identity(&self.client, &payload);
+        let current_session = self.client.auth_session();
+        if current_session != session.id() {
+            self.reset_account_projection();
+        }
+        projection.session = Some(current_session);
         apply_current_account(&self.current, &payload);
         projection.hydrated = true;
         Ok(payload)
     }
 
+    pub(crate) async fn check_cookie_authentication(&self) -> Result<()> {
+        let session = self.client.rest.request_session();
+        let payload = session.run(fetch_current_account(&self.client)).await?;
+        let mut projection = session
+            .run(async { Ok(self.auth_projection.lock().await) })
+            .await?;
+        record_cookie_identity(&self.client, &payload);
+        self.client.authenticate_cookies()?;
+        let current_session = self.client.auth_session();
+        if current_session != session.id() {
+            self.reset_account_projection();
+        }
+        projection.session = Some(current_session);
+        projection.skip_next_authenticated_update = true;
+        apply_current_account(&self.current, &payload);
+        projection.hydrated = true;
+        Ok(())
+    }
+
     pub(crate) async fn hydrate_authenticated_projection(&self) -> Result<()> {
-        let mut projection = self.auth_projection.lock().await;
+        let session = self.client.rest.request_session();
+        let projection = session
+            .run(async { Ok(self.auth_projection.lock().await) })
+            .await?;
         if projection.hydrated || !self.client.is_authenticated() {
             return Ok(());
         }
-        let payload = fetch_current_account(&self.client).await?;
+        drop(projection);
+        let payload = session.run(fetch_current_account(&self.client)).await?;
+        let mut projection = session
+            .run(async { Ok(self.auth_projection.lock().await) })
+            .await?;
         if !self.client.is_authenticated() {
             return Ok(());
         }
         apply_current_account(&self.current, &payload);
+        projection.session = Some(session.id());
         projection.hydrated = true;
         Ok(())
     }
@@ -240,27 +321,16 @@ impl AccountApi {
         refresh_token: String,
     ) -> Result<()> {
         let mut projection = self.auth_projection.lock().await;
+        let previous_session = self.client.auth_session();
         projection.skip_next_authenticated_update = true;
+        drop(projection);
         if let Err(error) = self.client.set_tokens(token, refresh_token).await {
-            projection.skip_next_authenticated_update = false;
-            if !self.client.is_authenticated() {
-                projection.hydrated = false;
-                self.reset_account_projection();
-            }
+            self.clear_deauthenticated_projection().await;
             return Err(error);
         }
-        projection.hydrated = false;
-        self.reset_account_projection_for_authentication();
-        let payload = match fetch_current_account(&self.client).await {
-            Ok(payload) => payload,
-            Err(error) => {
-                self.rollback_failed_initial_hydration(&mut projection, true);
-                return Err(error);
-            }
-        };
-        apply_current_account(&self.current, &payload);
-        projection.hydrated = true;
-        Ok(())
+        let session = self.client.rest.request_session();
+        self.hydrate_installed_authentication(&session, previous_session, true)
+            .await
     }
 
     pub(crate) async fn clear_deauthenticated_projection(&self) {
@@ -304,9 +374,20 @@ impl AccountApi {
     }
 
     pub async fn refresh_balance(&self) -> Result<Value> {
-        let balance = self.account_balance().await?;
+        let session = self.client.rest.request_session();
+        let balance = session.run(self.account_balance()).await?;
         self.current.update(json!({"balance": balance}));
         Ok(balance)
+    }
+}
+
+pub(super) fn record_cookie_identity(client: &ApiClient, payload: &Value) {
+    if let Some(address) = payload
+        .get("walletAddress")
+        .or_else(|| payload.get("wallet_address"))
+        .and_then(Value::as_str)
+    {
+        client.set_cookie_identity(address);
     }
 }
 

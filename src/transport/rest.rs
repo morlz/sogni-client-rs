@@ -13,7 +13,7 @@ use url::Url;
 use super::{ClearableCookieStore, HttpClients};
 use crate::{
     ApiError, Error, Result,
-    auth::AuthManager,
+    auth::{AuthManager, RequestSession},
     utils::{ParsedSseEvent, drop_nulls, parse_sse_chunk, query_pairs},
 };
 
@@ -118,7 +118,8 @@ impl RestClient {
         url: &Url,
         headers: Option<HeaderMap>,
     ) -> Result<reqwest::Response> {
-        let (version, mut request_headers) = self.auth.headers().await?;
+        let session = self.request_session();
+        let (version, mut request_headers) = session.run(self.auth.headers()).await?;
         if let Some(headers) = headers {
             request_headers.extend(headers);
         }
@@ -129,28 +130,42 @@ impl RestClient {
                 request_headers.insert(COOKIE, cookie);
             }
         }
-        if self.auth.version() != version {
-            return Err(Error::InvalidInput(
-                "account session changed before request".into(),
-            ));
-        }
-        let response = request.headers(request_headers).send().await?;
-        if response.status() == StatusCode::UNAUTHORIZED {
-            self.auth.clear_if_version(version);
-        }
+        session.check()?;
+        let mut response = session
+            .run(async { Ok(request.headers(request_headers).send().await?) })
+            .await?;
+        let response_session = if response.status() == StatusCode::UNAUTHORIZED {
+            if let Some(signed_out) = self.auth.clear_if_version(version) {
+                session.record_matching_rejection(&signed_out);
+                signed_out
+            } else {
+                session
+            }
+        } else {
+            session
+        };
+        response_session.check()?;
         self.cookies
             .store_response(cookie_generation, response.headers(), response.url());
+        // A matching 401 may deliberately end this session at the headers.
+        // Its body retains the API status unless a later login supersedes it.
+        response.extensions_mut().insert(response_session);
         Ok(response)
     }
 
     pub async fn process_response(&self, response: reqwest::Response) -> Result<Value> {
+        let session = response
+            .extensions()
+            .get::<RequestSession>()
+            .cloned()
+            .unwrap_or_else(|| self.request_session());
         let status = response.status();
         let retry_after = response
             .headers()
             .get(reqwest::header::RETRY_AFTER)
             .and_then(|value| value.to_str().ok())
             .map(str::to_owned);
-        let text = response.text().await?;
+        let text = session.run(async { Ok(response.text().await?) }).await?;
         let parsed = if text.trim().is_empty() {
             None
         } else {
@@ -232,6 +247,10 @@ impl RestClient {
 
     pub(crate) fn auth_updates(&self) -> tokio::sync::watch::Receiver<u64> {
         self.auth.subscribe_session()
+    }
+
+    pub(crate) fn request_session(&self) -> RequestSession {
+        self.auth.request_session()
     }
 
     /// Transfer a write-once saved asset using only the server's signed headers.
@@ -397,11 +416,16 @@ impl RestClient {
             self.process_response(response).await?;
             return Err(Error::Protocol("SSE endpoint returned no stream".into()));
         }
+        let session = response
+            .extensions()
+            .get::<RequestSession>()
+            .cloned()
+            .unwrap_or_else(|| self.request_session());
         let mut bytes = response.bytes_stream();
         let stream = try_stream! {
             let mut buffer = Vec::<u8>::new();
             let mut frame_lines = Vec::<String>::new();
-            while let Some(chunk) = bytes.next().await {
+            while let Some(chunk) = session.run(async { Ok(bytes.next().await) }).await? {
                 buffer.extend_from_slice(&chunk?);
                 while let Some(index) = buffer.iter().position(|byte| *byte == b'\n') {
                     let line = buffer.drain(..=index).collect::<Vec<_>>();
@@ -413,6 +437,7 @@ impl RestClient {
                         if !frame_lines.is_empty() {
                             let raw = frame_lines.join("\n");
                             for frame in parse_sse_chunk(&raw) {
+                                session.check()?;
                                 yield frame;
                             }
                             frame_lines.clear();
@@ -428,6 +453,7 @@ impl RestClient {
             }
             if !frame_lines.is_empty() {
                 for frame in parse_sse_chunk(&frame_lines.join("\n")) {
+                    session.check()?;
                     yield frame;
                 }
             }

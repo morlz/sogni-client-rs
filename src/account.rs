@@ -35,6 +35,7 @@ pub struct AccountApi {
 struct AuthProjectionState {
     hydrated: bool,
     skip_next_authenticated_update: bool,
+    session: Option<u64>,
 }
 
 #[derive(Default)]

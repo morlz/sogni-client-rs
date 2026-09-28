@@ -10,7 +10,7 @@ const root = path.resolve(process.argv[2]);
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd:root, encoding:'utf8' }).trim();
 const version = require(path.join(root, 'package.json')).version;
 const builtVersion = require(path.join(root, 'dist/version.js')).LIB_VERSION;
-if (commit !== '4147e8dfeed5632ef8a8c648614ab476e924a0e1' || version !== '5.54.0') {
+if (commit !== '25b5d46100e4ec764e8d063c19ad4eb141664cbf' || version !== '5.58.1') {
   throw new Error('Update the pinned upstream revision intentionally before regenerating fixtures.');
 }
 if (builtVersion !== version) throw new Error('Rebuild the upstream SDK before generating fixtures.');
@@ -67,7 +67,8 @@ const h3 = (mode,suffix='',values={}) => params('video',`minimax-h3-fastvideo-in
 for (const mode of ['t2v','i2v','flf2v','ia2v','flfa2v','a2v']) for (const suffix of ['','_2stage']) add(`h3-${mode}${suffix}`,h3(mode,suffix));
 add('h3-audio-offset',h3('a2v','_2stage',{audioStart:2.5,generateAudio:true,loras:[],loraStrengths:[]}));
 for (const mode of ['ia2v','flfa2v','a2v']) {
-  for (const values of [{referenceAudio:false},{generateAudio:false},{audioDuration:2},{audioStart:'1'},{audioStart:-1},{loras:['test']},{loraStrengths:[1]},{steps:8}]) reject(`h3-audio-invalid-${invalid.length}`,h3(mode,'_2stage',values));
+  for (const suffix of ['', '_2stage']) add(`h3-audio-loras-${mode}${suffix}`, h3(mode,suffix,{loras:['catalog','personal-owned'],loraStrengths:[0.8,0.4]}));
+  for (const values of [{referenceAudio:false},{generateAudio:false},{audioDuration:2},{audioStart:'1'},{audioStart:-1},{steps:8}]) reject(`h3-audio-invalid-${invalid.length}`,h3(mode,'_2stage',values));
 }
 for (const outputScale of [null,false,1,'2']) reject(`h3-output-scale-${invalid.length}`,h3('t2v','_2stage',{outputScale}));
 for (const mode of ['t2v','i2v','flf2v']) reject(`h3-retired-720-${mode}`,h3(mode,'_2stage_720p'));
@@ -85,6 +86,41 @@ for (const [suffix, steps] of [['_2stage',20], ['_balanced_2stage',8]]) {
 add('seedance-export',params('video','seedance-2-5',{positivePrompt:'A kite.',duration:5,outputFormat:'mov',returnLastFrame:true}));
 for (const values of [{outputFormat:'webm'},{outputFormat:'mov'},{returnLastFrame:true},{returnLastFrame:null}]) reject(`export-invalid-${invalid.length}`,params('video','seedance-2-0',values));
 add('receipt-application-chosen',params('image','gpt-image-2.5-flare',{appSource:'custom-application',worldGenerationReceipt:{stage:'target_still',sourceImageSha256:'A'.repeat(64),selectionHash:'B'.repeat(64)}}));
+for (const outputFormat of ['png','jpg','webp']) for (const embedPromptMetadata of [undefined,false,true]) {
+  add(`image-metadata-${outputFormat}-${embedPromptMetadata}`,params('image','coreml-sogni_artist_v1_768',{seed:0,outputFormat,...(embedPromptMetadata===undefined?{}:{embedPromptMetadata})}));
+}
+for (const startingImageStrength of [0,1,0.25,undefined,null]) add(`image-strength-${startingImageStrength}`,params('image','coreml-sogni_artist_v1_768',{startingImage:true,...(startingImageStrength===undefined?{}:{startingImageStrength})}));
+for (const embedPromptMetadata of ['false',null,0]) reject(`image-bad-metadata-${invalid.length}`,params('image','coreml-sogni_artist_v1_768',{embedPromptMetadata}));
+for (const startingImageStrength of [-0.1,1.1,'bad','NaN']) reject(`image-bad-strength-${invalid.length}`,params('image','coreml-sogni_artist_v1_768',{startingImage:true,startingImageStrength}));
+const keyframeIds = [
+  ...['i2v','flf2v'].flatMap(mode => ['','_turbo','_balanced'].map(suffix=>`minimax-h3-fl2va-fp8_${mode}${suffix}`)),
+  ...['i2v','flf2v','ia2v','flfa2v','a2v'].flatMap(mode=>['','_2stage'].map(suffix=>`minimax-h3-fastvideo-int8_${mode}_turbo${suffix}`)),
+  ...['','_turbo','_balanced','_2stage','_balanced_2stage'].map(suffix=>`minimax-h3-ref2va-fp8_r2v${suffix}`)
+];
+if (keyframeIds.length!==21 || !keyframeIds.every(utils.isMinimaxH3KeyframeModel)) throw new Error('Keyframe model census drift');
+const keyframeParams = (modelId,values={}) => {
+  const workflow=utils.getVideoWorkflowType(modelId);
+  return params('video',modelId,{frames:243,width:672,height:384,
+    steps:utils.isMinimaxH3TurboModel(modelId)?4:utils.isMinimaxH3BalancedModel(modelId)?8:20,guidance:1,
+    ...(['i2v','flf2v','ia2v','flfa2v','r2v'].includes(workflow)?{referenceImage:true}:{}),
+    ...(['flf2v','flfa2v'].includes(workflow)?{referenceImageEnd:true}:{}),
+    ...(['ia2v','flfa2v','a2v'].includes(workflow)?{referenceAudio:true}:{}),...values});
+};
+const stills=indices=>indices.map(frameIndex=>({image:true,frameIndex}));
+for (const modelId of keyframeIds) add(`keyframes-${modelId}`,keyframeParams(modelId,{keyframes:stills([241,1,30,60,90,120,150,180])}));
+const i2v='minimax-h3-fl2va-fp8_i2v';
+add('keyframes-r2v-reference-slots',keyframeParams('minimax-h3-ref2va-fp8_r2v',{contextImages:[true,true],referenceVideos:[true],referenceAudio:true,keyframes:stills([180,60])}));
+for (const duration of [6,6.5,8]) add(`keyframes-duration-${duration}`,keyframeParams(i2v,{frames:362,duration,keyframes:stills([1,utils.calculateVideoFrames(i2v,duration,24)-2])}));
+for (const modelId of [i2v,'minimax-h3-fl2va-fp8_t2v']) for (const keyframes of [[],null]) add(`empty-keyframes-${modelId}-${keyframes}`,keyframeParams(modelId,{keyframes}));
+for (const modelId of ['minimax-h3-fl2va-fp8_t2v','minimax-h3-fl2va-fp8_t2v_turbo','minimax-h3-fl2va-fp8_t2v_balanced','minimax-h3-fastvideo-int8_t2v_turbo','minimax-h3-fastvideo-int8_t2v_turbo_2stage','seedance-2-5','happyhorse-1.1-i2v','wan3.0-video','ltx23-22b-fp8_i2v_distilled']) reject(`keyframes-wrong-model-${modelId}`,keyframeParams(modelId,{keyframes:stills([60])}));
+for (const keyframes of [{image:true,frameIndex:60},stills([1,2,3,4,5,6,7,8,9]),[null],[{frameIndex:60}],[{image:true,frameIndex:0},{image:false,frameIndex:60}],stills([30,60,30])]) reject(`keyframes-shape-${invalid.length}`,keyframeParams(i2v,{keyframes}));
+for (const frameIndex of [0,242,243,-5,2.5,'60',null,true,false,[60],{at:60}]) reject(`keyframes-index-${invalid.length}`,keyframeParams(i2v,{keyframes:[{image:true,frameIndex}]}));
+for (const mode of ['i2v','flf2v','ia2v','flfa2v','a2v','r2v']) {
+  const modelId=keyframeIds.find(id=>utils.getVideoWorkflowType(id)===mode);
+  for (const frameIndex of [0,140,141]) reject(`keyframes-edge-${mode}-${frameIndex}`,keyframeParams(modelId,{frames:141,keyframes:stills([frameIndex])}));
+}
+reject('keyframes-duration-count',keyframeParams(i2v,{frames:362,duration:6,keyframes:stills([144])}));
+reject('keyframes-missing-length',keyframeParams(i2v,{frames:undefined,keyframes:stills([30])}));
 const tiers = [
   {name:'speech-custom',media:'audio',tier:{steps:{min:1,max:1,default:1},speaker:{allowed:['ryan'],default:'ryan'},instruct:{maxLength:4000},language:{allowed:['en'],default:'en'}}},
   {name:'speech-clone',media:'audio',tier:{steps:{min:1,max:1,default:1},referenceText:{maxLength:6000},requiresReferenceAudio:true}},

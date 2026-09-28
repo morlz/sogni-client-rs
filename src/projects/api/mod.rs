@@ -6,11 +6,20 @@ mod media;
 mod models;
 mod personal_loras;
 mod recovery;
+mod result_media;
+mod results;
 mod reusable;
+mod session;
 mod status;
 mod submission_recovery;
 pub use personal_loras::{
     ImportPersonalLoraParams, PersonalLora, PersonalLoraLibrary, PersonalLoraLimits, PersonalLoras,
+};
+pub use result_media::ResultMediaKind;
+pub(super) use result_media::{ResultMediaEvidence, result_media_evidence};
+pub use results::{
+    GetProjectResultOptions, ListRecentProjectsOptions, ProjectResult, ProjectResultJob,
+    RecentProject, RecentProjectJob, ResultUrlUnavailable,
 };
 pub use reusable::{ReusableUploads, SavedUpload, SavedUploadBinding};
 
@@ -34,6 +43,7 @@ pub(super) struct ProjectsInner {
     pub(super) supported_models: RwLock<Option<TimedValue>>,
     pub(super) model_tiers: RwLock<Option<TimedValue>>,
     pub(super) events: EventBus,
+    pub(super) media_results: parking_lot::Mutex<std::collections::VecDeque<(u64, String, String)>>,
     pub(super) recovered_completed_ids: RwLock<HashSet<String>>,
     pub(super) sync_lock: Mutex<()>,
     pub(super) assets: ReusableUploads,
@@ -60,6 +70,7 @@ impl ProjectsApi {
             supported_models: RwLock::new(None),
             model_tiers: RwLock::new(None),
             events: EventBus::default(),
+            media_results: parking_lot::Mutex::new(std::collections::VecDeque::new()),
             recovered_completed_ids: RwLock::new(HashSet::new()),
             sync_lock: Mutex::new(()),
         });

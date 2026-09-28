@@ -1,6 +1,7 @@
 use super::*;
 use crate::projects::api::ProjectsInner;
 mod attempts;
+mod queue;
 
 #[derive(Clone)]
 pub struct Project {
@@ -20,9 +21,13 @@ pub(super) struct ProjectState {
     pub(super) queue_position: i64,
     pub(super) estimated_start_at: Option<DateTime<Utc>>,
     pub(super) queue_status: Option<String>,
+    pub(super) waiting_reason: Option<WaitingReason>,
+    pub(super) job_waiting_reasons: Vec<JobWaitingReason>,
+    pub(super) queue_revision: u64,
 }
 
 pub(super) struct ProjectInner {
+    pub(super) session: crate::auth::RequestSession,
     pub(super) state: RwLock<ProjectState>,
     pub(super) jobs: RwLock<Vec<Job>>,
     pub(super) events: EventBus,
@@ -53,8 +58,15 @@ impl Project {
             .and_then(Value::as_str)
             .unwrap_or("image")
             .to_owned();
+        let session = api
+            .upgrade()
+            .expect("project API exists at construction")
+            .client
+            .rest
+            .request_session();
         Self {
             inner: Arc::new(ProjectInner {
+                session,
                 state: RwLock::new(ProjectState {
                     id,
                     started_at: Utc::now(),
@@ -67,6 +79,9 @@ impl Project {
                     queue_position: -1,
                     estimated_start_at: None,
                     queue_status: None,
+                    waiting_reason: None,
+                    job_waiting_reasons: Vec::new(),
+                    queue_revision: 0,
                 }),
                 jobs: RwLock::new(Vec::new()),
                 events: EventBus::default(),
@@ -87,6 +102,46 @@ impl Project {
     #[must_use]
     pub fn status(&self) -> ProjectStatus {
         self.inner.state.read().status
+    }
+
+    pub(in crate::projects) fn auth_session(&self) -> u64 {
+        self.inner.session.id()
+    }
+
+    pub(in crate::projects) fn same_handle(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.inner, &other.inner)
+    }
+
+    pub(in crate::projects) fn check_session(&self) -> Result<()> {
+        self.inner
+            .session
+            .check()
+            .map_err(|_| session_ended_error())
+    }
+
+    pub(in crate::projects) fn end_session(&self) {
+        let error = json!({"code":0,"message":"This client stopped tracking the project because its account session ended. The project may still be running. Check its original account before submitting again."});
+        self.update(
+            |state| {
+                if !state.status.is_finished() {
+                    state.status = ProjectStatus::Failed;
+                    state.error = Some(error.clone());
+                }
+            },
+            &["status", "error"],
+        );
+        self.invalidate_queue();
+        for job in self.jobs() {
+            job.update(
+                |state| {
+                    if !state.status.is_finished() {
+                        state.status = JobStatus::Failed;
+                        state.error = Some(error.clone());
+                    }
+                },
+                &["status", "error"],
+            );
+        }
     }
 
     #[must_use]
@@ -162,6 +217,8 @@ impl Project {
             queue_position: state.queue_position,
             estimated_start_at: state.estimated_start_at,
             queue_status: state.queue_status.clone(),
+            waiting_reason: state.waiting_reason.clone(),
+            job_waiting_reasons: state.job_waiting_reasons.clone(),
             jobs,
             progress,
             result_urls,
@@ -175,6 +232,7 @@ impl Project {
 
     /// Wait without cancelling the server-side render when the local timeout elapses.
     pub async fn wait_for_completion(&self, timeout: Option<Duration>) -> Result<Vec<String>> {
+        self.check_session()?;
         let wait =
             async {
                 loop {
@@ -214,18 +272,33 @@ impl Project {
                     changed.await;
                 }
             };
-        if let Some(timeout) = timeout {
-            tokio::time::timeout(timeout, wait)
-                .await
-                .map_err(|_| Error::Timeout(format!("project {} did not finish", self.id())))?
-        } else {
-            wait.await
-        }
+        let result = self
+            .inner
+            .session
+            .run(async {
+                if let Some(timeout) = timeout {
+                    tokio::time::timeout(timeout, wait).await.map_err(|_| {
+                        Error::Timeout(format!("project {} did not finish", self.id()))
+                    })?
+                } else {
+                    wait.await
+                }
+            })
+            .await;
+        self.check_session()?;
+        result
     }
 
     pub async fn cancel(&self) -> Result<()> {
+        self.check_session()?;
         let api = self.inner.api.upgrade().ok_or(Error::Closed)?;
-        cancel_project(&api, &self.id()).await
+        let result = self
+            .inner
+            .session
+            .run(cancel_project(&api, &self.id()))
+            .await;
+        self.check_session()?;
+        result
     }
 
     #[must_use]
@@ -268,12 +341,9 @@ impl Project {
             .get("modelId")
             .and_then(Value::as_str)
             .unwrap_or_default();
-        let media_type = if is_model_artifact_model(model_id) {
-            "model".into()
-        } else {
-            cached_model_media(&api.supported_models, model_id)
-                .unwrap_or_else(|| state.media_type.clone())
-        };
+        let media_type = ProjectsApi { inner: api.clone() }
+            .result_media_kind(Some(model_id), Some(&state.media_type), None)
+            .map_or_else(|| state.media_type.clone(), |kind| kind.as_str().into());
         let job = Job::new(
             JobSnapshot::pending(canonical_id.clone(), state.id.clone(), step_count),
             api.client.clone(),
@@ -301,6 +371,9 @@ impl Project {
             apply(&mut state);
         }
         self.notify("updated", json!(keys));
+        if self.status().is_finished() {
+            self.invalidate_queue();
+        }
     }
 
     pub(super) fn suspend_processing_deadlines(&self) {
@@ -318,6 +391,10 @@ impl Project {
         self.inner.events.emit(name, data);
         self.inner.changed.notify_waiters();
     }
+}
+
+fn session_ended_error() -> Error {
+    ProjectError::from_payload(json!({"code":0,"message":"This client stopped tracking the project because its account session ended. The project may still be running. Check its original account before submitting again."})).into()
 }
 
 #[cfg(test)]

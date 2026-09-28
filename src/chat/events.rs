@@ -23,10 +23,21 @@ const CHAT_EVENT_LAG_MESSAGE: &str =
 
 pub(super) fn listen_for_chat_events(inner: &Arc<ChatInner>) {
     let mut receiver = inner.client.subscribe_scoped();
+    let mut session = inner.client.rest.request_session();
     let weak = Arc::downgrade(inner);
     tokio::spawn(async move {
         loop {
-            let event = match receiver.recv().await {
+            let received = tokio::select! {
+                biased;
+                () = session.changed() => {
+                    let Some(inner) = weak.upgrade() else { return; };
+                    end_previous_sessions(&inner);
+                    session = inner.client.rest.request_session();
+                    continue;
+                },
+                event = receiver.recv() => event,
+            };
+            let event = match received {
                 Ok(event) => event,
                 Err(tokio::sync::broadcast::error::RecvError::Lagged(skipped)) => {
                     tracing::warn!(skipped, "chat event receiver lagged");
@@ -48,6 +59,15 @@ pub(super) fn listen_for_chat_events(inner: &Arc<ChatInner>) {
 
 fn handle_chat_event(inner: &Arc<ChatInner>, scoped: ScopedEvent) {
     let event = scoped.event;
+    if matches!(
+        event.name.as_str(),
+        "jobTokens" | "llmJobResult" | "llmJobError" | "jobState" | "swarmLLMModels"
+    ) && scoped
+        .session
+        .is_some_and(|session| session != inner.client.auth_session())
+    {
+        return;
+    }
     match event.name.as_str() {
         "swarmLLMModels" => handle_models(inner, &event.data),
         "jobTokens" => handle_tokens(inner, &event.data),
@@ -59,6 +79,38 @@ fn handle_chat_event(inner: &Arc<ChatInner>, scoped: ScopedEvent) {
         "authenticated" => transport_recovery::authenticated(inner, &event.data, scoped.session),
         _ => {}
     }
+}
+
+fn end_previous_sessions(inner: &ChatInner) {
+    let current = inner.client.auth_session();
+    let ids = inner
+        .active
+        .read()
+        .iter()
+        .filter(|(_, chat)| chat.session != current)
+        .map(|(id, _)| id.clone())
+        .collect::<Vec<_>>();
+    for id in ids {
+        handle_error(
+            inner,
+            &json!({
+                "jobID": id, "error": "session_ended",
+                "error_message": "The account session ended before this chat request completed.",
+            }),
+        );
+    }
+}
+
+pub(super) fn session_error(job_id: Option<&str>) -> crate::Error {
+    ChatError::from_payload(
+        json!({
+            "error": "session_ended",
+            "error_message": "The account session ended before this chat request completed.",
+        }),
+        None,
+        job_id.map(str::to_owned),
+    )
+    .into()
 }
 
 fn fail_active_chats_after_lag(inner: &ChatInner) {

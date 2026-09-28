@@ -1,9 +1,11 @@
 use super::*;
 
 mod builder;
+mod keyframes;
 pub(in crate::projects) use builder::{
     effective_asset_wire_name, mark_asset_param, validate_asset_roles,
 };
+pub use keyframes::MinimaxH3Keyframe;
 
 /// A local file or in-memory media payload to upload before a project starts.
 #[derive(Clone, Debug)]
@@ -81,6 +83,8 @@ pub enum AssetRole {
     Pixal3dRightView,
     ControlNetImage,
     ContextImage(u8),
+    /// Intermediate MiniMax H3 image slot (1 through 8), separate from references.
+    KeyframeImage(u8),
     ReferenceImage,
     ReferenceImageEnd,
     ReferenceAudio,
@@ -108,6 +112,7 @@ impl AssetRole {
             Self::Pixal3dRightView => "contextImage3".into(),
             Self::ControlNetImage => "cnImage".into(),
             Self::ContextImage(index) => format!("contextImage{index}"),
+            Self::KeyframeImage(index) => format!("keyframeImage{index}"),
             Self::ReferenceImage => "referenceImage".into(),
             Self::ReferenceImageEnd => "referenceImageEnd".into(),
             Self::ReferenceAudio | Self::ReferenceAudioIdentity => "referenceAudio".into(),

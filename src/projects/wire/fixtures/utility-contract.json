@@ -1,5 +1,5 @@
 {
-  "upstream": "Sogni-AI/sogni-client@4147e8dfeed5632ef8a8c648614ab476e924a0e1 (5.54.0)",
+  "upstream": "Sogni-AI/sogni-client@25b5d46100e4ec764e8d063c19ad4eb141664cbf (5.58.1)",
   "cases": [
     {
       "name": "sam3-points-box",

@@ -7,11 +7,23 @@ pub(super) use result::copy_export_metadata;
 use result::{handle_job_error, handle_job_result};
 use state::{handle_job_eta, handle_job_progress, handle_job_state};
 pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
-    let mut receiver = inner.client.subscribe();
+    let mut receiver = inner.client.subscribe_scoped();
+    let mut session = inner.client.rest.request_session();
     let weak = Arc::downgrade(inner);
     tokio::spawn(async move {
         loop {
-            let event = match receiver.recv().await {
+            let incoming = tokio::select! {
+                biased;
+                () = session.changed() => {
+                    let Some(inner) = weak.upgrade() else { return; };
+                    let api = ProjectsApi { inner };
+                    api.clear_previous_sessions();
+                    session = api.inner.client.rest.request_session();
+                    continue;
+                },
+                event = receiver.recv() => event,
+            };
+            let scoped = match incoming {
                 Ok(event) => event,
                 Err(tokio::sync::broadcast::error::RecvError::Lagged(skipped)) => {
                     tracing::warn!(
@@ -31,9 +43,20 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
             let Some(inner) = weak.upgrade() else {
                 return;
             };
+            ProjectsApi {
+                inner: inner.clone(),
+            }
+            .clear_previous_sessions();
+            if scoped
+                .session
+                .is_some_and(|owner| owner != inner.client.auth_session())
+            {
+                continue;
+            }
+            let event = scoped.event;
             if matches!(
                 event.name.as_str(),
-                "jobState" | "jobProgress" | "jobETA" | "jobResult" | "jobRetry"
+                "jobState" | "jobProgress" | "jobETA" | "jobResult" | "jobRetry" | "projectQueue"
             ) || (event.name == "jobError"
                 && !(event.data.get("imgID").and_then(Value::as_str).is_none()
                     && event
@@ -49,7 +72,32 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
                 "jobState" => handle_job_state(&inner, &event.data),
                 "jobProgress" => handle_job_progress(&inner, &event.data),
                 "jobETA" => handle_job_eta(&inner, &event.data),
-                "jobResult" => handle_job_result(&inner, &event.data).await,
+                "jobResult" => {
+                    let session = inner.client.rest.request_session();
+                    let mut completion = Box::pin(async move {
+                        let _ = session
+                            .run(async {
+                                handle_job_result(&inner, &event.data).await;
+                                Ok(())
+                            })
+                            .await;
+                    });
+                    // Apply the result's synchronous state changes in socket order,
+                    // then let URL signing wait independently of live queue updates.
+                    if futures_util::poll!(completion.as_mut()).is_pending() {
+                        tokio::spawn(completion);
+                    }
+                }
+                "projectQueue" => {
+                    if let Some(project) = state::project_by_id(&inner, &event.data) {
+                        project.receive_queue(&event.data);
+                    }
+                }
+                "disconnected" | "serverDisconnected" => {
+                    for project in inner.projects.read().values() {
+                        project.invalidate_queue();
+                    }
+                }
                 "jobError" => handle_job_error(&inner, &event.data),
                 "jobRetry" => handle_job_retry(&inner, &event.data),
                 "changeNetwork" => {
@@ -88,6 +136,10 @@ fn handle_job_retry(inner: &ProjectsInner, data: &Value) {
     }
 }
 
+#[cfg(test)]
+mod queue_tests;
+#[cfg(test)]
+mod result_api_tests;
 #[cfg(test)]
 mod retry_tests;
 

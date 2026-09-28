@@ -1,5 +1,6 @@
 use super::*;
 use crate::projects::project::ProjectInner;
+mod enhancement;
 mod runtime;
 
 #[derive(Clone)]
@@ -8,6 +9,8 @@ pub struct Job {
 }
 
 struct JobInner {
+    session: crate::auth::RequestSession,
+    result_evidence: RwLock<Option<api::ResultMediaEvidence>>,
     state: RwLock<JobSnapshot>,
     events: EventBus,
     client: Arc<ApiClient>,
@@ -35,8 +38,14 @@ impl Job {
         output_format: Option<String>,
         params: &Value,
     ) -> Self {
+        let session = project
+            .upgrade()
+            .map(|project| project.session.clone())
+            .unwrap_or_else(|| client.rest.request_session());
         Self {
             inner: Arc::new(JobInner {
+                session,
+                result_evidence: RwLock::new(None),
                 state: RwLock::new(state),
                 events: EventBus::default(),
                 client,
@@ -62,6 +71,12 @@ impl Job {
     #[must_use]
     pub fn status(&self) -> JobStatus {
         self.inner.state.read().status
+    }
+
+    /// Current server explanation while this result remains pending.
+    #[must_use]
+    pub fn waiting_reason(&self) -> Option<WaitingReason> {
+        self.inner.state.read().waiting_reason.clone()
     }
 
     #[must_use]
@@ -92,10 +107,21 @@ impl Job {
 
     /// Refresh the signed URL of a requested final-frame export.
     pub async fn get_last_frame_url(&self) -> Result<String> {
+        self.inner.session.check()?;
         let state = self.snapshot();
-        let response = self.inner.client.rest.get("/v1/media/downloadUrl", Some(&json!({
+        let query = json!({
             "jobId":state.project_id, "id":state.id, "type":"complete", "artifact":"lastFrame"
-        }))).await?;
+        });
+        let response = self
+            .inner
+            .session
+            .run(
+                self.inner
+                    .client
+                    .rest
+                    .get("/v1/media/downloadUrl", Some(&query)),
+            )
+            .await?;
         let url = response
             .pointer("/data/downloadUrl")
             .and_then(Value::as_str)
@@ -142,7 +168,18 @@ impl Job {
         self.inner.events.subscribe()
     }
 
+    pub(super) fn request_session(&self) -> crate::auth::RequestSession {
+        self.inner.session.clone()
+    }
+
+    pub(super) fn record_result_evidence(&self, data: &Value) {
+        if let Some(evidence) = api::result_media_evidence(data) {
+            *self.inner.result_evidence.write() = Some(evidence);
+        }
+    }
+
     pub async fn get_result_url(&self) -> Result<String> {
+        self.inner.session.check()?;
         if let Some(url) = self.result_url() {
             return Ok(url);
         }
@@ -153,8 +190,24 @@ impl Job {
         if self.is_withheld() {
             return Err(Error::InvalidInput("job result was withheld".into()));
         }
+        let parent = self.inner.project.upgrade().ok_or(Error::Closed)?;
+        let api = ProjectsApi {
+            inner: parent.api.upgrade().ok_or(Error::Closed)?,
+        };
+        let params = parent.state.read().params.clone();
+        let evidence =
+            self.inner.result_evidence.read().clone().or_else(|| {
+                api::result_media_evidence(&json!({"outputFormat":state.output_format}))
+            });
+        let kind = api
+            .result_media_kind(
+                params.get("modelId").and_then(Value::as_str),
+                Some(self.media_type()),
+                evidence.as_ref(),
+            )
+            .ok_or_else(|| Error::Protocol("result media kind is unknown".into()))?;
         let content_type = match (
-            self.inner.project_media_type.as_str(),
+            kind.as_str(),
             state
                 .output_format
                 .as_deref()
@@ -170,41 +223,31 @@ impl Job {
             ("image", Some("png")) => Some("image/png"),
             _ => None,
         };
-        let query = if matches!(self.media_type(), "video" | "audio" | "model") {
-            json!({
-                "jobId": state.project_id,
-                "id": state.id,
-                "type": "complete",
-                "contentType": content_type,
-            })
-        } else {
-            json!({
-                "jobId": state.project_id,
-                "imageId": state.id,
-                "type": "complete",
-                "contentType": content_type,
-            })
-        };
-        let endpoint = if matches!(self.media_type(), "video" | "audio" | "model") {
-            "/v1/media/downloadUrl"
-        } else {
-            "/v1/image/downloadUrl"
-        };
-        let response = self.inner.client.rest.get(endpoint, Some(&query)).await?;
-        let url = response
-            .pointer("/data/downloadUrl")
-            .and_then(Value::as_str)
-            .ok_or_else(|| {
-                Error::Protocol("download URL response missing data.downloadUrl".into())
-            })?
-            .to_owned();
+        let content_type = content_type.or_else(|| {
+            evidence
+                .as_ref()
+                .filter(|evidence| {
+                    evidence.kind == kind
+                        && matches!(kind, ResultMediaKind::Audio | ResultMediaKind::Image)
+                })
+                .and_then(|evidence| evidence.content_type.as_deref())
+        });
+        let url = self
+            .inner
+            .session
+            .run(api.mint_result_url(&state.project_id, &state.id, kind, content_type))
+            .await?;
         self.update(|state| state.result_url = Some(url.clone()), &["resultUrl"]);
         Ok(url)
     }
 
     pub async fn get_result_data(&self) -> Result<Bytes> {
+        self.inner.session.check()?;
         let url = Url::parse(&self.get_result_url().await?)?;
-        self.inner.client.rest.get_bytes(url).await
+        self.inner
+            .session
+            .run(self.inner.client.rest.get_bytes(url))
+            .await
     }
 
     /// The currently running or most recent image-enhancement project.
@@ -219,6 +262,17 @@ impl Job {
     /// retain the upstream medium-strength behavior. `overrides` may contain
     /// `positivePrompt`, `stylePrompt`, and `tokenType`.
     pub async fn enhance(
+        &self,
+        strength: &str,
+        overrides: Option<&Value>,
+    ) -> Result<Option<String>> {
+        let session = self.request_session();
+        session
+            .run(self.enhance_in_session(strength, overrides))
+            .await
+    }
+
+    async fn enhance_in_session(
         &self,
         strength: &str,
         overrides: Option<&Value>,
@@ -259,6 +313,10 @@ impl Job {
                 .unwrap_or_default()
                 .to_owned()
         };
+        let api = ProjectsApi {
+            inner: parent.api.upgrade().ok_or(Error::Closed)?,
+        };
+        let size = self.enhancement_size(&parent_params, &api).await?;
         let data = self.get_result_data().await?;
         let format = self.inner.output_format.as_deref().unwrap_or("png");
         let content_type = match format {
@@ -267,9 +325,9 @@ impl Job {
             _ => "image/png",
         };
         let mut request =
-            ProjectRequest::image("flux1-schnell-fp8", inherited_string("positivePrompt"))
+            ProjectRequest::image("krea2_turbo_fp8_scaled", inherited_string("positivePrompt"))
                 .network(Network::Fast)
-                .steps(5)
+                .steps(8)
                 .guidance(1.0)
                 .number_of_media(1)
                 .param("numberOfPreviews", 0)
@@ -301,22 +359,13 @@ impl Job {
         {
             request = request.param("seed", value.clone());
         }
-        if let Some(value) = parent_params
-            .get("sizePreset")
-            .filter(|value| !value.is_null())
-        {
-            request = request.param("sizePreset", value.clone());
+        if let Some((width, height)) = size {
+            request = request
+                .param("sizePreset", "custom")
+                .param("width", width)
+                .param("height", height);
         }
-        for dimension in ["width", "height"] {
-            if let Some(value) = parent_params
-                .get(dimension)
-                .filter(|value| !value.is_null())
-            {
-                request = request.param(dimension, value.clone());
-            }
-        }
-        let api = parent.api.upgrade().ok_or(Error::Closed)?;
-        let project = ProjectsApi { inner: api }.create(request).await?;
+        let project = api.create(request).await?;
         *self.inner.enhancement_project.write() = Some(project.clone());
         self.inner
             .events
@@ -338,6 +387,14 @@ impl Job {
         {
             let mut state = self.inner.state.write();
             apply(&mut state);
+            if state.status != JobStatus::Pending {
+                state.waiting_reason = None;
+            }
+            if !keys.is_empty() && keys.iter().all(|key| *key == "waitingReason") {
+                drop(state);
+                self.inner.events.emit("updated", json!(keys));
+                return;
+            }
             self.inner.runtime.lock().observe(
                 &state,
                 keys.contains(&"status"),

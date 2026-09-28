@@ -27,29 +27,29 @@ impl ProjectsApi {
         project_id: &str,
         mut request: ProjectRequest,
     ) -> std::result::Result<Project, ProjectSubmissionError> {
-        let session = self.inner.client.rest.auth_updates();
-        let auth_session = *session.borrow();
-        let (project_id, mut wire) = self
-            .prepare_submission(project_id, &mut request)
+        self.clear_previous_sessions();
+        let session = self.inner.client.rest.request_session();
+        let auth_session = session.id();
+        let (project_id, mut wire) = session
+            .run(self.prepare_submission(project_id, &mut request))
             .await
             .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::Prepare, cause))?;
-        self.process_assets(
-            &project_id,
-            &request.assets,
-            &mut wire,
-            matches!(
-                request.params.get("type").and_then(Value::as_str),
-                Some("video" | "audio")
-            ),
-        )
-        .await
-        .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::AssetUpload, cause))?;
-        if session.has_changed().unwrap_or(true) {
-            return Err(ProjectSubmissionError::new(
-                SubmissionPhase::Prepare,
-                Error::InvalidInput("The account changed. Select the upload again.".into()),
-            ));
-        }
+        session
+            .run(self.process_assets(
+                &session,
+                &project_id,
+                &request.assets,
+                &mut wire,
+                matches!(
+                    request.params.get("type").and_then(Value::as_str),
+                    Some("video" | "audio")
+                ),
+            ))
+            .await
+            .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::AssetUpload, cause))?;
+        session
+            .check()
+            .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::Prepare, cause))?;
         let project = Project::new(
             project_id.clone(),
             Value::Object(request.params),
@@ -58,6 +58,9 @@ impl ProjectsApi {
         );
         {
             let mut projects = self.inner.projects.write();
+            session
+                .check()
+                .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::Prepare, cause))?;
             if projects.contains_key(&project_id) {
                 return Err(ProjectSubmissionError::new(
                     SubmissionPhase::Prepare,
@@ -71,10 +74,12 @@ impl ProjectsApi {
             .lock()
             .unadmitted
             .insert(project_id.clone(), wire.clone());
-        match self
-            .inner
-            .client
-            .send_socket_tracked_in_session("jobRequest", &wire, auth_session)
+        match session
+            .run(self.inner.client.send_socket_tracked_in_session(
+                "jobRequest",
+                &wire,
+                auth_session,
+            ))
             .await
         {
             Ok(generation) => {
@@ -86,15 +91,34 @@ impl ProjectsApi {
                 }
             }
             Err(cause) => {
-                self.inner.projects.write().remove(&project_id);
-                self.inner.submission.lock().unadmitted.remove(&project_id);
+                if session.check().is_err() {
+                    project.end_session();
+                }
+                self.remove_failed_submission(&project);
                 return Err(ProjectSubmissionError::new(SubmissionPhase::Send, cause));
             }
+        }
+        if let Err(cause) = session.check() {
+            self.clear_previous_sessions();
+            project.end_session();
+            return Err(ProjectSubmissionError::new(SubmissionPhase::Send, cause));
         }
         self.inner
             .events
             .emit("projectCreated", json!({"projectId": project_id}));
         Ok(project)
+    }
+
+    pub(super) fn remove_failed_submission(&self, project: &Project) {
+        let project_id = project.id();
+        let mut projects = self.inner.projects.write();
+        if projects
+            .get(&project_id)
+            .is_some_and(|tracked| tracked.same_handle(project))
+        {
+            projects.remove(&project_id);
+            self.inner.submission.lock().unadmitted.remove(&project_id);
+        }
     }
 
     async fn prepare_submission(

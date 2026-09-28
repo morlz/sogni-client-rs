@@ -11,6 +11,8 @@ use super::{CurrentAccount, SubscriptionProjectionState};
 mod auth_state;
 #[cfg(feature = "wallet")]
 mod cookie_rollback;
+mod cookie_session;
+mod request_session;
 
 #[cfg(feature = "wallet")]
 #[test]

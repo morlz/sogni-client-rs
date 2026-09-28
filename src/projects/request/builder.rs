@@ -26,6 +26,18 @@ fn set_numbered_asset_param(
 
 pub(in crate::projects) fn mark_asset_param(params: &mut Map<String, Value>, role: &AssetRole) {
     match role {
+        AssetRole::KeyframeImage(slot) => {
+            if !(1..=8).contains(slot) {
+                return;
+            }
+            let keyframes = params.entry("keyframes").or_insert_with(|| json!([]));
+            if let Some(values) = keyframes.as_array_mut() {
+                values.resize_with(values.len().max(usize::from(*slot)), || json!({}));
+                if let Some(entry) = values[usize::from(*slot - 1)].as_object_mut() {
+                    entry.insert("image".into(), json!(true));
+                }
+            }
+        }
         AssetRole::ControlNetImage => {
             if let Some(control) = params.get_mut("controlNet").and_then(Value::as_object_mut) {
                 control.insert("image".into(), json!(true));
@@ -65,6 +77,16 @@ pub(in crate::projects) fn validate_asset_roles(
     let mut video_slots = [false; 3];
     for (role, _) in assets {
         match role {
+            AssetRole::KeyframeImage(slot) if !(1..=8).contains(slot) => {
+                return Err(Error::InvalidInput(
+                    "keyframe image slot must be between 1 and 8".into(),
+                ));
+            }
+            AssetRole::KeyframeImage(_) if !is_minimax_h3_keyframe_model(model_id) => {
+                return Err(Error::InvalidInput(format!(
+                    "keyframes is supported only by the MiniMax H3 image-to-video, first/last-frame, Sound to Video and Reference to Video workflows (i2v, flf2v, ia2v, flfa2v, a2v and r2v model ids); {model_id} does not accept keyframes."
+                )));
+            }
             AssetRole::ContextImage(slot) if !(1..=16).contains(slot) => {
                 return Err(Error::InvalidInput(
                     "context image slot must be between 1 and 16".into(),
@@ -172,6 +194,12 @@ impl ProjectRequest {
     #[must_use]
     pub fn number_of_media(self, value: u32) -> Self {
         self.param("numberOfMedia", value)
+    }
+
+    /// Include or omit prompt/settings metadata in worker image outputs.
+    #[must_use]
+    pub fn embed_prompt_metadata(self, enabled: bool) -> Self {
+        self.param("embedPromptMetadata", enabled)
     }
 
     /// Select the source-image foreground for a SAM3 segmentation request.

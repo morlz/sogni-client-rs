@@ -15,21 +15,26 @@ impl ProjectsApi {
         image_id: &str,
         source: &MediaSource,
     ) -> Result<()> {
-        let project_id = super::create::normalize_project_id(project_id)?;
-        let image_id = uuid::Uuid::parse_str(image_id)
-            .map_err(|_| Error::InvalidInput("image id must be a UUID".into()))?
-            .to_string()
-            .to_uppercase();
-        let media = source.read().await?;
-        let query = json!({
-            "imageId": image_id, "jobId": project_id, "type": "startingImage",
-            "contentType": media.content_type,
-        });
-        let upload = self.upload_url(&query).await?;
-        self.inner
-            .client
-            .rest
-            .put_bytes(upload, media.data, media.content_type.as_deref())
+        let session = self.inner.client.rest.request_session();
+        session
+            .run(async {
+                let project_id = super::create::normalize_project_id(project_id)?;
+                let image_id = uuid::Uuid::parse_str(image_id)
+                    .map_err(|_| Error::InvalidInput("image id must be a UUID".into()))?
+                    .to_string()
+                    .to_uppercase();
+                let media = source.read().await?;
+                let query = json!({
+                    "imageId": image_id, "jobId": project_id, "type": "startingImage",
+                    "contentType": media.content_type,
+                });
+                let upload = self.upload_url(&query).await?;
+                self.inner
+                    .client
+                    .rest
+                    .put_bytes(upload, media.data, media.content_type.as_deref())
+                    .await
+            })
             .await
     }
 
@@ -124,6 +129,7 @@ impl ProjectsApi {
 
     pub(super) async fn process_assets(
         &self,
+        session: &crate::auth::RequestSession,
         project_id: &str,
         assets: &[(AssetRole, MediaSource)],
         request: &mut Value,
@@ -136,6 +142,7 @@ impl ProjectsApi {
             .to_owned();
         let mut seen = std::collections::HashSet::new();
         for (role, source) in assets {
+            session.check()?;
             match role {
                 AssetRole::ContextImage(slot) if !(1..=16).contains(slot) => {
                     return Err(Error::InvalidInput(
@@ -161,6 +168,7 @@ impl ProjectsApi {
                 )));
             }
             let media = source.read().await?;
+            session.check()?;
             let (resource_type, resource_id) = if role.is_media() {
                 ["referenceAudio", "referenceVideo"]
                     .into_iter()
@@ -205,24 +213,27 @@ impl ProjectsApi {
                     },
                 )
                 .await?;
+            session.check()?;
             if !reused {
                 let upload = if role.is_media() {
                     self.media_upload_url(&query).await?
                 } else {
                     self.upload_url(&query).await?
                 };
+                session.check()?;
                 self.inner
                     .client
                     .rest
                     .put_bytes(upload, media.data, media.content_type.as_deref())
                     .await?;
+                session.check()?;
             }
             // Image uploads advertise their MIME in the resource registration
             // and PUT only. Video and voice-clone audio inputs annotate the wire.
             if let (Some(keyframe), Some(content_type)) = (
                 request
                     .pointer_mut("/keyFrames/0")
-                    .filter(|_| annotate_video),
+                    .filter(|_| annotate_video && !matches!(role, AssetRole::KeyframeImage(_))),
                 media.content_type,
             ) {
                 if matches!(role, AssetRole::ReferenceAudioIdentity) {

@@ -2,16 +2,46 @@ use super::state::project_by_id;
 use super::*;
 use crate::projects::api::ProjectsInner;
 pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) {
-    let Some(project) = project_by_id(inner, data) else {
+    let session = inner.client.rest.request_session();
+    let Some(job_id) = data.get("imgID").and_then(Value::as_str) else {
         return;
     };
-    let Some(job_id) = data.get("imgID").and_then(Value::as_str) else {
+    let Some(project) = project_by_id(inner, data) else {
+        let Some(project_id) = data.get("jobID").and_then(Value::as_str) else {
+            return;
+        };
+        let mut event = data.clone();
+        let mut url = raw_result_url(data);
+        if url.is_none()
+            && !(data.get("triggeredNSFWFilter").and_then(Value::as_bool) == Some(true)
+                && data.get("nsfwDetected").and_then(Value::as_bool) != Some(true))
+            && data.get("userCanceled").and_then(Value::as_bool) != Some(true)
+        {
+            if let Some(evidence) = api::result_media_evidence(data) {
+                let api = ProjectsApi {
+                    inner: inner.clone(),
+                };
+                let content_type = (evidence.kind == ResultMediaKind::Audio)
+                    .then_some(evidence.content_type.as_deref())
+                    .flatten();
+                url = session
+                    .run(api.mint_result_url(project_id, job_id, evidence.kind, content_type))
+                    .await
+                    .ok();
+            }
+        }
+        if session.check().is_ok() {
+            event["resultUrl"] = json!(url);
+            inner.events.emit("job", event);
+        }
         return;
     };
     let Some(job) = project.job_for_attempt(job_id, data.get("jobIndex").and_then(Value::as_u64))
     else {
         return;
     };
+    project.clear_job_queue(job_id, data.get("jobIndex").and_then(Value::as_u64));
+    job.record_result_evidence(data);
     let nsfw = data
         .get("triggeredNSFWFilter")
         .and_then(Value::as_bool)
@@ -19,7 +49,13 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
     let detected = data.get("nsfwDetected").and_then(Value::as_bool) == Some(true);
     let canceled = data.get("userCanceled").and_then(Value::as_bool) == Some(true);
     let provenance = JobProvenance::from_result(data);
-    let mut result_url = raw_result_url(data);
+    let result_url = raw_result_url(data);
+    let seed = data
+        .get("lastSeed")
+        .and_then(|value| value.as_i64().or_else(|| value.as_str()?.parse().ok()));
+    let steps = number(data.get("performedStepCount"));
+    // Completion may be observed while URL signing is still in flight. Publish
+    // all synchronous result metadata together before the first await.
     job.update(
         |state| {
             state.status = if canceled {
@@ -30,6 +66,20 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
             state.result_url.clone_from(&result_url);
             state.is_nsfw = nsfw;
             state.nsfw_detected = detected;
+            state.nsfw_sources = data
+                .get("nsfwSources")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+                .map(ToOwned::to_owned)
+                .collect();
+            if let Some(seed) = seed {
+                state.seed = Some(seed);
+            }
+            if let Some(steps) = steps {
+                state.step = steps;
+            }
             if provenance.is_some() {
                 state.provenance.clone_from(&provenance);
             }
@@ -40,43 +90,24 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
             "resultUrl",
             "isNSFW",
             "nsfwDetected",
+            "nsfwSources",
+            "seed",
+            "step",
             "provenance",
         ],
     );
     if result_url.is_none() && (!nsfw || detected) && !canceled {
-        if let Ok(url) = job.get_result_url().await {
-            result_url = Some(url);
-        }
+        // get_result_url stores a successful URL itself. A failed lookup must
+        // not erase a URL another waiter obtained while this signer was pending.
+        let _ = job.get_result_url().await;
     }
-    let seed = data
-        .get("lastSeed")
-        .and_then(|value| value.as_i64().or_else(|| value.as_str()?.parse().ok()));
-    let steps = number(data.get("performedStepCount"));
-    job.update(
-        |state| {
-            if let Some(seed) = seed {
-                state.seed = Some(seed);
-            }
-            if let Some(steps) = steps {
-                state.step = steps;
-            }
-            state.result_url = result_url;
-            state.is_nsfw = nsfw;
-            state.nsfw_detected = detected;
-            state.nsfw_sources = data
-                .get("nsfwSources")
-                .and_then(Value::as_array)
-                .into_iter()
-                .flatten()
-                .filter_map(Value::as_str)
-                .map(ToOwned::to_owned)
-                .collect();
-        },
-        &["status", "resultUrl", "isNSFW", "nsfwDetected"],
-    );
+    if session.check().is_err() || project.check_session().is_err() {
+        return;
+    }
     let mut completed = json!({"jobId": job_id});
     let mut event = data.clone();
     let snapshot = job.snapshot();
+    event["resultUrl"] = json!(snapshot.result_url);
     for target in [&mut completed, &mut event] {
         if let Some(url) = &snapshot.last_frame_url {
             target["lastFrameUrl"] = json!(url);
@@ -146,6 +177,7 @@ pub(super) fn handle_job_error(inner: &Arc<ProjectsInner>, data: &Value) {
         }
     }
     if let Some(job_id) = data.get("imgID").and_then(Value::as_str) {
+        project.clear_job_queue(job_id, data.get("jobIndex").and_then(Value::as_u64));
         let Some(job) =
             project.job_for_attempt(job_id, data.get("jobIndex").and_then(Value::as_u64))
         else {

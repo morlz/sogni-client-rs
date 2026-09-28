@@ -42,6 +42,8 @@ pub struct JobSnapshot {
     pub id: String,
     pub project_id: String,
     pub status: JobStatus,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub waiting_reason: Option<WaitingReason>,
     pub step: f64,
     pub step_count: f64,
     pub external_progress: Option<f64>,
@@ -81,6 +83,7 @@ impl JobSnapshot {
             id,
             project_id,
             status: JobStatus::Pending,
+            waiting_reason: None,
             step: 0.0,
             step_count,
             external_progress: None,
@@ -119,6 +122,10 @@ pub struct ProjectSnapshot {
     pub queue_position: i64,
     pub estimated_start_at: Option<DateTime<Utc>>,
     pub queue_status: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub waiting_reason: Option<WaitingReason>,
+    #[serde(default)]
+    pub job_waiting_reasons: Vec<JobWaitingReason>,
     pub jobs: Vec<JobSnapshot>,
     pub progress: u8,
     pub result_urls: Vec<String>,

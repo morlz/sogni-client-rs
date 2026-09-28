@@ -1,6 +1,43 @@
 use super::*;
 
 #[test]
+fn typed_keyframes_keep_caller_order_and_replacement_keeps_reference_assets() {
+    let request = ProjectRequest::video("minimax-h3-fl2va-fp8_i2v", "fixture")
+        .asset(AssetRole::ReferenceImage, MediaSource::bytes("anchor"))
+        .keyframes(vec![
+            MinimaxH3Keyframe::new(MediaSource::bytes("late"), 180),
+            MinimaxH3Keyframe::new(MediaSource::bytes("early"), 60),
+        ]);
+    assert_eq!(
+        request.params["keyframes"],
+        json!([
+            {"image":true,"frameIndex":180},{"image":true,"frameIndex":60}
+        ])
+    );
+    assert_eq!(
+        request
+            .assets
+            .iter()
+            .map(|(role, _)| role.wire_name())
+            .collect::<Vec<_>>(),
+        ["referenceImage", "keyframeImage1", "keyframeImage2"]
+    );
+    let request = request.keyframes(vec![MinimaxH3Keyframe::new(MediaSource::bytes("new"), 90)]);
+    assert_eq!(request.assets.len(), 2);
+    assert_eq!(
+        request.params["keyframes"],
+        json!([{"image":true,"frameIndex":90}])
+    );
+    assert!(
+        validate_asset_roles(
+            "minimax-h3-fl2va-fp8_i2v",
+            &[(AssetRole::KeyframeImage(0), MediaSource::bytes("bad"))]
+        )
+        .is_err()
+    );
+}
+
+#[test]
 fn pixal_orbit_assets_keep_fixed_slots_when_views_are_omitted() {
     let request = ProjectRequest::image(PIXAL3D_MULTIVIEW_IMAGE_TO_3D_MODEL_ID, "")
         .asset(AssetRole::StartingImage, MediaSource::bytes("front"))

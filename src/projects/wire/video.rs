@@ -140,6 +140,7 @@ pub(super) fn build_video_keyframe(
     } else {
         24.0
     };
+    let mut frames_duration = None;
     if let Some(value) = params.get("duration").filter(|value| {
         !(value.is_null() || is_video_upscale_model(model_id) && params.contains_key("frames"))
     }) {
@@ -178,6 +179,14 @@ pub(super) fn build_video_keyframe(
         }
         let frames = calculate_video_frames(model_id, duration, fps, None, None)?;
         keyframe.insert("frames".into(), json!(frames));
+        frames_duration = Some(duration);
+    }
+    let indices = validation::keyframe_indices(params, keyframe.get("frames"), frames_duration)?;
+    if !indices.is_empty() {
+        for slot in 1..=indices.len() {
+            keyframe.insert(format!("hasKeyframeImage{slot}"), json!(true));
+        }
+        keyframe.insert("keyframeFrameIndices".into(), json!(indices));
     }
     if let Some(coordinates) = params.get("sam2Coordinates") {
         keyframe.insert(

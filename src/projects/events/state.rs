@@ -2,7 +2,12 @@ use super::*;
 use crate::projects::api::ProjectsInner;
 pub(super) fn project_by_id(inner: &ProjectsInner, data: &Value) -> Option<Project> {
     let id = data.get("jobID")?.as_str()?.to_uppercase();
-    inner.projects.read().get(&id).cloned()
+    inner
+        .projects
+        .read()
+        .get(&id)
+        .filter(|project| project.check_session().is_ok())
+        .cloned()
 }
 
 pub(super) fn handle_job_state(inner: &Arc<ProjectsInner>, data: &Value) {
@@ -14,6 +19,8 @@ pub(super) fn handle_job_state(inner: &Arc<ProjectsInner>, data: &Value) {
     };
     match kind {
         "queued" => {
+            // Even legacy queue activity supersedes an older recovery request.
+            project.advance_queue_revision();
             project.suspend_processing_deadlines();
             let seconds =
                 number(data.get("estimatedStartSeconds")).filter(|seconds| *seconds >= 0.0);
@@ -68,6 +75,7 @@ pub(super) fn handle_job_state(inner: &Arc<ProjectsInner>, data: &Value) {
             } else {
                 JobStatus::Processing
             };
+            project.clear_job_queue(job_id, data.get("jobIndex").and_then(Value::as_u64));
             job.update(
                 |state| {
                     if state.status.is_finished() {
@@ -119,6 +127,7 @@ pub(super) fn handle_job_progress(inner: &Arc<ProjectsInner>, data: &Value) {
     else {
         return;
     };
+    project.clear_job_queue(job_id, data.get("jobIndex").and_then(Value::as_u64));
     job.update(
         |state| {
             if state.status.is_finished() {
@@ -153,16 +162,15 @@ pub(super) fn handle_job_progress(inner: &Arc<ProjectsInner>, data: &Value) {
     if data.get("hasImage").and_then(Value::as_bool) == Some(true) {
         let inner = inner.clone();
         let attempt_id = job.id();
+        let session = job.request_session();
         tokio::spawn(async move {
             let query = json!({
                 "jobId": project.id(),
                 "imageId": job.id(),
                 "type": "preview",
             });
-            if let Ok(response) = inner
-                .client
-                .rest
-                .get("/v1/image/downloadUrl", Some(&query))
+            if let Ok(response) = session
+                .run(inner.client.rest.get("/v1/image/downloadUrl", Some(&query)))
                 .await
             {
                 if let Some(url) = response
@@ -202,6 +210,7 @@ pub(super) fn handle_job_eta(inner: &Arc<ProjectsInner>, data: &Value) {
     else {
         return;
     };
+    project.clear_job_queue(job_id, data.get("jobIndex").and_then(Value::as_u64));
     job.update(
         |state| {
             state.eta = Some(eta);

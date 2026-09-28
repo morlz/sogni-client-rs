@@ -14,6 +14,8 @@ use crate::{
 impl ChatApi {
     /// OpenAI-compatible hosted chat completion. Streaming is intentionally rejected.
     pub async fn create_hosted_completion(&self, params: &Value) -> Result<Value> {
+        let session = self.inner.client.rest.request_session();
+        session.run(async {
         if params.get("stream").and_then(Value::as_bool) == Some(true) {
             return Err(Error::InvalidInput(
                 "hosted chat currently supports non-streaming requests only".into(),
@@ -69,6 +71,7 @@ impl ChatApi {
                 .post_with("/v1/chat/completions", &body, headers, Some(CHAT_TIMEOUT))
                 .await,
         )
+        }).await
     }
 
     pub async fn execute_hosted_tool(&self, params: &Value) -> Result<Value> {

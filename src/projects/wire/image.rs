@@ -53,12 +53,35 @@ pub(super) fn build_image_keyframe(
     }
     let has_starting_image = truthy(params.get("startingImage"));
     if has_starting_image {
-        let strength = number(params.get("startingImageStrength")).unwrap_or(0.5);
-        if !(0.0..=1.0).contains(&strength) {
-            return Err(Error::InvalidInput(
-                "startingImageStrength must be between 0 and 1".into(),
-            ));
-        }
+        let strength = match params
+            .get("startingImageStrength")
+            .filter(|value| !value.is_null())
+        {
+            None => 0.5,
+            Some(value) => {
+                let number = number(Some(value))
+                    .filter(|value| !value.is_nan())
+                    .ok_or_else(|| {
+                        Error::InvalidInput(format!(
+                            "startingImageStrength must be a number, got {}",
+                            value
+                                .as_str()
+                                .map_or_else(|| value.to_string(), str::to_owned)
+                        ))
+                    })?;
+                if number < 0.0 {
+                    return Err(Error::InvalidInput(format!(
+                        "startingImageStrength must greater or equal 0, got {number}"
+                    )));
+                }
+                if number > 1.0 {
+                    return Err(Error::InvalidInput(format!(
+                        "startingImageStrength must be less or equal 1, got {number}"
+                    )));
+                }
+                number
+            }
+        };
         keyframe.insert("hasStartingImage".into(), json!(true));
         keyframe.insert("strengthIsEnabled".into(), json!(true));
         keyframe.insert("strength".into(), json!(1.0 - strength));

@@ -200,6 +200,10 @@ impl ApiClient {
         self.auth.authenticate_cookies()
     }
 
+    pub(crate) fn set_cookie_identity(&self, identity: &str) {
+        self.auth.set_cookie_identity(identity);
+    }
+
     pub(crate) fn auth_backup(&self) -> Result<Option<AuthBackup>> {
         self.auth.backup()
     }
@@ -242,10 +246,10 @@ impl ApiClient {
         if self.closed.swap(true, Ordering::AcqRel) {
             return Ok(());
         }
+        self.auth.clear();
         if let Some(socket) = &self.socket {
             socket.close().await?;
         }
-        self.auth.clear();
         Ok(())
     }
 

@@ -112,17 +112,23 @@ impl ProjectsApi {
         strength: &str,
         token_type: &str,
     ) -> Result<CostEstimate> {
-        let strength = enhancement_strength(strength);
-        self.estimate_cost(&json!({
-            "network": "fast",
-            "tokenType": token_type,
-            "model": "flux1-schnell-fp8",
-            "imageCount": 1,
-            "stepCount": 5,
-            "previewCount": 0,
-            "cnEnabled": false,
-            "startingImageStrength": strength,
-        }))
+        self.estimate_cost(&enhancement_quote(strength, token_type, None))
+            .await
+    }
+
+    /// Quote image enhancement at the source image's explicit canvas size.
+    pub async fn estimate_enhancement_cost_with_size(
+        &self,
+        strength: &str,
+        token_type: &str,
+        width: u32,
+        height: u32,
+    ) -> Result<CostEstimate> {
+        self.estimate_cost(&enhancement_quote(
+            strength,
+            token_type,
+            Some((width, height)),
+        ))
         .await
     }
 
@@ -169,6 +175,20 @@ impl ProjectsApi {
             "referenceVideoCount": params.get("referenceVideoCount"),
             "referenceVideoDurationSeconds": params.get("referenceVideoDurationSeconds"),
         });
+        if let Some(count) = params
+            .get("keyframeCount")
+            .filter(|value| !value.is_null())
+            .map(Value::as_f64)
+            .unwrap_or_else(|| {
+                params
+                    .get("keyframes")
+                    .and_then(Value::as_array)
+                    .map(|entries| entries.len() as f64)
+            })
+            .filter(|count| count.is_finite() && *count > 0.0)
+        {
+            query["keyframeCount"] = json!(count.floor().to_string());
+        }
         if params
             .get("referenceVideo")
             .is_some_and(|value| !value.is_null() && value != false)
@@ -221,6 +241,20 @@ impl ProjectsApi {
                     .as_str()
             })
     }
+}
+
+fn enhancement_quote(strength: &str, token_type: &str, size: Option<(u32, u32)>) -> Value {
+    let mut params = json!({
+        "network": "fast", "tokenType": token_type,
+        "model": "krea2_turbo_fp8_scaled", "imageCount": 1, "stepCount": 8,
+        "previewCount": 0, "cnEnabled": false,
+        "startingImageStrength": 1.0 - enhancement_strength(strength),
+    });
+    if let Some((width, height)) = size {
+        params["width"] = json!(width);
+        params["height"] = json!(height);
+    }
+    params
 }
 
 #[cfg(test)]

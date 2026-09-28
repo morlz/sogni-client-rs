@@ -147,6 +147,21 @@ pub(super) fn recovered_params(raw: &Value) -> Value {
 }
 
 pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) {
+    replay_recovered_at_revision(project, raw, completed, project.queue_revision());
+}
+
+pub(super) fn replay_recovered_at_revision(
+    project: &Project,
+    raw: &Value,
+    completed: bool,
+    expected_revision: u64,
+) {
+    if project.check_session().is_err() {
+        return;
+    }
+    let mut replay_in_flight = project.queue_revision() == expected_revision;
+    project.apply_queue_snapshot(raw, expected_revision);
+    let mut replay_revision = project.queue_revision();
     let mut jobs = Vec::new();
     if !completed {
         jobs.extend(
@@ -163,6 +178,16 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
             .unwrap_or_default(),
     );
     for job_raw in jobs {
+        if project.check_session().is_err() {
+            return;
+        }
+        if project.queue_revision() != replay_revision {
+            replay_in_flight = false;
+        }
+        let raw_status = job_raw.get("status").and_then(Value::as_str).unwrap_or("");
+        if !replay_in_flight && !matches!(raw_status, "jobCompleted" | "jobError") {
+            continue;
+        }
         let Some(id) = job_raw
             .get("imgID")
             .or_else(|| job_raw.get("id"))
@@ -175,7 +200,6 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
         else {
             continue;
         };
-        let raw_status = job_raw.get("status").and_then(Value::as_str).unwrap_or("");
         let status = match raw_status {
             "assigned" | "initiatingModel" => JobStatus::Initiating,
             "jobStarted" | "jobProgress" => JobStatus::Processing,
@@ -183,6 +207,10 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
             "jobError" => JobStatus::Failed,
             _ => JobStatus::Pending,
         };
+        if status != JobStatus::Pending {
+            project.clear_job_queue(id, job_raw.get("jobIndex").and_then(Value::as_u64));
+        }
+        job.record_result_evidence(&job_raw);
         job.update(
             |state| {
                 if state.status.is_finished() && !status.is_finished() {
@@ -234,6 +262,7 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
             },
             &["status", "step", "resultUrl", "provenance", "preparation"],
         );
+        replay_revision = project.queue_revision();
     }
     let status = match raw.get("status").and_then(Value::as_str) {
         Some("completed") => Some(ProjectStatus::Completed),
@@ -246,6 +275,12 @@ pub(super) fn replay_recovered(project: &Project, raw: &Value, completed: bool) 
         _ => None,
     };
     if let Some(status) = status {
+        if project.queue_revision() != replay_revision {
+            replay_in_flight = false;
+        }
+        if !replay_in_flight && !status.is_finished() {
+            return;
+        }
         if raw.get("status").and_then(Value::as_str) == Some("queued") {
             project.suspend_processing_deadlines();
         }

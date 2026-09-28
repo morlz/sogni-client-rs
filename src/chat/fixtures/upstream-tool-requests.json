@@ -1,6 +1,6 @@
 {
-  "version": "5.54.0",
-  "commit": "4147e8dfeed5632ef8a8c648614ab476e924a0e1",
+  "version": "5.58.1",
+  "commit": "25b5d46100e4ec764e8d063c19ad4eb141664cbf",
   "models": [
     {
       "id": "gpt-image-2",

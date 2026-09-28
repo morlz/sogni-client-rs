@@ -157,9 +157,8 @@ impl SogniClient {
                 "check_auth is only valid for cookie authentication".into(),
             ));
         }
-        match self.account.me().await {
+        match self.account.check_cookie_authentication().await {
             Ok(_) => {
-                self.api_client.authenticate_cookies()?;
                 self.api_client.start().await?;
                 Ok(true)
             }

@@ -1,11 +1,11 @@
-# sogni-client-by-morlz Rust SDK 5.54.0
+# sogni-client-by-morlz Rust SDK 5.58.1
 
-Compatibility: TypeScript 5.54.0 at 4147e8d; hosted protocol 1.0.0-alpha.45.
+Compatibility: TypeScript 5.58.1 at 25b5d46; hosted protocol 1.0.0-alpha.46.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
-Cargo dependency: `sogni-client-by-morlz = "5.54.0"`.
+Cargo dependency: `sogni-client-by-morlz = "5.58.1"`.
 Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
 source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
@@ -25,14 +25,17 @@ Reuse one client. Call `close().await` during graceful shutdown.
 Persist `app_id` across restarts; WebSocket clients now require it explicitly.
 For REST-only APIs, use `.disable_socket(true)` with no app ID. Deferred
 socket startup still requires an ID.
-Account replacement reconnects the socket and rejects commands queued by the
-previous session. Healthy SSE streams can exceed request_timeout, which limits
-connection setup and idle reads instead of total stream duration.
+Logout/account replacement ends pending work from the previous account,
+including REST/SSE/chat and project operations. Old Project/Job handles cannot
+act for the new account; local waiters end even if remote work continues.
+Same-wallet token renewal preserves ongoing work. Healthy SSE streams can exceed
+request_timeout, which limits connection setup and idle reads instead of total
+stream duration.
 
 Namespaces:
 
 - `account`: auth, balances, rewards, wallet, subscriptions
-- `projects`: generation, `assets()` reusable uploads, models, estimates, LoRAs, recovery
+- `projects`: generation, durable results/history, queue state, uploads, estimates, LoRAs
 - `chat`: socket completion/stream, hosted completion/tools, durable runs
 - `workflows`: durable workflows and `workflows.templates`
 - `replay`: RunRecord write/list/get
@@ -52,6 +55,9 @@ let urls = project.wait_for_completion(None).await?;
 Use `.param("wireName", serde_json::json!(value))` for any forward-compatible
 project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
 
+- Images: `.embed_prompt_metadata(false)` omits worker prompt/settings metadata.
+  startingImageStrength is source influence 0–1, default 0.5; explicit zero
+  strength/guidance/seed/previews survive serialization.
 - SAM3: image model `sam3_image_segment_bf16`, starting image, and
   `.sam3_prompt(Sam3ImagePrompt { ... })`; one PNG mask/cutout, no previews.
   `apply_mask` returns RGBA, `max_instances` selects 1–16 matches, labeled
@@ -70,8 +76,14 @@ project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
   reference video, upscaleResolution 1080/1440. Timing can be server-probed;
   optional detailPreference/processingSpeed/seed preserve source timing/audio.
 - FastH3: `_turbo_2stage` doubles the canvas; ia2v/flfa2v/a2v audio-guide modes
-  require driving audio and exact image anchors. Use
+  require driving audio and exact image anchors; loras/loraStrengths are allowed. Use
   `get_minimax_h3_frames_for_audio_duration`; outputScale and retired720p IDs fail.
+- MiniMax H3 keyframes: `.keyframes(Vec<MinimaxH3Keyframe>)`, whose constructor
+  takes (MediaSource, frame_index), accepts up to 8 intermediate stills for
+  i2v/flf2v/ia2v/flfa2v/a2v/r2v. Caller order is preserved in separate upload
+  slots. Indices are unique 24 FPS frames from 1 to frames-2; duration overrides
+  frames and snaps (6 seconds = 141 frames). Use is_minimax_h3_keyframe_model.
+  Describe `<Picture N>` chronologically after the workflow's own pictures.
 - Seedance 2.5: outputFormat mov and returnLastFrame; `job.last_frame_url()`
   and `job.get_last_frame_url()` expose the separate image export.
 - `job.provenance()` carries hashes, mask geometry, and `Sam3Selection` entries.
@@ -88,6 +100,27 @@ project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
   twice the canvas size. Seedance 2.5 now defaults to 1080p (no 4K).
 - Estimates accept billingMode; video/audio also accept network, defaulting to
   the current connection. daily_fair_use_pct is optional server-supplied advice.
+- Video estimates accept keyframeCount or derive keyframes.length; an explicit
+  count, including zero, takes precedence. The server supplies the price.
+- `job.enhance` uses Krea 2 Turbo/8 steps, preserves the parent canvas and seed,
+  and resolves named presets from the parent model before downloading. Quote
+  explicit dimensions with estimate_enhancement_cost_with_size(strength,
+  token_type, width, height); the original estimator uses default dimensions.
+
+`projects.get_result(id, None)` returns ProjectResult with current status and
+completed-job URLs without local tracking or new generation. URLs expire; refetch
+to refresh. ResultUrlUnavailable distinguishes withheld media, unknown kind and
+URL lookup failure; GetProjectResultOptions.kind is only a media-kind fallback.
+`projects.list_recent(None)` lists account-owned completed projects, newest first;
+ListRecentProjectsOptions takes since (epoch ms), limit (renders, 1–100), app_source.
+Defaults are 24 hours/50 renders; history is clamped to seven days. Use get_result
+for URLs. Neither API needs the original Project handle.
+
+Queue: project.waiting_reason()/job_waiting_reasons(), job.waiting_reason(), and
+matching snapshot fields. projects.subscribe() emits queueChanged carrying
+ProjectQueueChanged. Display WaitingReason.message as plain text. Queue details
+can coexist with running jobs and are optional on older servers. projectQueue
+socket subscription defaults to true; pass an explicit false to opt out.
 
 LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
 `1 + n*8`. WAN 2.2 generates internally at 16 FPS. Use
@@ -103,6 +136,8 @@ LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
 - Cost confirmation sends the exact caller-approved acceptedCostPreview with
   toolCallId, decision="confirm", and optional idempotencyKey; cancel needs no preview.
 - `chat.tools.get(name)` / `.all()` -> bundled hosted definitions
+- Hosted sound_to_video accepts ordered loras/loraStrengths arrays. This schema
+  describes hosted execution; local execute_tool_call does not forward these fields.
 - `chat.execute_tool_call`: six direct media tools; speech/upscale_video
   execute via hosted chat or durable runs.
 - Model routing: `resolve_hosted_tool_model_selector`, `is_edit_image_model`,

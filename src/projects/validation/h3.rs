@@ -105,15 +105,6 @@ pub(in crate::projects) fn validate_h3_params(
                 )));
             }
         }
-        if ["loras", "loraStrengths"].iter().any(|field| {
-            params
-                .get(*field)
-                .is_some_and(|value| !value.as_array().is_some_and(Vec::is_empty))
-        }) {
-            return Err(Error::InvalidInput(format!(
-                "MiniMax H3 {workflow} does not support LoRAs. Remove loras and loraStrengths."
-            )));
-        }
     } else if params.contains_key("audioStart") {
         return Err(Error::InvalidInput("audioStart is supported only by the MiniMax H3 FastH3 audio-guide workflows (minimax-h3-fastvideo-int8_ia2v_turbo, minimax-h3-fastvideo-int8_flfa2v_turbo, minimax-h3-fastvideo-int8_a2v_turbo and their _2stage ids).".into()));
     }

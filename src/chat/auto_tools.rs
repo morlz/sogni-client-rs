@@ -25,30 +25,33 @@ impl ChatApi {
         params: &Value,
         options: ChatAutoToolOptions,
     ) -> Result<ChatCompletion> {
+        let session = self.inner.client.rest.request_session();
         reject_untyped_tool_controls(params)?;
         require_non_streaming(params)?;
         let (logical_attribution, child_attribution) = self.auto_tool_attributions(params)?;
         let chat = self.clone();
-        drive_auto_tool_loop(
-            params.clone(),
-            options,
-            move |mut round_params, round, cancel| {
-                let chat = chat.clone();
-                set_round_attribution(
-                    &mut round_params,
-                    if round == 0 {
-                        logical_attribution.clone()
-                    } else {
-                        child_attribution.clone()
-                    },
-                );
-                async move {
-                    chat.create_single_completion(&round_params, cancel.as_ref())
-                        .await
-                }
-            },
-        )
-        .await
+        session
+            .run(drive_auto_tool_loop_with_session(
+                params.clone(),
+                options,
+                move |mut round_params, round, cancel| {
+                    let chat = chat.clone();
+                    set_round_attribution(
+                        &mut round_params,
+                        if round == 0 {
+                            logical_attribution.clone()
+                        } else {
+                            child_attribution.clone()
+                        },
+                    );
+                    async move {
+                        chat.create_single_completion(&round_params, cancel.as_ref())
+                            .await
+                    }
+                },
+                Some(&session),
+            ))
+            .await
     }
 
     fn auto_tool_attributions(&self, params: &Value) -> Result<(Option<Value>, Option<Value>)> {
@@ -102,10 +105,24 @@ fn set_round_attribution(params: &mut Value, attribution: Option<Value>) {
     }
 }
 
+#[cfg(test)]
 async fn drive_auto_tool_loop<C, Fut>(
     params: Value,
     options: ChatAutoToolOptions,
+    complete: C,
+) -> Result<ChatCompletion>
+where
+    C: FnMut(Value, usize, Option<ChatAutoToolCancellation>) -> Fut,
+    Fut: Future<Output = Result<ChatCompletion>>,
+{
+    drive_auto_tool_loop_with_session(params, options, complete, None).await
+}
+
+async fn drive_auto_tool_loop_with_session<C, Fut>(
+    params: Value,
+    options: ChatAutoToolOptions,
     mut complete: C,
+    session: Option<&crate::auth::RequestSession>,
 ) -> Result<ChatCompletion>
 where
     C: FnMut(Value, usize, Option<ChatAutoToolCancellation>) -> Fut,
@@ -125,11 +142,17 @@ where
     let mut history = Vec::new();
 
     for round in 0..options.max_tool_rounds {
+        if let Some(session) = session {
+            session.check()?;
+        }
         ensure_not_cancelled(options.cancellation.as_ref())?;
         let mut round_params = params.clone();
         round_params["messages"] = Value::Array(messages.clone());
         round_params["stream"] = Value::Bool(false);
         let mut completion = complete(round_params, round, options.cancellation.clone()).await?;
+        if let Some(session) = session {
+            session.check()?;
+        }
         if completion.finish_reason != "tool_calls" || completion.tool_calls.is_empty() {
             if !history.is_empty() {
                 completion.tool_history = Some(history);
@@ -140,7 +163,13 @@ where
         validate_custom_tool_calls(&completion.tool_calls)?;
         let mut results = Vec::with_capacity(completion.tool_calls.len());
         for tool_call in &completion.tool_calls {
+            if let Some(session) = session {
+                session.check()?;
+            }
             results.push(execute_custom_tool(&options, tool_call.clone()).await?);
+            if let Some(session) = session {
+                session.check()?;
+            }
         }
         append_tool_messages(&mut messages, &completion, &completion.tool_calls, &results);
         history.push(ChatToolHistoryEntry {

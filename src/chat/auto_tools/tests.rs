@@ -51,6 +51,65 @@ fn params() -> Value {
     })
 }
 
+#[tokio::test]
+async fn session_change_during_a_custom_tool_cannot_run_later_tools_or_rounds() {
+    let http = crate::transport::HttpClients::build(std::time::Duration::from_secs(1)).unwrap();
+    let auth = crate::auth::AuthManager::new(
+        crate::AuthKind::ApiKey,
+        "http://127.0.0.1:9/".parse().unwrap(),
+        http.authenticated(),
+        http.cookies(),
+    );
+    auth.authenticate_api_key("A").unwrap();
+    let owner = auth.request_session();
+    let entered = Arc::new(tokio::sync::Notify::new());
+    let observed = entered.clone();
+    let executions = Arc::new(AtomicUsize::new(0));
+    let executed = executions.clone();
+    let rounds = Arc::new(AtomicUsize::new(0));
+    let completed = rounds.clone();
+    let options = ChatAutoToolOptions::new(move |_| {
+        let observed = observed.clone();
+        let executed = executed.clone();
+        async move {
+            executed.fetch_add(1, Ordering::SeqCst);
+            observed.notify_one();
+            std::future::pending::<Result<String>>().await
+        }
+    });
+    let pending = tokio::spawn(async move {
+        owner
+            .run(drive_auto_tool_loop_with_session(
+                params(),
+                options,
+                move |_, _, _| {
+                    completed.fetch_add(1, Ordering::SeqCst);
+                    ready(Ok(completion(
+                        "ONE",
+                        "",
+                        "tool_calls",
+                        vec![tool_call("first", "alpha"), tool_call("second", "beta")],
+                    )))
+                },
+                Some(&owner),
+            ))
+            .await
+    });
+    tokio::time::timeout(std::time::Duration::from_secs(5), entered.notified())
+        .await
+        .unwrap();
+    auth.authenticate_api_key("B").unwrap();
+    assert!(
+        tokio::time::timeout(std::time::Duration::from_secs(5), pending)
+            .await
+            .unwrap()
+            .unwrap()
+            .is_err()
+    );
+    assert_eq!(executions.load(Ordering::SeqCst), 1);
+    assert_eq!(rounds.load(Ordering::SeqCst), 1);
+}
+
 #[test]
 fn typed_loop_rejects_streaming_mode() {
     assert!(require_non_streaming(&json!({"stream": false})).is_ok());

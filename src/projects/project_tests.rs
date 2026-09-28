@@ -28,13 +28,18 @@ impl Wake for ProjectNotificationWake {
     }
 }
 
-#[test]
-fn snapshot_releases_state_before_collecting_jobs() {
+#[tokio::test]
+async fn snapshot_releases_state_before_collecting_jobs() {
+    let client = SogniClient::builder()
+        .disable_socket(true)
+        .build()
+        .await
+        .unwrap();
     let project = Project::new(
         "PROJECT".into(),
         json!({"type": "image", "numberOfMedia": 1}),
         false,
-        Weak::new(),
+        Arc::downgrade(&client.projects.inner),
     );
     let jobs_guard = project.inner.jobs.write();
     let (state_cloned_tx, state_cloned_rx) = mpsc::sync_channel(0);
@@ -71,6 +76,7 @@ fn snapshot_releases_state_before_collecting_jobs() {
     writer_thread.join().expect("writer thread did not panic");
     assert_eq!(snapshot.queue_position, -1);
     assert_eq!(project.inner.state.read().queue_position, 7);
+    client.close().await.unwrap();
 }
 
 #[tokio::test]

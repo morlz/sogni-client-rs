@@ -1,8 +1,8 @@
 use super::*;
 
 #[test]
-fn complete_utility_requests_match_upstream_5_54_serializer() {
-    // Captured from the unmodified TypeScript serializer at 4147e8d, including
+fn complete_utility_requests_match_upstream_5_58_serializer() {
+    // Captured from the unmodified TypeScript serializer at 25b5d46, including
     // worker reset fields. Fixtures include their exact source parameters.
     let fixtures: Value =
         serde_json::from_str(include_str!("fixtures/utility-contract.json")).unwrap();
@@ -27,7 +27,7 @@ fn complete_utility_requests_match_upstream_5_54_serializer() {
 }
 
 #[test]
-fn generation_requests_and_rejections_match_upstream_5_54_serializer() {
+fn generation_requests_and_rejections_match_upstream_5_58_serializer() {
     // Includes all six FastH3 modes, speech, ordered GPT references and masks,
     // FlashVSR source timing, Pixal3D views, SAM3 selections, Seedance exports,
     // and both Ref2VA two-stage tiers with mixed references and LoRAs.

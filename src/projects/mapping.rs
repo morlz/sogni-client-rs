@@ -308,6 +308,7 @@ pub(super) fn cached_model_media(
             .find(|model| model.get("id").and_then(Value::as_str) == Some(model_id))
             .and_then(|model| model.get("media"))
             .and_then(Value::as_str)
+            .filter(|kind| matches!(*kind, "image" | "video" | "audio" | "model"))
             .map(ToOwned::to_owned)
     })
 }
