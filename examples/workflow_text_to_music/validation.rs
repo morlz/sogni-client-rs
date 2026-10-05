@@ -95,12 +95,45 @@ pub(super) struct ModelSpec {
     pub samplers: &'static [&'static str],
     pub scheduler: &'static str,
     pub schedulers: &'static [&'static str],
+    pub ace_controls: bool,
+    pub duration_default: f64,
+    pub duration_range: (f64, f64),
+    pub guidance_range: (f64, f64),
+    pub prompt_strength_default: f64,
 }
 
 pub(super) fn model_spec(id: &str) -> Result<ModelSpec> {
     // Turbo variants deliberately omit CFG guidance. SFT variants retain it and
     // use their larger validated step/sampler ranges.
+    let ace = ModelSpec {
+        name: "ACE-Step 1.5 XL Turbo",
+        steps: 8,
+        step_range: (4, 16),
+        guidance: None,
+        sampler: "euler",
+        samplers: XL_SAMPLERS,
+        scheduler: "simple",
+        schedulers: SIMPLE_SCHEDULER,
+        ace_controls: true,
+        duration_default: 30.0,
+        duration_range: (10.0, 600.0),
+        guidance_range: (1.0, 15.0),
+        prompt_strength_default: 2.0,
+    };
     let spec = match id {
+        "minimax_music3" => ModelSpec {
+            name: "MiniMax Music 3",
+            steps: 30,
+            step_range: (10, 100),
+            guidance: Some(1.7),
+            samplers: &["euler"],
+            ace_controls: false,
+            duration_default: 60.0,
+            duration_range: (10.0, 300.0),
+            guidance_range: (1.0, 5.0),
+            prompt_strength_default: 1.7,
+            ..ace
+        },
         "ace_step_1.5_xl_turbo" => ModelSpec {
             name: "ACE-Step 1.5 XL Turbo",
             steps: 8,
@@ -110,6 +143,7 @@ pub(super) fn model_spec(id: &str) -> Result<ModelSpec> {
             samplers: XL_SAMPLERS,
             scheduler: "simple",
             schedulers: SIMPLE_SCHEDULER,
+            ..ace
         },
         "ace_step_1.5_xl_sft" => ModelSpec {
             name: "ACE-Step 1.5 XL SFT",
@@ -120,6 +154,7 @@ pub(super) fn model_spec(id: &str) -> Result<ModelSpec> {
             samplers: XL_SAMPLERS,
             scheduler: "simple",
             schedulers: SIMPLE_SCHEDULER,
+            ..ace
         },
         "ace_step_1.5_turbo" => ModelSpec {
             name: "ACE-Step 1.5 Turbo (Legacy)",
@@ -130,6 +165,7 @@ pub(super) fn model_spec(id: &str) -> Result<ModelSpec> {
             samplers: XL_SAMPLERS,
             scheduler: "simple",
             schedulers: SIMPLE_SCHEDULER,
+            ..ace
         },
         "ace_step_1.5_sft" => ModelSpec {
             name: "ACE-Step 1.5 SFT (Legacy)",
@@ -140,8 +176,9 @@ pub(super) fn model_spec(id: &str) -> Result<ModelSpec> {
             samplers: LEGACY_SFT_SAMPLERS,
             scheduler: "linear_quadratic",
             schedulers: LEGACY_SFT_SCHEDULERS,
+            ..ace
         },
-        _ => bail!("unsupported ACE-Step model: {id}"),
+        _ => bail!("unsupported music model: {id}"),
     };
     Ok(spec)
 }
@@ -155,22 +192,49 @@ pub(super) fn validate(
     sampler: &str,
     scheduler: &str,
 ) -> Result<()> {
-    finite("Duration", args.duration)?;
-    if !(10.0..=600.0).contains(&args.duration) {
-        bail!("Duration must be between 10 and 600 seconds");
+    if !spec.ace_controls
+        && (args.shift.is_some() || args.no_composer_mode || args.creativity.is_some())
+    {
+        bail!(
+            "MiniMax Music 3 has no shift, composer-mode or creativity controls; use --model ace_step_1.5_xl_turbo"
+        );
     }
-    if !(30..=300).contains(&args.bpm) {
+    let duration = args.duration.unwrap_or(spec.duration_default);
+    finite("Duration", duration)?;
+    if !(spec.duration_range.0..=spec.duration_range.1).contains(&duration) {
+        if spec.ace_controls {
+            bail!("Duration must be between 10 and 600 seconds");
+        }
+        bail!("Duration must be between 10 and 300 seconds for MiniMax Music 3");
+    }
+    if spec.ace_controls && args.bpm.is_some_and(|bpm| !(30..=300).contains(&bpm)) {
         bail!("BPM must be between 30 and 300");
     }
-    if !KEYS.contains(&args.keyscale.as_str()) {
+    if spec.ace_controls
+        && args
+            .keyscale
+            .as_deref()
+            .is_some_and(|key| !KEYS.contains(&key))
+    {
         bail!(
             "Key/scale must be one of: A major, A minor, A# major, A# minor, Ab major, Ab minor..."
         );
     }
-    if !["2", "3", "4", "6"].contains(&args.timesignature.as_str()) {
+    if spec.ace_controls
+        && args
+            .timesignature
+            .as_deref()
+            .is_some_and(|signature| !["2", "3", "4", "6"].contains(&signature))
+    {
         bail!("Time signature must be one of: 2, 3, 4, 6");
     }
-    if !lyrics.is_empty() && !LANGUAGES.contains(&args.language.as_str()) {
+    if spec.ace_controls
+        && !lyrics.is_empty()
+        && args
+            .language
+            .as_deref()
+            .is_some_and(|language| !LANGUAGES.contains(&language))
+    {
         bail!("Language must be one of: {}", LANGUAGES.join(", "));
     }
     if !(spec.step_range.0..=spec.step_range.1).contains(&steps) {
@@ -185,20 +249,26 @@ pub(super) fn validate(
         finite("Guidance", raw)?;
     }
     if let Some(value) = guidance {
-        if !(1.0..=15.0).contains(&value) {
-            bail!("Guidance must be between 1 and 15");
+        if !(spec.guidance_range.0..=spec.guidance_range.1).contains(&value) {
+            if spec.ace_controls {
+                bail!("Guidance must be between 1 and 15");
+            }
+            bail!("Guidance must be between 1 and 5 for MiniMax Music 3");
         }
     }
-    finite("Shift", args.shift)?;
-    if !(1.0..=5.0).contains(&args.shift) {
+    let shift = args.shift.unwrap_or(3.0);
+    finite("Shift", shift)?;
+    if !(1.0..=5.0).contains(&shift) {
         bail!("Shift must be between 1 and 5");
     }
-    finite("Prompt strength", args.prompt_strength)?;
-    if !(0.0..=10.0).contains(&args.prompt_strength) {
+    let prompt_strength = args.prompt_strength.unwrap_or(spec.prompt_strength_default);
+    finite("Prompt strength", prompt_strength)?;
+    if !(0.0..=10.0).contains(&prompt_strength) {
         bail!("Prompt strength must be between 0 and 10");
     }
-    finite("Creativity", args.creativity)?;
-    if !(0.0..=2.0).contains(&args.creativity) {
+    let creativity = args.creativity.unwrap_or(0.85);
+    finite("Creativity", creativity)?;
+    if !(0.0..=2.0).contains(&creativity) {
         bail!("Creativity must be between 0 and 2");
     }
     if !spec.samplers.contains(&sampler) {

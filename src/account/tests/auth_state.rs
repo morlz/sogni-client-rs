@@ -32,6 +32,47 @@ impl FixtureState {
     fn fail_next_me(&self) {
         self.me_failures_remaining.store(1, Ordering::SeqCst);
     }
+
+    fn consume_me_failure(&self) -> bool {
+        let mut remaining = self.me_failures_remaining.load(Ordering::SeqCst);
+        while let Some(next) = remaining.checked_sub(1) {
+            match self.me_failures_remaining.compare_exchange(
+                remaining,
+                next,
+                Ordering::SeqCst,
+                Ordering::SeqCst,
+            ) {
+                Ok(_) => return true,
+                Err(actual) => remaining = actual,
+            }
+        }
+        false
+    }
+}
+
+#[test]
+fn concurrent_account_failures_consume_only_the_configured_count_without_underflow() {
+    let state = FixtureState::default();
+    assert!(!state.consume_me_failure());
+    state.me_failures_remaining.store(17, Ordering::SeqCst);
+    let barrier = std::sync::Barrier::new(8);
+    let consumed = std::thread::scope(|scope| {
+        let threads = (0..8)
+            .map(|_| {
+                scope.spawn(|| {
+                    barrier.wait();
+                    (0..4).filter(|_| state.consume_me_failure()).count()
+                })
+            })
+            .collect::<Vec<_>>();
+        threads
+            .into_iter()
+            .map(|thread| thread.join().unwrap())
+            .sum::<usize>()
+    });
+    assert_eq!(consumed, 17);
+    assert_eq!(state.me_failures_remaining.load(Ordering::SeqCst), 0);
+    assert!(!state.consume_me_failure());
 }
 
 async fn spawn_account_fixture() -> (Url, FixtureState, JoinHandle<()>) {
@@ -70,13 +111,7 @@ async fn login() -> Json<Value> {
 
 async fn me(State(state): State<FixtureState>) -> (StatusCode, Json<Value>) {
     state.me_calls.fetch_add(1, Ordering::SeqCst);
-    if state
-        .me_failures_remaining
-        .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |remaining| {
-            remaining.checked_sub(1)
-        })
-        .is_ok()
-    {
+    if state.consume_me_failure() {
         return (
             StatusCode::SERVICE_UNAVAILABLE,
             Json(json!({"message": "transient account lookup failure"})),

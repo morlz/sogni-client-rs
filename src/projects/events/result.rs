@@ -143,11 +143,11 @@ pub(super) fn handle_job_error(inner: &Arc<ProjectsInner>, data: &Value) {
     if api.resubmit_if_restarting(data) {
         return;
     }
-    let Some(project) = project_by_id(inner, data) else {
-        return;
-    };
-    inner.submission.lock().unadmitted.remove(&project.id());
-    let raw_code = data.get("error").cloned().unwrap_or(json!(5000));
+    let raw_code = data
+        .get("error")
+        .filter(|value| public_error_field("error", value))
+        .cloned()
+        .unwrap_or(json!(5000));
     let code = raw_code
         .as_i64()
         .or_else(|| raw_code.as_str().and_then(|code| code.parse().ok()));
@@ -166,16 +166,36 @@ pub(super) fn handle_job_error(inner: &Arc<ProjectsInner>, data: &Value) {
     if code.is_none() {
         error["originalCode"] = raw_code;
     }
+    if let Some(category) = data
+        .get("vendorFailureCategory")
+        .and_then(Value::as_str)
+        .filter(|value| !value.trim().is_empty())
+    {
+        error["vendorFailureCategory"] = json!(category);
+    }
     for key in [
         "subscriptionLimit",
         "requiredPlans",
         "feature",
         "limitation",
     ] {
-        if let Some(value) = data.get(key) {
+        if let Some(value) = data.get(key).filter(|value| public_error_field(key, value)) {
             error[key] = value.clone();
         }
     }
+    let public_event = public_job_error(data, &error);
+    let Some(project) = project_by_id(inner, data) else {
+        if data.get("jobID").and_then(Value::as_str).is_some() {
+            let event = if data.get("imgID").and_then(Value::as_str).is_some() {
+                "job"
+            } else {
+                "project"
+            };
+            inner.events.emit(event, public_event);
+        }
+        return;
+    };
+    inner.submission.lock().unadmitted.remove(&project.id());
     if let Some(job_id) = data.get("imgID").and_then(Value::as_str) {
         project.clear_job_queue(job_id, data.get("jobIndex").and_then(Value::as_u64));
         let Some(job) =
@@ -217,7 +237,46 @@ pub(super) fn handle_job_error(inner: &Arc<ProjectsInner>, data: &Value) {
             &["status", "error"],
         );
     }
-    inner.events.emit("job", data.clone());
+    inner.events.emit("job", public_event);
+}
+
+fn public_job_error(data: &Value, normalized: &Value) -> Value {
+    // Keep the established Rust wire keys and code values, while exposing only
+    // the client contract. Provider responses and private failure details do
+    // not belong in public Job/Project events.
+    let mut event = Map::new();
+    for key in [
+        "jobID",
+        "imgID",
+        "jobIndex",
+        "isFromWorker",
+        "error",
+        "error_message",
+        "subscriptionLimit",
+        "requiredPlans",
+        "feature",
+        "limitation",
+    ] {
+        if let Some(value) = data.get(key).filter(|value| public_error_field(key, value)) {
+            event.insert(key.into(), value.clone());
+        }
+    }
+    if let Some(category) = normalized.get("vendorFailureCategory") {
+        event.insert("vendorFailureCategory".into(), category.clone());
+    }
+    Value::Object(event)
+}
+
+fn public_error_field(key: &str, value: &Value) -> bool {
+    match key {
+        "error" => value.is_number() || value.is_string(),
+        "jobIndex" => value.as_u64().is_some(),
+        "isFromWorker" | "subscriptionLimit" => value.is_boolean(),
+        "requiredPlans" => value
+            .as_array()
+            .is_some_and(|plans| plans.iter().all(Value::is_string)),
+        _ => value.is_string(),
+    }
 }
 
 pub(in crate::projects) async fn cancel_project(
@@ -310,3 +369,7 @@ mod cancel_tests;
 #[cfg(test)]
 #[path = "result_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "error_category_tests.rs"]
+mod error_category_tests;

@@ -137,7 +137,7 @@ Several video examples inspect downloaded output using `ffprobe`. Install FFmpeg
 | `workflow_creative_agent_cli` | Natural-language creative-agent command line |
 | `workflow_creative_agent_tools` | Hosted tool planning/execution |
 | `workflow_creative_agent_workflows` | Durable creative workflows, event streaming, and lifecycle operations |
-| `workflow_text_to_music` | ACE-Step 1.5 audio generation |
+| `workflow_text_to_music` | MiniMax Music 3 by default, with explicit ACE-Step 1.5 controls |
 
 ### Axum web application
 
@@ -160,6 +160,8 @@ examples use their historically named output directory). Downloads stream to a t
 then rename atomically, and never overwrite an existing result.
 
 Server-hosted result URLs are temporary, so download outputs you need to keep.
+Sogni signed links remain valid for 48 hours. Keep their whole opaque URL and
+signed query; storage may use S3 acceleration or Sogni R2 hosts.
 
 ## Validation
 

@@ -89,7 +89,6 @@ pub(super) async fn socket_manager(
                     let _ = socket.close(None).await;
                     continue;
                 }
-                reconnect_attempt = 0;
                 inner.session.store(version.session, Ordering::Release);
                 inner.authenticated.store(false, Ordering::Release);
                 inner.generation.fetch_add(1, Ordering::AcqRel);
@@ -107,6 +106,12 @@ pub(super) async fn socket_manager(
                     version.session,
                 )
                 .await;
+                // An HTTP upgrade alone does not prove the peer can accept
+                // work. Keep increasing the backoff across pre-authentication
+                // disconnects, and reset it only after server authentication.
+                if inner.authenticated.load(Ordering::Acquire) {
+                    reconnect_attempt = 0;
+                }
                 inner.connected.send_replace(false);
                 inner.authenticated.store(false, Ordering::Release);
                 match outcome {

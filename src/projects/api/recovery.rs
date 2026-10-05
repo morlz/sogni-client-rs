@@ -140,24 +140,47 @@ impl ProjectsApi {
         project_ids: &[S],
         options: Option<ResolveMissingOptions>,
     ) -> BTreeMap<String, ProjectResolution> {
+        self.resolve_missing_with_advice(project_ids, options)
+            .await
+            .resolutions
+    }
+
+    /// Resolve missing projects while retaining coarse HTTP retry advice.
+    ///
+    /// Uses the same lookup and 404 retry policy as [`Self::resolve_missing`].
+    /// Non-404 failures remain unknown; advice does not trigger another request
+    /// or make an unknown project eligible for resubmission.
+    pub async fn resolve_missing_with_advice<S: AsRef<str>>(
+        &self,
+        project_ids: &[S],
+        options: Option<ResolveMissingOptions>,
+    ) -> ProjectResolutionReport {
         let session = self.inner.client.rest.request_session();
+        let mut retry_advice = BTreeMap::new();
         match session
-            .run(self.resolve_missing_in_session(project_ids, options, &session))
+            .run(self.resolve_missing_in_session(project_ids, options, &session, &mut retry_advice))
             .await
         {
-            Ok(result) => result,
-            Err(_) => project_ids
-                .iter()
-                .map(|id| {
-                    (
-                        id.as_ref().to_owned(),
-                        ProjectResolution::Unknown {
-                            error: "project status could not be verified in its account session"
-                                .into(),
-                        },
-                    )
-                })
-                .collect(),
+            Ok(resolutions) => ProjectResolutionReport {
+                resolutions,
+                retry_advice,
+            },
+            Err(_) => ProjectResolutionReport {
+                resolutions: project_ids
+                    .iter()
+                    .map(|id| {
+                        (
+                            id.as_ref().to_owned(),
+                            ProjectResolution::Unknown {
+                                error:
+                                    "project status could not be verified in its account session"
+                                        .into(),
+                            },
+                        )
+                    })
+                    .collect(),
+                retry_advice: BTreeMap::new(),
+            },
         }
     }
 
@@ -166,6 +189,7 @@ impl ProjectsApi {
         project_ids: &[S],
         options: Option<ResolveMissingOptions>,
         session: &RequestSession,
+        retry_advice: &mut BTreeMap<String, ProjectRecoveryAdvice>,
     ) -> Result<BTreeMap<String, ProjectResolution>> {
         let options = options.unwrap_or_default();
         let attempts = options.attempts.max(1);
@@ -201,7 +225,9 @@ impl ProjectsApi {
                         still_missing.push(project_id);
                     }
                     Err(error) => {
-                        let _ = error;
+                        if let Some(advice) = recovery_advice(&error) {
+                            retry_advice.insert(project_id.clone(), advice);
+                        }
                         tracing::debug!("missing project lookup was inconclusive");
                         result.insert(
                             project_id,
@@ -217,7 +243,17 @@ impl ProjectsApi {
         }
 
         if !pending.is_empty() {
-            let active = self.list_active_project_ids().await;
+            let active = match self.list_active_project_ids().await {
+                Ok(active) => active,
+                Err(error) => {
+                    if let Some(advice) = recovery_advice(&error) {
+                        for id in &pending {
+                            retry_advice.insert(id.clone(), advice.clone());
+                        }
+                    }
+                    None
+                }
+            };
             session.check()?;
             classify_exhausted_404s(&mut result, pending, active.as_ref());
             let absent = result
@@ -237,13 +273,12 @@ impl ProjectsApi {
         Ok(result)
     }
 
-    async fn list_active_project_ids(&self) -> Option<HashSet<String>> {
+    async fn list_active_project_ids(&self) -> Result<Option<HashSet<String>>> {
         let response = self
             .inner
             .client
             .socket_get("/api/v1/artist/projects/active", None)
-            .await
-            .ok()?;
+            .await?;
         // Even a partially malformed roster can positively identify a request.
         // Its absence verdict remains unknown, but an identified request must
         // never become eligible for resending on a later empty response.
@@ -252,7 +287,7 @@ impl ProjectsApi {
                 self.inner.submission.lock().observed(&id);
             }
         }
-        active_project_ids(&response)
+        Ok(active_project_ids(&response))
     }
 
     async fn reconcile(
@@ -484,6 +519,16 @@ impl ProjectsApi {
     }
 }
 
+fn recovery_advice(error: &Error) -> Option<ProjectRecoveryAdvice> {
+    match error {
+        Error::Api(error) => Some(ProjectRecoveryAdvice {
+            status: error.status,
+            retry_after_seconds: error.retry_after_seconds,
+        }),
+        _ => None,
+    }
+}
+
 fn incomplete_results(project: &Project) -> bool {
     let snapshot = project.snapshot();
     if snapshot.status != ProjectStatus::Completed {
@@ -544,3 +589,12 @@ mod tests;
 
 #[cfg(test)]
 mod result_tests;
+
+#[cfg(test)]
+mod advice_tests;
+
+#[cfg(test)]
+mod parity_tests;
+
+#[cfg(test)]
+mod startup_tests;

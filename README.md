@@ -3,9 +3,9 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.58.1** implements the TypeScript **5.58.1** public contract through
-[`25b5d46`](https://github.com/Sogni-AI/sogni-client/commit/25b5d46100e4ec764e8d063c19ad4eb141664cbf),
-including hosted tool definitions from Sogni Protocol `1.0.0-alpha.46`.
+Version **5.60.7** implements the TypeScript **5.60.7** public contract through
+[`1683bf3`](https://github.com/Sogni-AI/sogni-client/commit/1683bf33a8377a968aa3682021560ff729cb1a2e),
+including hosted tool definitions from Sogni Protocol `1.0.0-alpha.47`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
 See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
@@ -51,7 +51,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client-by-morlz = { version = "5.58.1", default-features = false }
+sogni-client-by-morlz = { version = "5.60.7", default-features = false }
 ```
 
 For development against the repository:
@@ -182,6 +182,12 @@ enabled. `startingImageStrength` is source-image influence from 0 to 1: 0 reques
 full denoising and 1 preserves the input. Omission or null uses 0.5. Explicit
 zero values for strength, guidance, seed, and preview count remain on the wire.
 
+For Stable Diffusion ControlNet, set `controlNet.preprocess` to `true` when
+`AssetRole::ControlNetImage` is an ordinary photo: the worker builds the map
+for the selected ControlNet name. Omitted or `false` uses the uploaded map
+as supplied, preserving existing requests. The option must be a boolean;
+InstantID, inpaint, and instrp2p use their image as supplied.
+
 `wait_for_completion` never cancels the remote generation when its local
 timeout expires. Call `project.cancel()` explicitly when cancellation is the
 desired outcome. Cancellation waits for owner-scoped status to confirm
@@ -239,6 +245,11 @@ status and returns `ProjectResult` with current status, jobs, and available
 completed-result URLs. It works after a process restart or socket recovery
 expiry, without creating a project or changing local tracking.
 
+Use `get_result` and `get_status` for individual reads. Wait on a tracked
+project through `wait_for_completion` and socket events; repeated REST reads
+consume the account's request limit and result reads may also mint one URL per
+completed job. Honor `ApiError::retry_after()` when the server returns 429.
+
 ```rust,no_run
 use sogni_client::{ListRecentProjectsOptions, SogniClient};
 
@@ -263,6 +274,11 @@ fresh URLs. A result job's `url_unavailable` explains withheld media, unknown
 media kind, or a failed URL lookup. `GetProjectResultOptions.kind` supplies a
 fallback `ResultMediaKind` only when stored evidence and model metadata cannot
 identify the media. Unknown media is never assumed to be an image.
+
+Sogni signed result links are valid for 48 hours. Download outputs you need to
+keep, or request a fresh URL later. Treat upload/download links as opaque:
+their hostname may use S3 Transfer Acceleration or Sogni's R2 storage, and their
+signed query must remain intact.
 
 Queue explanations are available through `project.waiting_reason()`,
 `project.job_waiting_reasons()`, `job.waiting_reason()`, and their snapshots.
@@ -362,6 +378,26 @@ voice cloning (`AssetRole::ReferenceAudio` and optional `referenceText`). Read
 `get_model_options().raw` for each model's available controls: speech tiers do
 not advertise music duration, tempo, or sampler settings they cannot consume.
 The service validates which audio controls a model accepts.
+
+Music uses `ProjectRequest::audio("minimax_music3", prompt)` or one of the
+ACE-Step models. MiniMax Music 3 is the default for `generate_music`: duration
+10–300 seconds (default 60) is a ceiling, so the track can resolve earlier;
+steps are 10–100 (default 30), guidance 1–5 (default 1.7), and `promptStrength`
+0–10 (default 1.7). Put tempo and key in the prompt. Lyrics use plain section
+tags such as `[Verse]` and `[Chorus]` on their own lines.
+
+MiniMax Music 3 has no `bpm`, `keyscale`, `timesignature`, `language`, `shift`,
+`composerMode`, or `creativity` controls. Local `generate_music` strips its
+ACE-Step-only fields and keeps lyrics, duration, format, seed, and prompt
+strength. A model-less request above 300 seconds selects ACE-Step XL Turbo;
+an explicitly named Music 3 request remains explicit for service validation.
+Speech models are never music candidates. Use an explicit ACE-Step model for
+its controls or drafts; ACE-Step accepts 10–600 seconds (default 30).
+
+The `workflow_text_to_music` example defaults to Music 3. Its optional tempo,
+key, meter, and language flags become Music 3 prompt directions; ACE-only flags
+or a duration above 300 seconds select XL Turbo when no model is named. Use
+`--dry-run` to inspect the resolved request without submitting a paid project.
 
 ```rust,no_run
 use sogni_client::{AssetRole, MediaSource, ProjectRequest};
@@ -502,6 +538,12 @@ presigned `PUT` flow. Failures after saved-asset transfer or verification begins
 are reported. For independent uploads used by durable chat or workflows,
 request a current v2 multipart form with `image_upload_post` or
 `media_upload_post`, then call `upload_presigned`.
+
+Direct tool media accepts HTTPS links from the existing Sogni/S3/CloudFront
+hosts, S3 acceleration/dualstack hosts, and four exact Sogni production/staging
+R2 input/output buckets. Other R2 customer buckets are refused. Downloads
+retain signed queries, omit API credentials, refuse redirects, and enforce
+size/format limits; strict media also validates and pins public DNS addresses.
 
 ## Personal LoRAs and estimates
 
@@ -665,6 +707,19 @@ do not retry requests; preserve an operation's idempotency key when retrying.
 
 The SDK does not log credentials or include them in `Debug` output. Server-side
 authorization, billing, eligibility, and safety decisions remain authoritative.
+
+External generation errors preserve an optional `vendorFailureCategory` string
+in job/project error payloads and public error events. Use it for coarse
+messages such as content-policy, input-validation, or timeout failures; handle
+unknown categories with a generic error message. Private provider failure
+details and response bodies are excluded from these public socket events.
+
+`projects.resolve_missing_with_advice(&ids, None).await` adds per-project
+`ProjectRecoveryAdvice` with HTTP `status` and optional whole-second
+`retry_after_seconds` for inconclusive lookups. Its optional `ResolveMissingOptions`
+uses `attempts` and `retry_delay` (`std::time::Duration`). `resolve_missing` retains its
+existing result shape. Transport errors or an unavailable live registry do not
+prove a project was lost; recovery keeps waiting without cancelling it.
 
 ## Compatibility and release checks
 

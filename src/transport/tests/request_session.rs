@@ -228,6 +228,166 @@ async fn nested_guards_preserve_only_their_own_401_body_and_still_reject_replace
 }
 
 #[tokio::test]
+async fn closing_a_client_stops_held_rest_work_without_an_account_change() {
+    for (hold_headers, status, abort) in [
+        (true, "200 OK", false),
+        (true, "401 Unauthorized", true),
+        (false, "200 OK", true),
+        (false, "401 Unauthorized", false),
+    ] {
+        let (endpoint, started, release, server) = held_response(
+            status,
+            "application/json",
+            "",
+            "{\"message\":\"expired\"}",
+            hold_headers,
+        )
+        .await;
+        let http = HttpClients::build(Duration::from_secs(30)).unwrap();
+        let auth = api_key_auth(endpoint.clone(), &http);
+        let client = ApiClient::new(
+            ClientConfig {
+                rest_endpoint: endpoint,
+                auth_kind: AuthKind::ApiKey,
+                disable_socket: true,
+                ..Default::default()
+            },
+            auth.clone(),
+            http,
+        )
+        .unwrap();
+        let rest = client.rest.clone();
+        let owner = rest.request_session();
+        let (received, headers) = oneshot::channel();
+        let pending = tokio::spawn(async move {
+            owner
+                .run(async {
+                    let nested = rest.request_session();
+                    nested
+                        .run(async {
+                            let response = rest
+                                .raw_request(reqwest::Method::GET, "/held", None, None, None, None)
+                                .await?;
+                            let _ = received.send(());
+                            rest.process_response(response).await
+                        })
+                        .await
+                })
+                .await
+        });
+        started.await.unwrap();
+        if !hold_headers {
+            // The matching 401 has already signed this request out. Closing
+            // must also cancel its permitted body and its nested outer guards.
+            headers.await.unwrap();
+        }
+        if abort {
+            client.abort();
+        } else {
+            client.close().await.unwrap();
+        }
+        let error = tokio::time::timeout(WATCHDOG, pending)
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap_err();
+        assert!(matches!(error, Error::Closed), "{error}");
+        assert!(!error.to_string().contains("account"));
+        assert!(matches!(auth.authenticate_api_key("B"), Err(Error::Closed)));
+        assert!(!client.is_authenticated());
+        assert!(matches!(
+            client.rest.get("/new", None).await,
+            Err(Error::Closed)
+        ));
+        let _ = release.send(());
+        server.await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn closing_during_token_renewal_cannot_revive_the_client() {
+    let replacement = token("A", 2, false);
+    let body = json!({"data":{"token":replacement,"refreshToken":token("A-refresh", 2, false)}})
+        .to_string();
+    let (endpoint, started, release, server) =
+        held_response("200 OK", "application/json", "", &body, true).await;
+    let http = HttpClients::build(Duration::from_secs(30)).unwrap();
+    let auth = AuthManager::new(
+        AuthKind::Token,
+        endpoint.clone(),
+        http.authenticated(),
+        http.cookies(),
+    );
+    let client = ApiClient::new(
+        ClientConfig {
+            rest_endpoint: endpoint,
+            auth_kind: AuthKind::Token,
+            disable_socket: true,
+            ..Default::default()
+        },
+        auth.clone(),
+        http,
+    )
+    .unwrap();
+    let renewing = auth.clone();
+    let pending = tokio::spawn(async move {
+        renewing
+            .authenticate_tokens(token("A", 1, true), token("A-refresh", 1, false))
+            .await
+    });
+    started.await.unwrap();
+    client.close().await.unwrap();
+    assert!(matches!(
+        tokio::time::timeout(WATCHDOG, pending)
+            .await
+            .unwrap()
+            .unwrap(),
+        Err(Error::Closed)
+    ));
+    let _ = release.send(());
+    server.await.unwrap();
+    assert!(!auth.is_authenticated());
+    assert!(matches!(
+        auth.authenticate_tokens(token("A", 3, false), token("A-refresh", 3, false))
+            .await,
+        Err(Error::Closed)
+    ));
+    assert!(matches!(auth.headers().await, Err(Error::Closed)));
+}
+
+#[tokio::test]
+async fn a_retained_sse_stream_reports_closure_for_buffered_events() {
+    let (endpoint, _) = http_fixture(
+        "200 OK",
+        "text/event-stream",
+        "data: first\n\ndata: second\n\n",
+    )
+    .await;
+    let http = HttpClients::build(WATCHDOG).unwrap();
+    let auth = api_key_auth(endpoint.clone(), &http);
+    let client = ApiClient::new(
+        ClientConfig {
+            rest_endpoint: endpoint,
+            auth_kind: AuthKind::ApiKey,
+            disable_socket: true,
+            ..Default::default()
+        },
+        auth,
+        http,
+    )
+    .unwrap();
+    let mut stream = client
+        .rest
+        .stream_sse("/events", None, HeaderMap::new())
+        .await
+        .unwrap();
+    assert_eq!(stream.next().await.unwrap().unwrap().data, "first");
+    client.close().await.unwrap();
+    assert!(matches!(stream.next().await.unwrap(), Err(Error::Closed)));
+    assert!(stream.next().await.is_none());
+}
+
+#[tokio::test]
 async fn another_requests_matching_401_does_not_keep_unrelated_work_alive() {
     let (url, _) = http_fixture("401 Unauthorized", "application/json", "{}").await;
     let (rest, auth) = rest_and_auth(url);

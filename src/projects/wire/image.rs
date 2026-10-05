@@ -162,6 +162,14 @@ pub(super) fn build_image_keyframe(
                 }
             });
         }
+        if let Some(value) = control.get("preprocess") {
+            let preprocess = value.as_bool().ok_or_else(|| {
+                Error::InvalidInput("controlNet.preprocess must be a boolean".into())
+            })?;
+            if preprocess {
+                raw["preprocess"] = json!(true);
+            }
+        }
         keyframe.insert("currentControlNetsJob".into(), json!([raw]));
     }
     validation::validate_gpt_image_options(params, model_id)?;
@@ -179,3 +187,7 @@ pub(super) fn build_image_keyframe(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "image_controlnet_tests.rs"]
+mod controlnet_tests;

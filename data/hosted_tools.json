@@ -332,38 +332,38 @@
           "properties": {
             "prompt": {
               "type": "string",
-              "description": "Genre, mood, and style description for the music. Be specific about musical characteristics.\n\nLITERAL PROMPT OVERRIDE: If the user explicitly says not to modify the prompt, or to use it exactly/verbatim/as-is, copy the identified prompt text verbatim instead of applying these construction rules unless a hard requirement is missing.\n\nExamples:\n- \"upbeat electronic dance music with driving bass and synth arpeggios\"\n- \"mellow jazz ballad with soft piano, brushed drums, and walking bass\"\n- \"epic orchestral soundtrack with soaring strings and powerful brass\"\n- \"lo-fi hip hop beat with vinyl crackle, muted keys, and chill vibes\"\n- \"acoustic folk song with fingerpicked guitar and warm harmonies\"\n\nInclude:\n- Genre (rock, jazz, electronic, classical, hip-hop, etc.)\n- Mood (happy, melancholic, energetic, relaxing, epic, etc.)\n- Instruments (piano, guitar, drums, synth, strings, etc.)\n- Style descriptors (driving, mellow, atmospheric, punchy, etc.)\n\nBATCH VARIATIONS: When numberOfVariations > 1, use Dynamic Prompt syntax to vary ONE dimension across separate tracks. Lock in any genre/mood/instruments the user specified, vary the rest. Example: \"{lo-fi hip hop beat with muted keys|jazz piano trio with brushed drums|ambient electronic with soft pads} with warm reverb and vinyl texture\"."
+              "description": "Genre, mood, and style description for the music. Be specific about musical characteristics.\n\nLITERAL PROMPT OVERRIDE: If the user explicitly says not to modify the prompt, or to use it exactly/verbatim/as-is, copy the identified prompt text verbatim instead of applying these construction rules unless a hard requirement is missing.\n\nExamples:\n- \"upbeat electronic dance music with driving bass and synth arpeggios\"\n- \"mellow jazz ballad with soft piano, brushed drums, and walking bass\"\n- \"epic orchestral soundtrack with soaring strings and powerful brass\"\n- \"lo-fi hip hop beat with vinyl crackle, muted keys, and chill vibes\"\n- \"acoustic folk song with fingerpicked guitar and warm harmonies\"\n\nInclude:\n- Genre (rock, jazz, electronic, classical, hip-hop, etc.)\n- Mood (happy, melancholic, energetic, relaxing, epic, etc.)\n- Instruments (piano, guitar, drums, synth, strings, etc.)\n- Style descriptors (driving, mellow, atmospheric, punchy, etc.)\n\nMODEL \"music3\": MiniMax Music 3 wants a structured caption instead of a tag list — write the prompt as one paragraph in three labeled parts: \"Global Metadata: genre, BPM, key, emotional progression across the song, production profile. Vocal Details: gender, timbre, delivery, harmonies (or: none, purely instrumental). Arrangement: primary and secondary instruments, groove, bass, percussion, textures, how sections evolve.\" The more specific, the closer the result. Fold tempo and key into this caption — music3 ignores the bpm/keyscale/timesig args.\n\nBATCH VARIATIONS: When numberOfVariations > 1, use Dynamic Prompt syntax to vary ONE dimension across separate tracks. This is one Sogni project with multiple jobs, so prefer it when all tracks share the same duration, BPM, key, lyrics, model, and generation parameters and only prompt text varies. Lock in any genre/mood/instruments the user specified, vary the rest. Example: \"{lo-fi hip hop beat with muted keys|jazz piano trio with brushed drums|ambient electronic with soft pads} with warm reverb and vinyl texture\"."
             },
             "duration": {
               "type": "number",
-              "description": "Duration in seconds. Default: 30. Range: 10-600 (10 seconds to 10 minutes). Short clips: 10-30s. Standard songs: 120-300s.",
+              "description": "Duration in seconds. music3 (the default model): 10-300, default 60, and a ceiling — the song may end earlier at a musical resolution. ACE-Step turbo/sft: 10-600, default 30. Short clips: 10-30s. Standard songs: 120-300s.",
               "minimum": 10,
               "maximum": 600
             },
             "bpm": {
               "type": "number",
-              "description": "Beats per minute / tempo. Default: 120. Range: 30-300. Slow ballad: 60-80. Mid-tempo: 90-120. Upbeat: 120-140. Fast dance: 140-180. Very fast: 180+.",
+              "description": "ACE-Step (turbo, sft) only — music3 does not use it; for music3 put the tempo in the prompt instead. Beats per minute / tempo. Default: 120. Range: 30-300. Slow ballad: 60-80. Mid-tempo: 90-120. Upbeat: 120-140. Fast dance: 140-180. Very fast: 180+.",
               "minimum": 30,
               "maximum": 300
             },
             "keyscale": {
               "type": "string",
-              "description": "Musical key and scale. E.g., \"C major\", \"A minor\", \"F# minor\", \"Bb major\". Default: \"C major\". Only set when the user specifies a key or when a particular mood calls for it (minor keys for sad/dark, major for happy/bright)."
+              "description": "ACE-Step (turbo, sft) only — music3 does not use it; for music3 put the key in the prompt instead. Musical key and scale. E.g., \"C major\", \"A minor\", \"F# minor\", \"Bb major\". Default: \"C major\". Only set when the user specifies a key or when a particular mood calls for it (minor keys for sad/dark, major for happy/bright)."
             },
             "lyrics": {
               "type": "string",
-              "description": "Song lyrics. Optional — omit for instrumental music. Format: write lyrics naturally with line breaks. The model will attempt to sing these lyrics with the generated music. Works best with clear, rhythmic phrasing that matches the BPM."
+              "description": "Song lyrics. Optional — omit for instrumental music. Format: write lyrics naturally with line breaks. The model will attempt to sing these lyrics with the generated music. Works best with clear, rhythmic phrasing that matches the BPM. For model \"music3\", structure lyrics with plain section tags on their own lines ([Intro], [Verse], [Pre-Chorus], [Chorus], [Post-Chorus], [Bridge], [Solo], [Outro]) — no modifiers inside brackets, and write enough sections to fill the requested duration since the composer ends the song when the lyric sheet runs out. For instrumental music3 tracks, pass ONLY a skeleton of those tags one per line (e.g. [Intro] [Verse] [Chorus] [Verse] [Solo] [Chorus] [Outro]) — bare instrumental pieces end early without it."
             },
             "model": {
               "type": "string",
               "enum": [
+                "minimax_music3",
                 "ace_step_1.5_xl_turbo",
                 "ace_step_1.5_xl_sft",
                 "ace_step_1.5_turbo",
-                "ace_step_1.5_sft",
-                "minimax_music3"
+                "ace_step_1.5_sft"
               ],
-              "description": "Canonical music model ID. Default: ace_step_1.5_xl_turbo. Use minimax_music3 (MiniMax Music 3, premium autoregressive composer, ~20x cost, duration is a ceiling) when the user asks for the best quality, realistic vocals, or full songs. Use ace_step_1.5_xl_sft only when the user explicitly requests XL SFT. Use legacy ace_step_1.5_turbo or ace_step_1.5_sft only when the user explicitly requests a legacy model."
+              "description": "Canonical music model ID. Default: minimax_music3 (MiniMax Music 3, premium autoregressive composer with the best vocals, lyric adherence and song structure; 10-300 s, and duration is a ceiling, so the song may end earlier at a musical resolution). Music 3 takes tempo and key in the prompt text; bpm, keyscale and timesig apply to ACE-Step only. Use ace_step_1.5_xl_turbo only when the user asks for a quick, cheap or draft track, names ACE-Step, or wants a track longer than 300 s (with no model named, a duration over 300 s uses ACE-Step XL Turbo). Use ace_step_1.5_xl_sft only when the user explicitly requests XL SFT. Use legacy ace_step_1.5_turbo or ace_step_1.5_sft only when the user explicitly requests a legacy model."
             },
             "timesig": {
               "type": "number",
@@ -373,11 +373,11 @@
                 4,
                 6
               ],
-              "description": "Time signature (beats per measure). 4 = 4/4 time (default, most common). 3 = 3/4 time (waltz). 2 = 2/4 time (march). 6 = 6/8 time (compound). Default: 4."
+              "description": "ACE-Step (turbo, sft) only — music3 does not use it; for music3 put the time signature in the prompt instead. Time signature (beats per measure). 4 = 4/4 time (default, most common). 3 = 3/4 time (waltz). 2 = 2/4 time (march). 6 = 6/8 time (compound). Default: 4."
             },
             "numberOfVariations": {
               "type": "number",
-              "description": "Number of variations (1-16). Use 1 unless user requests multiple. Default: 1.",
+              "description": "Number of variations (1-16). Use with one Dynamic Prompt branch when the user requests multiple prompt-only music variations that share the same duration, BPM, key, lyrics, model, and parameters. This creates one Sogni project with multiple jobs. Default: 1.",
               "minimum": 1,
               "maximum": 16
             }

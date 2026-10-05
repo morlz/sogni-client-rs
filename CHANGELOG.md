@@ -8,6 +8,17 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.60.7] - 2026-10-05
+
+- Port the public TypeScript 5.60.7 contract through `1683bf33a8377a968aa3682021560ff729cb1a2e`, including 30 hosted tool definitions from Sogni Protocol 1.0.0-alpha.47. The Rust fork remains handled through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (5.50.3-alpha.1), with no new fork commits to merge.
+- Support image ControlNet preprocessing from an ordinary photo, forwarding the optional boolean only when enabled and preserving existing control-map requests.
+- Accept Sogni's four exact R2 media hosts and S3 Transfer Acceleration links while retaining HTTPS, authority, redirect, and strict media-download safeguards. Preserve signed query strings.
+- Prefer MiniMax Music 3 for hosted music, use ACE-Step for model-less tracks longer than 300 seconds, preserve explicit model choices, and omit ACE-Step-only controls from Music 3 requests. Update music examples and public model guidance.
+- Preserve coarse, extensible server failure categories in project/job errors and events without exposing provider diagnostics.
+- Distinguish a closed client from an account change, stop pending REST/SSE/socket work and credential renewal on close, preserve existing server refusals, and reset reconnect backoff only after server authentication.
+- Add `resolve_missing_with_advice` with coarse HTTP status and bounded whole-second retry advice while preserving the existing resolution API. Keep uncertain recovery inconclusive, preserve compact terminal records and parameters, and let observed completion win over late recovery responses.
+- Verify that chat startup on the shared socket cannot create media jobs, and retain stable application IDs, once-only project resubmission, attempt deadlines, Rust 1.88 support, and automatic publication of `sogni-client-by-morlz`.
+
 ## [5.58.1] - 2026-09-28
 
 - Port the public TypeScript 5.58.1 contract through `25b5d46100e4ec764e8d063c19ad4eb141664cbf`, including hosted tool definitions from Sogni Protocol 1.0.0-alpha.46.

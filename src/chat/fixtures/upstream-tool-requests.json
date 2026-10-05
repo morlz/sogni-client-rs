@@ -1,6 +1,6 @@
 {
-  "version": "5.58.1",
-  "commit": "25b5d46100e4ec764e8d063c19ad4eb141664cbf",
+  "version": "5.60.7",
+  "commit": "1683bf33a8377a968aa3682021560ff729cb1a2e",
   "models": [
     {
       "id": "gpt-image-2",
@@ -313,6 +313,11 @@
       "workerCount": 1
     },
     {
+      "id": "minimax_music3",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
       "id": "ace_step_1.5_xl_turbo",
       "media": "audio",
       "workerCount": 1
@@ -329,11 +334,6 @@
     },
     {
       "id": "ace_step_1.5_sft",
-      "media": "audio",
-      "workerCount": 1
-    },
-    {
-      "id": "minimax_music3",
       "media": "audio",
       "workerCount": 1
     },
@@ -628,6 +628,68 @@
         "composerMode": false,
         "promptStrength": 0,
         "creativity": 0.7
+      }
+    },
+    {
+      "tool": "generate_music",
+      "args": {
+        "prompt": "Warm lo-fi at 84 BPM in A minor",
+        "duration": 300,
+        "bpm": 84,
+        "keyscale": "A minor",
+        "timesignature": 4,
+        "language": "en",
+        "composer_mode": false,
+        "creativity": 0.7,
+        "prompt_strength": 0,
+        "lyrics": "[Chorus]\nA song",
+        "output_format": "wav",
+        "seed": 0
+      },
+      "options": {},
+      "expected": {
+        "type": "audio",
+        "modelId": "minimax_music3",
+        "positivePrompt": "Warm lo-fi at 84 BPM in A minor",
+        "numberOfMedia": 1,
+        "duration": 300,
+        "lyrics": "[Chorus]\nA song",
+        "outputFormat": "wav",
+        "promptStrength": 0,
+        "seed": 0
+      }
+    },
+    {
+      "tool": "generate_music",
+      "args": {
+        "prompt": "long track",
+        "duration": 420
+      },
+      "options": {},
+      "expected": {
+        "type": "audio",
+        "modelId": "ace_step_1.5_xl_turbo",
+        "positivePrompt": "long track",
+        "numberOfMedia": 1,
+        "duration": 420
+      }
+    },
+    {
+      "tool": "generate_music",
+      "args": {
+        "prompt": "explicit Music 3",
+        "model": "minimax_music3",
+        "duration": 420,
+        "bpm": 84,
+        "language": "en"
+      },
+      "options": {},
+      "expected": {
+        "type": "audio",
+        "modelId": "minimax_music3",
+        "positivePrompt": "explicit Music 3",
+        "numberOfMedia": 1,
+        "duration": 420
       }
     }
   ]

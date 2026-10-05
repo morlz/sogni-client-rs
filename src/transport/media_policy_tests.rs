@@ -33,6 +33,56 @@ fn strict_media_requires_known_https_origin_without_credentials() -> TestResult 
 }
 
 #[test]
+fn strict_media_accepts_only_sognis_four_r2_buckets_and_preserves_signed_queries() -> TestResult {
+    for host in SOGNI_R2_MEDIA_HOSTS {
+        let input = format!(
+            "https://{host}/generation/image.png?X-Amz-Signature=abc%2Fdef%2Bghi&X-Amz-Credential=fixture%2Fscope"
+        );
+        let url = Url::parse(&input)?;
+        assert_eq!(safe_host(&url)?, host);
+        assert_eq!(url.as_str(), input);
+        let uppercase = Url::parse(&input.replace(host, &host.to_uppercase()))?;
+        assert_eq!(safe_host(&uppercase)?, host);
+        for invalid in [
+            input.replace("https://", "http://"),
+            input.replace(host, &format!("user:secret-marker@{host}")),
+            input.replace(host, &format!("{host}:444")),
+            format!("{input}#secret-marker"),
+        ] {
+            let invalid_url = Url::parse(&invalid)?;
+            let result = safe_host(&invalid_url);
+            assert!(result.is_err());
+            assert!(!format!("{result:?}").contains("secret-marker"));
+        }
+    }
+    for host in [
+        "generation-output-production.ffffffffffffffffffffffffffffffff.r2.cloudflarestorage.com",
+        "generation-input-production.ffffffffffffffffffffffffffffffff.r2.cloudflarestorage.com",
+        "attacker-bucket.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+        "generation-output-dev.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+        "234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+        "r2.cloudflarestorage.com",
+        "pub-0123456789abcdef0123456789abcdef.r2.dev",
+        "generation-output-production.r2.dev",
+        "generation-output-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com.evil.test",
+        "evil-generation-output-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+        "x.generation-output-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+    ] {
+        assert!(
+            safe_host(&Url::parse(&format!("https://{host}/media"))?).is_err(),
+            "{host}"
+        );
+    }
+    for host in [
+        "complete-images-production.s3-accelerate.amazonaws.com",
+        "complete-images-production.s3-accelerate.dualstack.amazonaws.com",
+    ] {
+        assert!(safe_host(&Url::parse(&format!("https://{host}/media"))?).is_ok());
+    }
+    Ok(())
+}
+
+#[test]
 fn strict_media_rejects_private_mixed_and_unbounded_dns_answers() -> TestResult {
     let public = "8.8.8.8:443".parse()?;
     validate_addresses(&[public, "[2606:4700:4700::1111]:443".parse()?])?;
@@ -125,6 +175,7 @@ async fn pinned_media_preserves_host_and_does_not_follow_redirect() -> TestResul
             request.push(byte[0]);
         }
         let headers = String::from_utf8_lossy(&request).to_ascii_lowercase();
+        assert!(headers.starts_with("put /fixture?x-amz-signature=abc%2fdef%2bghi http/1.1\r\n"));
         assert!(headers.contains(&format!("host: media.sogni.ai:{}\r\n", address.port())));
         assert!(!headers.contains("authorization:"));
         assert!(!headers.contains("x-api-key:"));
@@ -135,7 +186,10 @@ async fn pinned_media_preserves_host_and_does_not_follow_redirect() -> TestResul
     });
     let client = pinned_client("media.sogni.ai", &[address], Duration::from_secs(2), None)?;
     let response = client
-        .put(format!("http://media.sogni.ai:{}/fixture", address.port()))
+        .put(format!(
+            "http://media.sogni.ai:{}/fixture?X-Amz-Signature=abc%2Fdef%2Bghi",
+            address.port()
+        ))
         .send()
         .await?;
     assert_eq!(response.status(), reqwest::StatusCode::TEMPORARY_REDIRECT);

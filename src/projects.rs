@@ -70,8 +70,8 @@ pub use provenance::{JobProvenance, WorldGenerationReceiptRequest};
 pub use queue::{JobWaitingReason, ProjectQueueChanged, WaitingReason};
 pub use recovery::{
     ACTIVE_PROJECTS_RECOVERED_EVENT, COMPLETED_PROJECTS_RECOVERED_EVENT,
-    PROJECT_LOST_ORIGINAL_CODE, ProjectResolution, ResolveMissingOptions, is_project_lost_error,
-    is_project_lost_payload,
+    PROJECT_LOST_ORIGINAL_CODE, ProjectRecoveryAdvice, ProjectResolution, ProjectResolutionReport,
+    ResolveMissingOptions, is_project_lost_error, is_project_lost_payload,
 };
 pub use request::{AssetRole, MediaSource, MinimaxH3Keyframe, ProjectRequest};
 pub use sam3::{Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint, Sam3Selection};

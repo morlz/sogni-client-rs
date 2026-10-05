@@ -44,17 +44,29 @@ fn byte_limit(media: &str) -> usize {
 
 fn trusted_url(value: &str) -> Option<url::Url> {
     let url = url::Url::parse(value.trim()).ok()?;
-    if url.scheme() != "https" || !url.username().is_empty() || url.password().is_some() {
+    if url.scheme() != "https"
+        || url.port_or_known_default() != Some(443)
+        || !url.username().is_empty()
+        || url.password().is_some()
+        || url.fragment().is_some()
+    {
         return None;
     }
     let host = url.host_str()?;
     let s3 =
-        regex::Regex::new(r"^(?:[a-z0-9.-]+\.s3(?:\.[a-z0-9-]+)?|s3\.[a-z0-9-]+)\.amazonaws\.com$")
+        regex::Regex::new(r"^(?:[a-z0-9.-]+\.(?:s3(?:\.[a-z0-9-]+)?|s3-accelerate(?:\.dualstack)?)|s3\.[a-z0-9-]+)\.amazonaws\.com$")
             .unwrap();
+    let r2 = [
+        "generation-output-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+        "generation-output-staging.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+        "generation-input-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+        "generation-input-staging.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+    ];
     (host == "cdn.sogni.ai"
         || host.ends_with(".sogni.ai")
         || host.ends_with(".cloudfront.net")
-        || s3.is_match(host))
+        || s3.is_match(host)
+        || r2.contains(&host))
     .then_some(url)
 }
 
@@ -227,6 +239,8 @@ mod tests {
             "x.s3.amazonaws.com",
             "x.s3.us-west-2.amazonaws.com",
             "s3.us-east-1.amazonaws.com",
+            "complete-images-production.s3-accelerate.amazonaws.com",
+            "complete-images-production.s3-accelerate.dualstack.amazonaws.com",
             "x.cloudfront.net",
         ] {
             assert!(trusted_url(&format!("https://{host}/media")).is_some());
@@ -237,8 +251,61 @@ mod tests {
             "https://user:pass@cdn.sogni.ai/a",
             "https://localhost/a",
             "https://127.0.0.1/a",
+            "https://cdn.sogni.ai:444/a",
+            "https://cdn.sogni.ai/a#fragment",
+            "https://complete-images-production.s3-accelerate.amazonaws.com.evil.example/a",
+            "https://complete-images-production.s3-accelerate.amazonaws.co/a",
+            "https://s3-accelerate.amazonaws.com/a",
         ] {
             assert!(trusted_url(input).is_none(), "{input}");
+        }
+    }
+
+    #[test]
+    fn remote_media_r2_hosts_are_exact_and_signed_queries_remain_opaque() {
+        for host in [
+            "generation-output-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+            "generation-output-staging.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+            "generation-input-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+            "generation-input-staging.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+        ] {
+            let input = format!(
+                "https://{host}/generation/image.png?X-Amz-Signature=abc%2Fdef%2Bghi&X-Amz-Credential=fixture%2Fscope"
+            );
+            let url = trusted_url(&input).unwrap();
+            assert_eq!(url.as_str(), input);
+            assert_eq!(
+                trusted_url(&input.replace(host, &host.to_uppercase()))
+                    .unwrap()
+                    .host_str(),
+                Some(host)
+            );
+            for invalid in [
+                input.replace("https://", "http://"),
+                input.replace(host, &format!("user:pass@{host}")),
+                input.replace(host, &format!("{host}:444")),
+                format!("{input}#fragment"),
+            ] {
+                assert!(trusted_url(&invalid).is_none(), "{invalid}");
+            }
+        }
+        for host in [
+            "generation-output-production.ffffffffffffffffffffffffffffffff.r2.cloudflarestorage.com",
+            "generation-input-production.ffffffffffffffffffffffffffffffff.r2.cloudflarestorage.com",
+            "attacker-bucket.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+            "generation-output-dev.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+            "234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+            "r2.cloudflarestorage.com",
+            "pub-0123456789abcdef0123456789abcdef.r2.dev",
+            "generation-output-production.r2.dev",
+            "generation-output-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com.evil.example",
+            "evil-generation-output-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+            "x.generation-output-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+        ] {
+            assert!(
+                trusted_url(&format!("https://{host}/media")).is_none(),
+                "{host}"
+            );
         }
     }
 }

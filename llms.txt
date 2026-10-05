@@ -1,11 +1,11 @@
-# sogni-client-by-morlz Rust SDK 5.58.1
+# sogni-client-by-morlz Rust SDK 5.60.7
 
-Compatibility: TypeScript 5.58.1 at 25b5d46; hosted protocol 1.0.0-alpha.46.
+Compatibility: TypeScript 5.60.7 at 1683bf33a8377a968aa3682021560ff729cb1a2e; hosted protocol 1.0.0-alpha.47.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
-Cargo dependency: `sogni-client-by-morlz = "5.58.1"`.
+Cargo dependency: `sogni-client-by-morlz = "5.60.7"`.
 Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
 source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
@@ -58,6 +58,9 @@ project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
 - Images: `.embed_prompt_metadata(false)` omits worker prompt/settings metadata.
   startingImageStrength is source influence 0–1, default 0.5; explicit zero
   strength/guidance/seed/previews survive serialization.
+- ControlNet: `.param("controlNet", json!({"name":"depth","preprocess":true}))`
+  with `AssetRole::ControlNetImage` makes the map from a photo on the worker.
+  Omitted/false preserves ready-made maps. Only boolean preprocess is accepted.
 - SAM3: image model `sam3_image_segment_bf16`, starting image, and
   `.sam3_prompt(Sam3ImagePrompt { ... })`; one PNG mask/cutout, no previews.
   `apply_mask` returns RGBA, `max_instances` selects 1–16 matches, labeled
@@ -72,6 +75,12 @@ project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
 - Speech: `ProjectRequest::audio` with script prompt; `speaker`, `instruct`,
   `referenceText`, and `AssetRole::ReferenceAudio` for Qwen3-TTS voice cloning.
   Read model options for available controls; validation remains server-owned.
+- Music: `minimax_music3` is the generate_music default; 10–300 seconds
+  (default 60, a ceiling), 10–100 steps (default 30), guidance 1–5 (default 1.7),
+  promptStrength 0–10 (default 1.7). Tempo/key belong in the prompt; lyrics use
+  plain section tags. No ACE-only bpm/keyscale/timesignature/language/shift/
+  composerMode/creativity controls. Model-less duration >300 uses ACE-Step XL
+  Turbo (10–600 seconds). Explicit Music 3 remains explicit; speech is excluded.
 - FlashVSR: video model `flashvsr_v1.1_tiny_long_bf16`, empty prompt, one
   reference video, upscaleResolution 1080/1440. Timing can be server-probed;
   optional detailPreference/processingSpeed/seed preserve source timing/audio.
@@ -111,6 +120,9 @@ project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
 completed-job URLs without local tracking or new generation. URLs expire; refetch
 to refresh. ResultUrlUnavailable distinguishes withheld media, unknown kind and
 URL lookup failure; GetProjectResultOptions.kind is only a media-kind fallback.
+get_result/get_status are individual reads: wait through the tracked Project
+and socket, honor 429 retry_after, and avoid repeated signed-URL minting.
+Signed Sogni links last 48 hours; preserve their full opaque URL/signed query.
 `projects.list_recent(None)` lists account-owned completed projects, newest first;
 ListRecentProjectsOptions takes since (epoch ms), limit (renders, 1–100), app_source.
 Defaults are 24 hours/50 renders; history is clamped to seven days. Use get_result
@@ -145,6 +157,9 @@ LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
 
 Vision socket/hosted chat supports PNG/JPEG data URIs, URLs, or local paths.
 Durable runs/workflows require HTTP(S) media URLs.
+Direct tool media trusts four exact Sogni R2 production/staging input/output
+hosts plus existing Sogni/S3/CloudFront and S3 acceleration/dualstack hosts.
+Other R2 buckets are refused; downloads omit API credentials and redirects.
 
 ## Workflows
 
@@ -167,9 +182,14 @@ requests return retryable server_restarting/transport_lost errors. Use
 Recovery can resend one successfully written request after a connection drop
 only when both lookups confirm absence and no server evidence ever admitted it.
 It preserves the request ID/payload and rejects old-account or uncertain writes.
+resolve_missing_with_advice returns ProjectResolutionReport with resolutions
+and retry_advice entries (HTTP status and optional whole-second retry_after_seconds).
+Unknown recovery or failed lookups do not prove loss and do not cancel work.
 
 All errors use `sogni_client::Error`. Preserve `ApiError.payload`,
 `ProjectError.payload`, or `ChatError.payload` for structured application logic,
 but do not log credentials or private media URLs.
 ApiError/ChatError.retry_after() returns validated seconds (body before header);
 retry_after_seconds rounds up. details() returns object context; neither retries.
+Job/Project errors preserve optional nonempty vendorFailureCategory strings,
+including unknown future categories. Private vendor diagnostics stay excluded.

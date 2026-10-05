@@ -23,6 +23,7 @@ const SESSION_COOKIE: &str = "fixture_session=active";
 
 #[derive(Clone, Default)]
 struct FixtureState {
+    request_calls: Arc<AtomicUsize>,
     me_calls: Arc<AtomicUsize>,
     me_cookie_calls: Arc<AtomicUsize>,
     nonce_cookie_calls: Arc<AtomicUsize>,
@@ -52,13 +53,15 @@ async fn spawn_fixture() -> (Url, FixtureState, JoinHandle<()>) {
 }
 
 async fn nonce(State(state): State<FixtureState>, headers: HeaderMap) -> Json<Value> {
+    state.request_calls.fetch_add(1, Ordering::SeqCst);
     if has_session_cookie(&headers) {
         state.nonce_cookie_calls.fetch_add(1, Ordering::SeqCst);
     }
     Json(json!({"data": {"nonce": "fixture-nonce"}}))
 }
 
-async fn login() -> (HeaderMap, Json<Value>) {
+async fn login(State(state): State<FixtureState>) -> (HeaderMap, Json<Value>) {
+    state.request_calls.fetch_add(1, Ordering::SeqCst);
     let mut headers = HeaderMap::new();
     headers.insert(
         SET_COOKIE,
@@ -68,6 +71,7 @@ async fn login() -> (HeaderMap, Json<Value>) {
 }
 
 async fn me(State(state): State<FixtureState>, headers: HeaderMap) -> (StatusCode, Json<Value>) {
+    state.request_calls.fetch_add(1, Ordering::SeqCst);
     let call = state.me_calls.fetch_add(1, Ordering::SeqCst);
     let has_cookie = has_session_cookie(&headers);
     if has_cookie {
@@ -126,6 +130,20 @@ async fn failed_cookie_login_hydration_purges_cookie_before_retry() {
     assert!(!client.is_authenticated());
     assert_eq!(fixture.me_cookie_calls.load(Ordering::SeqCst), 1);
 
+    // Prove failed hydration purged the login cookie while this client can
+    // still make anonymous requests, independently of shutdown behavior.
+    let requests_before_retry = fixture.request_calls.load(Ordering::SeqCst);
+    client
+        .account
+        .get_nonce(WALLET_ADDRESS)
+        .await
+        .expect("anonymous nonce after failed cookie hydration");
+    assert_eq!(
+        fixture.request_calls.load(Ordering::SeqCst),
+        requests_before_retry + 1
+    );
+    assert_eq!(fixture.nonce_cookie_calls.load(Ordering::SeqCst), 0);
+
     client
         .account
         .login("TestUser", "correct horse battery staple")
@@ -140,11 +158,17 @@ async fn failed_cookie_login_hydration_purges_cookie_before_retry() {
     );
 
     client.close().await.expect("close client");
-    client
+    let requests_after_close = fixture.request_calls.load(Ordering::SeqCst);
+    let error = client
         .account
         .get_nonce(WALLET_ADDRESS)
         .await
-        .expect("request after close remains cookie-free");
+        .expect_err("closed client cannot make another request");
+    assert!(matches!(error, Error::Closed));
+    assert_eq!(
+        fixture.request_calls.load(Ordering::SeqCst),
+        requests_after_close
+    );
     assert_eq!(fixture.nonce_cookie_calls.load(Ordering::SeqCst), 0);
     server.abort();
 }

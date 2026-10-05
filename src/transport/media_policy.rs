@@ -10,6 +10,13 @@ use crate::{Error, Result};
 
 const MAX_DNS_ADDRESSES: usize = 64;
 
+const SOGNI_R2_MEDIA_HOSTS: [&str; 4] = [
+    "generation-output-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+    "generation-output-staging.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+    "generation-input-production.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+    "generation-input-staging.234df6a88ee221ecac622f8b1a9609e0.r2.cloudflarestorage.com",
+];
+
 pub(super) async fn client(
     url: &Url,
     timeout: Duration,
@@ -68,7 +75,8 @@ fn safe_host(url: &Url) -> Result<&str> {
     let host = url.host_str().ok_or_else(invalid)?;
     let allowed = ["sogni.ai", "sogni.io", "amazonaws.com"]
         .iter()
-        .any(|suffix| host == *suffix || host.ends_with(&format!(".{suffix}")));
+        .any(|suffix| host == *suffix || host.ends_with(&format!(".{suffix}")))
+        || SOGNI_R2_MEDIA_HOSTS.contains(&host);
     if !allowed
         || url.scheme() != "https"
         || url.port_or_known_default() != Some(443)

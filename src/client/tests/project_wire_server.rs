@@ -46,6 +46,7 @@ struct Faults {
     restarts: AtomicUsize,
     disconnects: AtomicUsize,
     acknowledge: bool,
+    admit_socket: bool,
     active: Arc<Mutex<Value>>,
     status: Arc<Mutex<Option<Value>>>,
     signing: Arc<SigningControl>,
@@ -64,7 +65,20 @@ impl Fixture {
         Self::with_faults(0, disconnects, acknowledge).await
     }
 
+    pub async fn without_socket_admission() -> Self {
+        Self::with_admission(0, 0, false, false).await
+    }
+
     async fn with_faults(restarts: usize, disconnects: usize, acknowledge: bool) -> Self {
+        Self::with_admission(restarts, disconnects, acknowledge, true).await
+    }
+
+    async fn with_admission(
+        restarts: usize,
+        disconnects: usize,
+        acknowledge: bool,
+        admit_socket: bool,
+    ) -> Self {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();
         let http = Arc::new(Mutex::new(Vec::new()));
@@ -77,6 +91,7 @@ impl Fixture {
             restarts: AtomicUsize::new(restarts),
             disconnects: AtomicUsize::new(disconnects),
             acknowledge,
+            admit_socket,
             active: active.clone(),
             status: status.clone(),
             signing: signing.clone(),
@@ -140,6 +155,13 @@ async fn serve_connection(
         .is_some_and(|value| value == "websocket")
     {
         assert_eq!(headers.get("api-key").map(String::as_str), Some(KEY));
+        if !faults.admit_socket {
+            // HTTP metadata remains available, but this upgrade never reaches
+            // WebSocket admission. Drain until the timed-out caller disconnects.
+            let mut bytes = [0; 1024];
+            while matches!(stream.read(&mut bytes).await, Ok(length) if length != 0) {}
+            return;
+        }
         serve_socket(stream, sender, faults).await;
         return;
     }
@@ -265,6 +287,42 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
     }
 }
 
+fn consume_fault(counter: &AtomicUsize) -> bool {
+    let mut remaining = counter.load(Ordering::SeqCst);
+    while let Some(next) = remaining.checked_sub(1) {
+        match counter.compare_exchange(remaining, next, Ordering::SeqCst, Ordering::SeqCst) {
+            Ok(_) => return true,
+            Err(actual) => remaining = actual,
+        }
+    }
+    false
+}
+
+#[test]
+fn concurrent_socket_faults_consume_only_the_configured_count_without_underflow() {
+    let counter = AtomicUsize::new(0);
+    assert!(!consume_fault(&counter));
+    counter.store(17, Ordering::SeqCst);
+    let barrier = std::sync::Barrier::new(8);
+    let consumed = std::thread::scope(|scope| {
+        let threads = (0..8)
+            .map(|_| {
+                scope.spawn(|| {
+                    barrier.wait();
+                    (0..4).filter(|_| consume_fault(&counter)).count()
+                })
+            })
+            .collect::<Vec<_>>();
+        threads
+            .into_iter()
+            .map(|thread| thread.join().unwrap())
+            .sum::<usize>()
+    });
+    assert_eq!(consumed, 17);
+    assert_eq!(counter.load(Ordering::SeqCst), 0);
+    assert!(!consume_fault(&counter));
+}
+
 async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, faults: Arc<Faults>) {
     let address = stream.local_addr().unwrap();
     let mut socket = tokio_tungstenite::accept_async(stream).await.unwrap();
@@ -288,13 +346,7 @@ async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, faults: Ar
                     let value =
                         crate::utils::b64_json_decode(envelope["data"].as_str().unwrap()).unwrap();
                     sender.send(value.clone()).await.unwrap();
-                    if faults
-                        .restarts
-                        .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |count| {
-                            count.checked_sub(1)
-                        })
-                        .is_ok()
-                    {
+                    if consume_fault(&faults.restarts) {
                         socket.send(Message::Text(json!({"type":"jobError","data":crate::utils::b64_json_encode(
                             &json!({"jobID":value["jobID"],"error":1001,"error_message":"Server is restarting"})
                         ).unwrap()}).to_string().into())).await.unwrap();
@@ -312,13 +364,7 @@ async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, faults: Ar
                         }
                         return;
                     }
-                    if faults
-                        .disconnects
-                        .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |count| {
-                            count.checked_sub(1)
-                        })
-                        .is_ok()
-                    {
+                    if consume_fault(&faults.disconnects) {
                         if faults.acknowledge {
                             socket
                                 .send(Message::Text(

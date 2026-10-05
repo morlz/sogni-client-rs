@@ -1,12 +1,12 @@
 # sogni-client-by-morlz Rust SDK complete agent reference
 
-Crate version: 5.58.1. Compatible with TypeScript 5.58.1 at upstream commit
-25b5d46100e4ec764e8d063c19ad4eb141664cbf; hosted protocol 1.0.0-alpha.46.
+Crate version: 5.60.7. Compatible with TypeScript 5.60.7 at upstream commit
+1683bf33a8377a968aa3682021560ff729cb1a2e; hosted protocol 1.0.0-alpha.47.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client-by-morlz = "5.58.1"`; disable default features for clients
+Dependency: `sogni-client-by-morlz = "5.60.7"`; disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
@@ -107,6 +107,14 @@ startingImageStrength is source influence in [0,1], mapped to denoising strength
 1-influence. Omission or null means 0.5. Malformed/out-of-range values fail before
 upload; explicit zero strength, guidance, seed and preview count are preserved.
 
+Stable Diffusion ControlNet: set .param("controlNet", json!({"name":"depth",
+"preprocess":true})) and upload the photo as AssetRole::ControlNetImage.
+preprocess=true asks the worker to generate the named control map from an
+ordinary photo (depth, edges, pose, etc.). Omitted/false uses the uploaded map
+unchanged; it never adds a false wire flag. Nonbooleans reject with
+"controlNet.preprocess must be a boolean". InstantID, inpaint, and instrp2p use
+the image as supplied.
+
 SAM3: use `ProjectRequest::image("sam3_image_segment_bf16", "")` with
 `AssetRole::StartingImage` and `Sam3ImagePrompt`. It forces numberOfMedia=1,
 numberOfPreviews=0, and outputFormat=png in both the request and project state.
@@ -199,6 +207,16 @@ URLs/uploads: v1 `upload_url`, `download_url`, `media_upload_url`,
 `media_download_url`; v2 `image_upload_post`, `media_upload_post`, and
 `upload_presigned`.
 
+Upload/download links are opaque signed URLs valid for 48 hours for Sogni
+results. Preserve the whole URL and query; do not assume S3 hostnames or turn
+a bucket/key into a replacement URL. Fetch a new result URL when it expires.
+Direct tool media additionally accepts S3 Transfer Acceleration and dualstack
+links and four exact Sogni R2 generation-input/output production/staging
+buckets. Other R2 accounts, bucket names, r2.dev, and suffix tricks are refused.
+HTTPS, credentials/port/fragment checks, bounded bytes/format validation,
+credential-free requests, and redirect refusal remain enforced. Strict media
+validates and pins public DNS answers before connecting.
+
 projects.assets() returns ReusableUploads with upload(&MediaSource), list(),
 remove(id), and bind(id, &SavedUploadBinding). upload returns SavedUpload:
 id, name, bytes, content_type, state, created_at, expires_at. Binding fields:
@@ -223,6 +241,15 @@ connection only when both owner status and the live registry confirm absence
 and no server evidence ever admitted it. Uncertain writes and old accounts
 never qualify; every resend preserves the original ID and payload.
 
+projects.resolve_missing_with_advice(&ids, None).await returns
+ProjectResolutionReport { resolutions, retry_advice }. The existing
+resolve_missing result shape is unchanged, and both share one lookup pass.
+Optional ResolveMissingOptions uses attempts and retry_delay (std::time::Duration).
+ProjectRecoveryAdvice carries status: u16 and retry_after_seconds: Option<u64>,
+exposing only HTTP status and validated, rounded-up server wait seconds.
+Transport failures, 429/5xx responses, and an unavailable live registry leave
+recovery inconclusive; they do not count as proof of loss or cancel work.
+
 ## Durable project results and queue explanations
 
 `projects.get_result(id: &str, options: Option<GetProjectResultOptions>)`
@@ -233,6 +260,11 @@ model_id: Option<String>, waiting_reason: Option<WaitingReason>, jobs.
 Each ProjectResultJob has id, status (String), optional reason, kind, url,
 url_unavailable and seed. Unfinished and failed jobs remain in the projection;
 URLs are requested only for completed available media.
+
+get_result and get_status are individual reads, not waiting loops. Tracked
+projects settle through wait_for_completion and socket events. Repeated REST
+reads consume request limits; get_result can also mint one signed URL per
+completed job. On a 429 honor ApiError.retry_after before trying again.
 
 ResultMediaKind is Image/Video/Audio/Model. Endpoint selection uses model metadata
 and stored result evidence; unknown media is never assumed to be image.
@@ -292,6 +324,30 @@ instruct {maxLength,required}, referenceText {maxLength}, acceptsReferenceAudio,
 requiresReferenceAudio. Speech tiers can omit sampler/scheduler/duration/BPM.
 No sampler/scheduler choices means corresponding null wire fields. Discover
 individual model capabilities at runtime.
+
+Music model default for local generate_music: minimax_music3. Its duration
+range is 10–300 seconds, default 60, and duration is a ceiling: tracks can end
+earlier at a musical resolution. Steps 10–100 (default 30), guidance 1–5
+(default 1.7), promptStrength 0–10 (default 1.7). Use tempo/key in prompt text and
+plain lyric tags such as [Intro], [Verse], [Chorus], [Bridge], [Outro] on their
+own lines. Music 3 has no bpm, keyscale, timesignature, language, shift,
+composerMode or creativity parameters.
+
+Local generate_music selects only canonical music models: Music 3, ACE-Step XL
+Turbo, XL SFT, legacy Turbo, legacy SFT in that order. Worker counts do not
+override preference and speech models never qualify. A model-less duration
+over 300 seconds removes Music 3 from candidates, preferring ACE-Step XL Turbo;
+an explicitly named Music 3 request stays explicit for service validation.
+The local tool omits bpm/keyscale/timesignature/language/composerMode/creativity
+for Music 3 and retains lyrics, duration, outputFormat, seed, promptStrength.
+Explicit ACE-Step retains its controls and supports 10–600 seconds (default 30).
+
+workflow_text_to_music defaults to Music 3 with its settings above. Optional
+--bpm/--keyscale/--timesignature/--language become Music 3 prompt words, and
+empty lyrics become an instrumental section skeleton. With no --model,
+duration >300 or --shift/--no-composer-mode/--creativity selects ACE-Step XL
+Turbo; an explicit Music 3 request rejects those ACE-only settings or duration
+over 300. --dry-run validates and shows the request without credentials or work.
 
 ## Video frame behavior
 
@@ -404,7 +460,7 @@ read through `HostedTools` rather than copying schemas.
 Current hosted definitions include generate_speech, upscale_video, image_to_3d,
 remove_background and segment_image, plus
 FastH3 audio-guide/two-stage and GPT Image 2.5 selectors. These definitions
-come from protocol alpha.46. Hosted sound_to_video accepts ordered loras and
+come from protocol alpha.47. Hosted sound_to_video accepts ordered loras and
 loraStrengths arrays (1–8 entries) for audio-guide generation. The direct local
 sound_to_video tool handler does not forward those LoRA fields; use an explicit
 ProjectRequest or hosted execution when they are needed.
@@ -424,6 +480,15 @@ exposes model_id, model, selected_by. VideoDefaults contains width/height/fps.
 Durable chat: `create_run`, `get_run`, `cancel_run`, `confirm_run_cost`, and
 `stream_run_events`. `Idempotency-Key` and workload attribution are propagated.
 SSE resume uses `Last-Event-ID`.
+
+Socket generation errors preserve optional nonempty vendorFailureCategory
+strings in normalized Job/Project errors and public error events. This coarse
+service category can be content_policy/input_validation/timeout/result_storage/
+cancelled/vendor_failed/asset_resolution/vendor_transient or a future string.
+Unknown categories require a generic failure message. Existing numeric codes,
+originalCode, and subscription feature/requiredPlans/limitation remain intact.
+Private vendorFailureReason/provider response bodies are not exposed in these
+public socket errors.
 
 For cost approval, pass toolCallId, decision="confirm", and the exact
 acceptedCostPreview displayed from run.waiting.details to confirm_run_cost.

@@ -53,6 +53,63 @@ async fn authenticate(socket: &mut WebSocketStream<tokio::net::TcpStream>) {
 }
 
 #[tokio::test]
+async fn pre_authentication_disconnects_grow_backoff_until_server_authenticates() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let client = client(listener.local_addr().unwrap(), Duration::from_secs(10));
+    let (finish, finished) = oneshot::channel();
+    let server = tokio::spawn(async move {
+        let mut times = Vec::new();
+        for cycle in 0..4 {
+            let accepted = listener.accept().await.unwrap().0;
+            times.push(tokio::time::Instant::now());
+            let mut socket = accept_async(accepted).await.unwrap();
+            if cycle == 3 {
+                let _ = finished.await;
+                return times;
+            }
+            if cycle == 2 {
+                authenticate(&mut socket).await;
+            }
+            socket
+                .close(Some(CloseFrame {
+                    code: CloseCode::Away,
+                    reason: "restart".into(),
+                }))
+                .await
+                .unwrap();
+        }
+        unreachable!()
+    });
+    let mut events = client.subscribe();
+    client.start().await.unwrap();
+    // Do not release the last accepted socket until it is observable. This
+    // exercises real upgrades, server-authentication frames and reconnects.
+    tokio::time::timeout(Duration::from_secs(15), async {
+        let mut connections = 0;
+        while connections < 4 {
+            if events.recv().await.unwrap().name == "connected" {
+                connections += 1;
+            }
+        }
+    })
+    .await
+    .unwrap();
+    let _ = finish.send(());
+    let times = server.await.unwrap();
+    client.close().await.unwrap();
+    let second_delay = times[2] - times[1];
+    assert!(
+        second_delay >= Duration::from_millis(1500),
+        "second pre-authentication disconnect retried too soon: {second_delay:?}"
+    );
+    let authenticated_delay = times[3] - times[2];
+    assert!(
+        authenticated_delay < Duration::from_secs(3),
+        "authenticated peer did not reset the backoff: {authenticated_delay:?}"
+    );
+}
+
+#[tokio::test]
 async fn send_waits_through_a_restart_and_the_new_authentication_handshake() {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let client = client(listener.local_addr().unwrap(), Duration::from_secs(6));

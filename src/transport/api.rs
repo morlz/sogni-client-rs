@@ -246,7 +246,7 @@ impl ApiClient {
         if self.closed.swap(true, Ordering::AcqRel) {
             return Ok(());
         }
-        self.auth.clear();
+        self.auth.close();
         if let Some(socket) = &self.socket {
             socket.close().await?;
         }
@@ -255,10 +255,10 @@ impl ApiClient {
 
     pub fn abort(&self) {
         self.closed.store(true, Ordering::Release);
+        self.auth.close();
         if let Some(socket) = &self.socket {
             socket.abort();
         }
-        self.auth.clear();
     }
 }
 

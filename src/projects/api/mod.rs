@@ -74,7 +74,7 @@ impl ProjectsApi {
             recovered_completed_ids: RwLock::new(HashSet::new()),
             sync_lock: Mutex::new(()),
         });
-        listen_for_project_events(&inner);
+        let _listener = listen_for_project_events(&inner);
         Self { inner }
     }
 

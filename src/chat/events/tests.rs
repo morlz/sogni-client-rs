@@ -173,6 +173,57 @@ async fn account_session_end_terminates_active_and_queued_chats_without_retry_ad
 }
 
 #[tokio::test]
+async fn client_closure_ends_active_and_queued_chats_without_account_change_or_retry() {
+    for abort in [false, true] {
+        let (api, auth) = session_chat("http://127.0.0.1:9/".parse().unwrap());
+        let owner = api.inner.client.rest.request_session();
+        let (mut active, mut stream) = active_chat("SENT");
+        let (mut queued, queued_stream) = active_chat("QUEUED");
+        active.session = auth.version().session;
+        queued.session = active.session;
+        api.inner
+            .recovery
+            .lock()
+            .submitting("QUEUED".into(), queued.session);
+        api.inner
+            .active
+            .write()
+            .extend([("SENT".into(), active), ("QUEUED".into(), queued)]);
+        if abort {
+            api.inner.client.abort();
+        } else {
+            api.inner.client.close().await.unwrap();
+        }
+        for pending in [&stream, &queued_stream] {
+            let error = tokio::time::timeout(Duration::from_secs(5), pending.wait(None))
+                .await
+                .unwrap()
+                .unwrap_err();
+            let Error::Chat(chat) = &error else {
+                panic!("a retained chat needs a terminal closed-client result");
+            };
+            assert_eq!(chat.error_type.as_deref(), Some("client_closed"));
+            assert!(chat.message.contains("was closed") && !chat.message.contains("account"));
+            assert!(!crate::is_retryable_chat_error(&error));
+        }
+        assert!(stream.next().await.unwrap().is_err());
+        assert!(stream.next().await.is_none());
+        assert!(api.inner.active.read().is_empty());
+        assert!(matches!(
+            session_error(&owner, Some("QUEUED")),
+            Error::Closed
+        ));
+        assert!(matches!(
+            api.create_completion(&json!({
+                "model":"fixture", "messages":[{"role":"user","content":"hello"}]
+            }))
+            .await,
+            Err(Error::Closed)
+        ));
+    }
+}
+
+#[tokio::test]
 async fn buffered_old_chat_payloads_cannot_complete_a_current_account_job() {
     let (api, auth) = session_chat("http://127.0.0.1:9/".parse().unwrap());
     let previous = auth.version().session;

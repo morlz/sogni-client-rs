@@ -86,6 +86,9 @@ async function requestFixtures() {
     ['sound_to_video', 'executeSoundToVideo', { prompt:'sing', videoModel:'ltx25-ia2v', reference_audio_url:wav, reference_image_url:png, duration:6, width:768, height:512, generateAudio:false }],
     ['video_to_video', 'executeVideoToVideo', { prompt:'redraw', videoModel:'ltx25-v2v', control_mode:'canny', reference_video_url:mp4, outputFormat:'webm', returnLastFrame:false, detailer_strength:0.4 }],
     ['generate_music', 'executeMusicGeneration', { prompt:'music', model:'ace_step_1.5_xl_turbo', duration:20, output_format:'mp3', timesignature:4, composer_mode:false, prompt_strength:0, creativity:0.7 }],
+    ['generate_music', 'executeMusicGeneration', { prompt:'Warm lo-fi at 84 BPM in A minor', duration:300, bpm:84, keyscale:'A minor', timesignature:4, language:'en', composer_mode:false, creativity:0.7, prompt_strength:0, lyrics:'[Chorus]\nA song', output_format:'wav', seed:0 }],
+    ['generate_music', 'executeMusicGeneration', { prompt:'long track', duration:420 }],
+    ['generate_music', 'executeMusicGeneration', { prompt:'explicit Music 3', model:'minimax_music3', duration:420, bpm:84, language:'en' }],
   ];
   async function normalized(value) {
     if (value instanceof Blob) return true;

@@ -45,13 +45,13 @@ pub use projects::{
     JobProvenance, JobSnapshot, JobStatus, JobWaitingReason, ListRecentProjectsOptions,
     MediaSource, MinimaxH3Keyframe, ModelOptions, PROJECT_LOST_ORIGINAL_CODE, PersonalLora,
     PersonalLoraLibrary, PersonalLoraLimits, PersonalLoras, Pixal3dGenerationOptions,
-    Pixal3dTemplateVariant, PresignedPost, Project, ProjectQueueChanged, ProjectRequest,
-    ProjectResolution, ProjectResult, ProjectResultJob, ProjectSnapshot, ProjectStatus,
-    ProjectSubmissionError, ProjectsApi, RecentProject, RecentProjectJob, ResolveMissingOptions,
-    ResultMediaKind, ResultUrlUnavailable, ReusableUploads, Sam3ImagePrompt, Sam3PointLabel,
-    Sam3PromptBox, Sam3PromptPoint, Sam3Selection, SavedUpload, SavedUploadBinding,
-    SubmissionPhase, WaitingReason, WorldGenerationReceiptRequest, is_project_lost_error,
-    is_project_lost_payload,
+    Pixal3dTemplateVariant, PresignedPost, Project, ProjectQueueChanged, ProjectRecoveryAdvice,
+    ProjectRequest, ProjectResolution, ProjectResolutionReport, ProjectResult, ProjectResultJob,
+    ProjectSnapshot, ProjectStatus, ProjectSubmissionError, ProjectsApi, RecentProject,
+    RecentProjectJob, ResolveMissingOptions, ResultMediaKind, ResultUrlUnavailable,
+    ReusableUploads, Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint,
+    Sam3Selection, SavedUpload, SavedUploadBinding, SubmissionPhase, WaitingReason,
+    WorldGenerationReceiptRequest, is_project_lost_error, is_project_lost_payload,
 };
 pub use replay::{ReplayApi, ReplayGetResult, ReplayWriteResult};
 pub use stats::StatsApi;

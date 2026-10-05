@@ -33,6 +33,7 @@ pub(super) fn listen_for_chat_events(inner: &Arc<ChatInner>) {
                     let Some(inner) = weak.upgrade() else { return; };
                     end_previous_sessions(&inner);
                     session = inner.client.rest.request_session();
+                    if session.is_closed() { return; }
                     continue;
                 },
                 event = receiver.recv() => event,
@@ -83,6 +84,7 @@ fn handle_chat_event(inner: &Arc<ChatInner>, scoped: ScopedEvent) {
 
 fn end_previous_sessions(inner: &ChatInner) {
     let current = inner.client.auth_session();
+    let closed = inner.client.rest.request_session().is_closed();
     let ids = inner
         .active
         .read()
@@ -94,14 +96,25 @@ fn end_previous_sessions(inner: &ChatInner) {
         handle_error(
             inner,
             &json!({
-                "jobID": id, "error": "session_ended",
-                "error_message": "The account session ended before this chat request completed.",
+                "jobID": id,
+                "error": if closed { "client_closed" } else { "session_ended" },
+                "error_message": if closed {
+                    "This Sogni client was closed before the chat request finished."
+                } else {
+                    "The account session ended before this chat request completed."
+                },
             }),
         );
     }
 }
 
-pub(super) fn session_error(job_id: Option<&str>) -> crate::Error {
+pub(super) fn session_error(
+    owner: &crate::auth::RequestSession,
+    job_id: Option<&str>,
+) -> crate::Error {
+    if owner.is_closed() {
+        return crate::Error::Closed;
+    }
     ChatError::from_payload(
         json!({
             "error": "session_ended",

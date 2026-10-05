@@ -151,19 +151,23 @@ fn select(
 
 fn music(args: &Value, options: &Value, models: &[Value]) -> Result<ToolRequestPlan> {
     let requested = resolve_hosted_tool_model_selector("generate_music", args);
-    // Preserve source ordering: XL music first; canonical raw requests win.
+    // Music 3 is the default; only ACE-Step can satisfy a model-less request
+    // above its 300-second ceiling. Explicit Music 3 requests stay explicit.
+    let long_track = requested.is_none()
+        && args
+            .get("duration")
+            .and_then(Value::as_f64)
+            .is_some_and(|duration| duration > 300.0);
     let preferred: Vec<_> = [
+        "minimaxMusic3",
         "aceStepXlTurbo",
         "aceStepXlSft",
         "aceStepTurbo",
         "aceStepSft",
-        "minimaxMusic3",
-        "qwen3TtsCustomVoice",
-        "qwen3TtsVoiceClone",
-        "qwen3TtsVoiceDesign",
     ]
     .iter()
     .filter_map(|key| routing_data()["preferred"]["audio"][key].as_str())
+    .filter(|id| !long_track || *id != "minimax_music3")
     .collect();
     let model = select(
         models,
@@ -171,22 +175,34 @@ fn music(args: &Value, options: &Value, models: &[Value]) -> Result<ToolRequestP
         requested.as_deref(),
         None,
         &preferred,
-        None,
+        Some(if long_track {
+            ace_music_model
+        } else {
+            music_model
+        }),
     )?;
+    let ace_controls = model != "minimax_music3";
     let mut plan = ToolRequestPlan::new("audio", &model, args, options)?;
     plan.copy(
         args,
         &[
             ("duration", "duration"),
-            ("bpm", "bpm"),
-            ("keyscale", "keyscale"),
             ("lyrics", "lyrics"),
-            ("language", "language"),
             ("output_format", "outputFormat"),
             ("seed", "seed"),
         ],
     );
-    if let Some(signature) = args.get("timesignature") {
+    if ace_controls {
+        plan.copy(
+            args,
+            &[
+                ("bpm", "bpm"),
+                ("keyscale", "keyscale"),
+                ("language", "language"),
+            ],
+        );
+    }
+    if let Some(signature) = args.get("timesignature").filter(|_| ace_controls) {
         let normalized = signature
             .as_str()
             .filter(|s| !s.is_empty())
@@ -196,18 +212,42 @@ fn music(args: &Value, options: &Value, models: &[Value]) -> Result<ToolRequestP
             plan.params.insert("timesignature".into(), json!(value));
         }
     }
-    if let Some(value) = args.get("composer_mode").and_then(Value::as_bool) {
+    if let Some(value) = args
+        .get("composer_mode")
+        .filter(|_| ace_controls)
+        .and_then(Value::as_bool)
+    {
         plan.params.insert("composerMode".into(), json!(value));
     }
     for (source, target) in [
         ("prompt_strength", "promptStrength"),
         ("creativity", "creativity"),
     ] {
+        if source == "creativity" && !ace_controls {
+            continue;
+        }
         if let Some(value) = args.get(source).and_then(Value::as_f64) {
             plan.params.insert(target.into(), json!(value));
         }
     }
     Ok(plan)
+}
+
+fn music_model(id: &str) -> bool {
+    [
+        "minimaxMusic3",
+        "aceStepXlTurbo",
+        "aceStepXlSft",
+        "aceStepTurbo",
+        "aceStepSft",
+    ]
+    .iter()
+    .filter_map(|key| routing_data()["preferred"]["audio"][key].as_str())
+    .any(|music| music == id)
+}
+
+fn ace_music_model(id: &str) -> bool {
+    id != "minimax_music3" && music_model(id)
 }
 
 fn string<'a>(args: &'a Value, key: &str) -> Option<&'a str> {

@@ -2,8 +2,17 @@ use super::*;
 use clap::Parser;
 
 fn parse(flags: &[&str]) -> Args {
-    Args::try_parse_from(std::iter::once("x").chain(flags.iter().copied()))
-        .expect("valid CLI syntax")
+    let default_model = if flags.contains(&"--model") {
+        &[][..]
+    } else {
+        &["--model", "ace_step_1.5_xl_turbo"][..]
+    };
+    Args::try_parse_from(
+        std::iter::once("x")
+            .chain(default_model.iter().copied())
+            .chain(flags.iter().copied()),
+    )
+    .expect("valid CLI syntax")
 }
 
 fn request(flags: &[&str]) -> Result<sogni_client::ProjectRequest> {
@@ -213,4 +222,117 @@ fn sampler_and_scheduler_choices_are_model_specific() {
         ]),
         "Scheduler must be one of: simple for ACE-Step 1.5 XL SFT"
     );
+}
+
+#[test]
+fn music3_ranges_and_default_settings_are_distinct_from_ace() {
+    let spec = model_spec("minimax_music3").unwrap();
+    assert!(!spec.ace_controls);
+    assert_eq!(spec.step_range, (10, 100));
+    assert_eq!(spec.steps, 30);
+    assert_eq!(spec.duration_range, (10.0, 300.0));
+    assert_eq!(spec.duration_default, 60.0);
+    assert_eq!(spec.guidance, Some(1.7));
+    assert_eq!(spec.guidance_range, (1.0, 5.0));
+    assert_eq!(spec.prompt_strength_default, 1.7);
+    for (duration, steps, guidance) in [("10", "10", "1"), ("300", "100", "5")] {
+        assert!(
+            request(&[
+                "--model",
+                "minimax_music3",
+                "--duration",
+                duration,
+                "--steps",
+                steps,
+                "--guidance",
+                guidance
+            ])
+            .is_ok()
+        );
+    }
+    for (key, value, expected) in [
+        (
+            "--duration",
+            "300.01",
+            "Duration must be between 10 and 300 seconds for MiniMax Music 3",
+        ),
+        (
+            "--steps",
+            "9",
+            "Steps must be between 10 and 100 for MiniMax Music 3",
+        ),
+        (
+            "--steps",
+            "101",
+            "Steps must be between 10 and 100 for MiniMax Music 3",
+        ),
+        (
+            "--guidance",
+            "0.99",
+            "Guidance must be between 1 and 5 for MiniMax Music 3",
+        ),
+        (
+            "--guidance",
+            "5.01",
+            "Guidance must be between 1 and 5 for MiniMax Music 3",
+        ),
+    ] {
+        assert_eq!(error(&["--model", "minimax_music3", key, value]), expected);
+    }
+}
+
+#[test]
+fn music3_prompt_directions_accept_values_outside_ace_control_constraints() {
+    for (flag, value, direction) in [
+        ("--bpm", "20", "Tempo: 20 BPM."),
+        ("--keyscale", "D dorian", "Key: D dorian."),
+        ("--timesig", "7", "Time signature: 7/4."),
+        ("--language", "elvish", "Lyrics language: elvish."),
+    ] {
+        let request = request(&["--model", "minimax_music3", flag, value, "--dry-run"])
+            .expect("Music 3 direction is ordinary prompt text");
+        let params = request.params();
+        assert_eq!(params["modelId"], "minimax_music3");
+        assert!(
+            params["positivePrompt"]
+                .as_str()
+                .unwrap()
+                .ends_with(direction),
+            "{flag}"
+        );
+        for key in [
+            "bpm",
+            "keyscale",
+            "timesignature",
+            "language",
+            "shift",
+            "composerMode",
+            "creativity",
+        ] {
+            assert!(
+                params.get(key).is_none(),
+                "{flag} must not create ACE field {key}"
+            );
+        }
+    }
+}
+
+#[test]
+fn explicit_ace_still_rejects_out_of_contract_controls() {
+    for (flag, value, expected) in [
+        ("--bpm", "20", "BPM must be between 30 and 300"),
+        ("--keyscale", "D dorian", "Key/scale must be one of:"),
+        (
+            "--timesig",
+            "7",
+            "Time signature must be one of: 2, 3, 4, 6",
+        ),
+        ("--language", "elvish", "Language must be one of:"),
+    ] {
+        assert!(
+            error(&["--model", "ace_step_1.5_xl_turbo", flag, value, "--dry-run"])
+                .starts_with(expected),
+            "{flag}"
+        );
+    }
 }

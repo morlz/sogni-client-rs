@@ -100,3 +100,44 @@ async fn terminal_recovery_preserves_reasons_and_settles_unfinished_children_and
     }
     client.close().await.unwrap();
 }
+
+#[tokio::test]
+async fn compact_recovered_jobs_inherit_render_steps_without_overwriting_omitted_params() {
+    let client = SogniClient::builder()
+        .disable_socket(true)
+        .build()
+        .await
+        .unwrap();
+    let params = json!({
+        "type":"image", "steps":20, "numberOfMedia":2, "numberOfPreviews":3,
+        "positivePrompt":"fixture prompt",
+    });
+    let project = Project::new(
+        "PROJECT".into(),
+        params.clone(),
+        false,
+        Arc::downgrade(&client.projects.inner),
+    );
+    replay_recovered(
+        &project,
+        &json!({
+            "status":"completed", "finished":true, "statusOnly":true,
+            "completedWorkerJobs":[{
+                "imgID":"IMAGE", "status":"jobCompleted", "performedSteps":20,
+                "resultUrl":"https://media.sogni.ai/fixture.png",
+            }],
+        }),
+        true,
+    );
+    assert_eq!(project.snapshot().params, params);
+    assert_eq!(project.jobs()[0].snapshot().step_count, 20.0);
+    assert_eq!(project.jobs()[0].status(), JobStatus::Completed);
+    replay_recovered(
+        &project,
+        &json!({"status":"queued","finished":false,"workerJobs":[]}),
+        false,
+    );
+    assert_eq!(project.status(), ProjectStatus::Completed);
+    assert_eq!(project.snapshot().params, params);
+    client.close().await.unwrap();
+}

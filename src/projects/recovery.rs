@@ -59,6 +59,31 @@ impl ProjectResolution {
     }
 }
 
+/// Coarse server advice for an inconclusive project-recovery lookup.
+///
+/// Inspecting this value never resubmits a project or automatically retries a
+/// request. The server remains authoritative about whether retrying is allowed.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectRecoveryAdvice {
+    /// HTTP status of the lookup that prevented a reliable verdict.
+    pub status: u16,
+    /// Server retry advice rounded up to whole seconds, when available.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retry_after_seconds: Option<u64>,
+}
+
+/// Recovery resolutions with optional coarse advice for unknown outcomes.
+///
+/// Keys retain the spelling supplied to [`ProjectsApi::resolve_missing_with_advice`].
+/// Raw service diagnostics and request headers are not included.
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectResolutionReport {
+    pub resolutions: BTreeMap<String, ProjectResolution>,
+    pub retry_advice: BTreeMap<String, ProjectRecoveryAdvice>,
+}
+
 pub(super) fn project_lost_payload() -> Value {
     json!({
         "code": 0,

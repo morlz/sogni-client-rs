@@ -1,6 +1,6 @@
 {
-  "version": "5.58.1",
-  "commit": "25b5d46100e4ec764e8d063c19ad4eb141664cbf",
+  "version": "5.60.7",
+  "commit": "1683bf33a8377a968aa3682021560ff729cb1a2e",
   "selectors": [
     {
       "tool": "generate_image",
@@ -3521,6 +3521,11 @@
       "workerCount": 1
     },
     {
+      "id": "minimax_music3",
+      "media": "audio",
+      "workerCount": 1
+    },
+    {
       "id": "ace_step_1.5_xl_turbo",
       "media": "audio",
       "workerCount": 1
@@ -3537,11 +3542,6 @@
     },
     {
       "id": "ace_step_1.5_sft",
-      "media": "audio",
-      "workerCount": 1
-    },
-    {
-      "id": "minimax_music3",
       "media": "audio",
       "workerCount": 1
     },
@@ -4187,6 +4187,14 @@
       }
     },
     {
+      "id": "minimax_music3",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
       "id": "ace_step_1.5_xl_turbo",
       "expected": {
         "width": 848,
@@ -4212,14 +4220,6 @@
     },
     {
       "id": "ace_step_1.5_sft",
-      "expected": {
-        "width": 848,
-        "height": 480,
-        "fps": 16
-      }
-    },
-    {
-      "id": "minimax_music3",
       "expected": {
         "width": 848,
         "height": 480,
@@ -4517,6 +4517,10 @@
       "expected": false
     },
     {
+      "id": "minimax_music3",
+      "expected": false
+    },
+    {
       "id": "ace_step_1.5_xl_turbo",
       "expected": false
     },
@@ -4530,10 +4534,6 @@
     },
     {
       "id": "ace_step_1.5_sft",
-      "expected": false
-    },
-    {
-      "id": "minimax_music3",
       "expected": false
     },
     {
@@ -4572,7 +4572,7 @@
     },
     {
       "name": "generate_music",
-      "sha256": "7f326053f68a47c2f2d4fa05f474f9aa5b54329e1556df715d2a5d08afdae90e"
+      "sha256": "1a2a78de90f40c0e58d8c8fd486c3d3e96007f20decb08eacb927060750b2f8a"
     },
     {
       "name": "generate_speech",

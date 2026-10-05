@@ -52,7 +52,7 @@ impl ChatApi {
             .await
             .map_err(|error| {
                 if owner.check().is_err() {
-                    super::events::session_error(Some(&job_id))
+                    super::events::session_error(&owner, Some(&job_id))
                 } else {
                     error
                 }
@@ -88,7 +88,7 @@ impl ChatApi {
             .await
             .map_err(|error| {
                 if owner.check().is_err() {
-                    super::events::session_error(Some(&job_id))
+                    super::events::session_error(&owner, Some(&job_id))
                 } else {
                     error
                 }
@@ -168,7 +168,7 @@ impl ChatApi {
             self.inner.active.write().remove(&job_id);
             self.inner.recovery.lock().forget(&job_id);
             if owner.check().is_err() {
-                return Err(super::events::session_error(Some(&job_id)));
+                return Err(super::events::session_error(&owner, Some(&job_id)));
             }
             if let Some(error) = &state.read().error {
                 return Err(error.clone().into());

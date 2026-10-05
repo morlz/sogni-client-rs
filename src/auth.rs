@@ -1,7 +1,10 @@
 use std::{
     fmt,
     future::Future,
-    sync::Arc,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -75,6 +78,7 @@ struct AuthState {
 pub(crate) struct RequestSession {
     updates: watch::Receiver<u64>,
     id: u64,
+    closed: Arc<AtomicBool>,
 }
 
 struct RequestOperation {
@@ -95,13 +99,19 @@ impl RequestSession {
     }
 
     pub(crate) fn check(&self) -> Result<()> {
-        if *self.updates.borrow() != self.id {
+        if self.is_closed() {
+            Err(Error::Closed)
+        } else if *self.updates.borrow() != self.id {
             Err(Error::InvalidInput(
                 "account session changed; submit this request again".into(),
             ))
         } else {
             Ok(())
         }
+    }
+
+    pub(crate) fn is_closed(&self) -> bool {
+        self.closed.load(Ordering::Acquire)
     }
 
     pub(crate) async fn changed(&mut self) {
@@ -141,6 +151,7 @@ impl RequestSession {
                     biased;
                     () = session.changed() => {
                         if session.updates.has_changed().is_err() { return Err(Error::Closed); }
+                        if self.is_closed() { return Err(Error::Closed); }
                         let current = *self.updates.borrow();
                         if operation.session == self.id && *operation.rejected_at.read() == Some(current) {
                             // Its own 401 body is still owned by the signed-out epoch.
@@ -156,7 +167,7 @@ impl RequestSession {
                             && *operation.rejected_at.read() == Some(*self.updates.borrow());
                         let unauthorized = matches!(&result, Err(Error::Api(error)) if error.status == 401)
                             || matches!(&result, Err(Error::Chat(error)) if error.status == Some(401));
-                        if !owned_rejection || !unauthorized { self.check()?; }
+                        if self.is_closed() || !owned_rejection || !unauthorized { self.check()?; }
                         return result;
                     }
                 }
@@ -187,6 +198,7 @@ struct AuthInner {
     refresh_lock: RwLock<Arc<Mutex<()>>>,
     updates: watch::Sender<bool>,
     sessions: watch::Sender<u64>,
+    closed: Arc<AtomicBool>,
 }
 
 impl fmt::Debug for AuthManager {
@@ -217,6 +229,7 @@ impl AuthManager {
                 refresh_lock: RwLock::new(Arc::new(Mutex::new(()))),
                 updates,
                 sessions,
+                closed: Arc::new(AtomicBool::new(false)),
             }),
         }
     }
@@ -236,15 +249,27 @@ impl AuthManager {
     pub(crate) fn request_session(&self) -> RequestSession {
         let updates = self.subscribe_session();
         let id = *updates.borrow();
-        RequestSession { updates, id }
+        RequestSession {
+            updates,
+            id,
+            closed: self.inner.closed.clone(),
+        }
     }
 
     pub(crate) fn version(&self) -> AuthVersion {
         self.inner.state.read().version
     }
 
-    fn replace(&self, credentials: Credentials, authenticated: bool, identity: Option<String>) {
+    fn replace(
+        &self,
+        credentials: Credentials,
+        authenticated: bool,
+        identity: Option<String>,
+    ) -> Result<()> {
         let mut state = self.inner.state.write();
+        if self.inner.closed.load(Ordering::Acquire) {
+            return Err(Error::Closed);
+        }
         let unchanged = match (&state.credentials, &credentials) {
             (Credentials::ApiKey(old), Credentials::ApiKey(new)) => old == new,
             (Credentials::Cookies, Credentials::Cookies) => {
@@ -270,9 +295,13 @@ impl AuthManager {
         }
         state.version.revision = state.version.revision.wrapping_add(1);
         self.inner.updates.send_replace(authenticated);
+        Ok(())
     }
 
     pub(crate) fn is_authenticated(&self) -> bool {
+        if self.inner.closed.load(Ordering::Acquire) {
+            return false;
+        }
         let now = unix_time();
         match &self.inner.state.read().credentials {
             Credentials::ApiKey(key) => !key.trim().is_empty(),
@@ -301,8 +330,7 @@ impl AuthManager {
             Credentials::ApiKey(Zeroizing::new(api_key.to_owned())),
             true,
             None,
-        );
-        Ok(())
+        )
     }
 
     pub(crate) fn authenticate_cookies(&self) -> Result<()> {
@@ -311,8 +339,7 @@ impl AuthManager {
                 "cookie authentication was not configured".into(),
             ));
         }
-        self.replace(Credentials::Cookies, true, None);
-        Ok(())
+        self.replace(Credentials::Cookies, true, None)
     }
 
     pub(crate) fn set_cookie_identity(&self, identity: &str) {
@@ -321,6 +348,9 @@ impl AuthManager {
         }
         let identity = identity.to_lowercase();
         let mut state = self.inner.state.write();
+        if self.inner.closed.load(Ordering::Acquire) {
+            return;
+        }
         if state.identity.as_ref().is_some_and(|old| old != &identity) {
             state.version.session = state.version.session.wrapping_add(1);
             state.version.revision = state.version.revision.wrapping_add(1);
@@ -359,7 +389,7 @@ impl AuthManager {
             },
             refresh_exp > unix_time(),
             identity,
-        );
+        )?;
         if token_exp <= unix_time() {
             self.renew_token().await?;
         }
@@ -367,6 +397,7 @@ impl AuthManager {
     }
 
     pub(crate) async fn headers(&self) -> Result<(AuthVersion, HeaderMap)> {
+        self.request_session().check()?;
         let (session, needs_refresh) = {
             let state = self.inner.state.read();
             let needs_refresh = matches!(&state.credentials,
@@ -377,6 +408,9 @@ impl AuthManager {
             self.renew_token().await?;
         }
         let state = self.inner.state.read();
+        if self.inner.closed.load(Ordering::Acquire) {
+            return Err(Error::Closed);
+        }
         // A request waiting for another refresh still belongs to its original
         // account. Ordinary token revisions within that session remain valid.
         if state.version.session != session {
@@ -436,11 +470,28 @@ impl AuthManager {
     }
 
     pub(crate) fn clear(&self) {
-        self.replace(Credentials::Empty, false, None);
+        let _ = self.replace(Credentials::Empty, false, None);
+    }
+
+    pub(crate) fn close(&self) {
+        let mut state = self.inner.state.write();
+        if self.inner.closed.swap(true, Ordering::AcqRel) {
+            return;
+        }
+        self.inner.cookies.clear();
+        state.credentials = Credentials::Empty;
+        state.identity = None;
+        state.version.session = state.version.session.wrapping_add(1);
+        state.version.revision = state.version.revision.wrapping_add(1);
+        self.inner.sessions.send_replace(state.version.session);
+        self.inner.updates.send_replace(false);
     }
 
     pub(crate) fn clear_if_version(&self, expected: AuthVersion) -> Option<RequestSession> {
         let mut state = self.inner.state.write();
+        if self.inner.closed.load(Ordering::Acquire) {
+            return None;
+        }
         if state.version != expected {
             return None;
         }
@@ -523,6 +574,9 @@ impl AuthManager {
         let token_exp = jwt_exp(token)?;
         let refresh_exp = jwt_exp(next_refresh)?;
         let mut state = self.inner.state.write();
+        if self.inner.closed.load(Ordering::Acquire) {
+            return Err(Error::Closed);
+        }
         if state.version != version {
             return Err(Error::InvalidInput(
                 "account session changed during token refresh".into(),

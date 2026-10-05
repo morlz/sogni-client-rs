@@ -17,6 +17,7 @@ pub(super) struct ProjectState {
     pub(super) media_type: String,
     pub(super) status: ProjectStatus,
     pub(super) error: Option<Value>,
+    local_session_error: bool,
     pub(super) eta: Option<DateTime<Utc>>,
     pub(super) queue_position: i64,
     pub(super) estimated_start_at: Option<DateTime<Utc>>,
@@ -75,6 +76,7 @@ impl Project {
                     media_type,
                     status: ProjectStatus::Pending,
                     error: None,
+                    local_session_error: false,
                     eta: None,
                     queue_position: -1,
                     estimated_start_at: None,
@@ -113,19 +115,24 @@ impl Project {
     }
 
     pub(in crate::projects) fn check_session(&self) -> Result<()> {
-        self.inner
-            .session
-            .check()
-            .map_err(|_| session_ended_error())
+        self.inner.session.check().map_err(|error| match error {
+            Error::Closed => Error::Closed,
+            _ => session_ended_error(),
+        })
     }
 
     pub(in crate::projects) fn end_session(&self) {
-        let error = json!({"code":0,"message":"This client stopped tracking the project because its account session ended. The project may still be running. Check its original account before submitting again."});
+        let error = if self.inner.session.is_closed() {
+            json!({"code":0,"message":"This client stopped tracking the project because it was closed. The project may still be running. Check its original account before submitting again."})
+        } else {
+            json!({"code":0,"message":"This client stopped tracking the project because its account session ended. The project may still be running. Check its original account before submitting again."})
+        };
         self.update(
             |state| {
                 if !state.status.is_finished() {
                     state.status = ProjectStatus::Failed;
                     state.error = Some(error.clone());
+                    state.local_session_error = true;
                 }
             },
             &["status", "error"],
@@ -232,6 +239,9 @@ impl Project {
 
     /// Wait without cancelling the server-side render when the local timeout elapses.
     pub async fn wait_for_completion(&self, timeout: Option<Duration>) -> Result<Vec<String>> {
+        if let Some(error) = self.refusal_before_close() {
+            return Err(error);
+        }
         self.check_session()?;
         let wait =
             async {
@@ -285,8 +295,25 @@ impl Project {
                 }
             })
             .await;
+        // Disposal must not replace a server refusal already recorded before
+        // it, even when the caller has not resumed its notified wait yet.
+        if let Some(error) = self.refusal_before_close() {
+            return Err(error);
+        }
         self.check_session()?;
         result
+    }
+
+    fn refusal_before_close(&self) -> Option<Error> {
+        if !self.inner.session.is_closed() {
+            return None;
+        }
+        let state = self.inner.state.read();
+        let error = state.error.as_ref()?;
+        // Service failures may legitimately use code zero. Only an error
+        // installed by end_session represents local abandonment of the work.
+        (state.status == ProjectStatus::Failed && !state.local_session_error)
+            .then(|| ProjectError::from_payload(error.clone()).into())
     }
 
     pub async fn cancel(&self) -> Result<()> {

@@ -6,7 +6,7 @@ pub(super) use result::cancel_project;
 pub(super) use result::copy_export_metadata;
 use result::{handle_job_error, handle_job_result};
 use state::{handle_job_eta, handle_job_progress, handle_job_state};
-pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
+pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) -> tokio::task::JoinHandle<()> {
     let mut receiver = inner.client.subscribe_scoped();
     let mut session = inner.client.rest.request_session();
     let weak = Arc::downgrade(inner);
@@ -19,6 +19,7 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
                     let api = ProjectsApi { inner };
                     api.clear_previous_sessions();
                     session = api.inner.client.rest.request_session();
+                    if session.is_closed() { return; }
                     continue;
                 },
                 event = receiver.recv() => event,
@@ -32,8 +33,11 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
                     );
                     if let Some(inner) = weak.upgrade() {
                         let api = ProjectsApi { inner };
-                        if api.sync("event-lagged").await.is_err() {
-                            tracing::warn!("project recovery after event lag failed");
+                        let owner = api.inner.client.rest.request_session();
+                        if let Err(error) = api.sync("event-lagged").await {
+                            if !ownerless_error(&error, &owner) {
+                                tracing::warn!("project recovery after event lag failed");
+                            }
                         }
                     }
                     continue;
@@ -117,15 +121,18 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) {
                         inner: inner.clone(),
                     };
                     tokio::spawn(async move {
-                        if api.sync("authenticated").await.is_err() {
-                            tracing::warn!("project recovery failed");
+                        let owner = api.inner.client.rest.request_session();
+                        if let Err(error) = api.sync("authenticated").await {
+                            if !ownerless_error(&error, &owner) {
+                                tracing::warn!("project recovery failed");
+                            }
                         }
                     });
                 }
                 _ => {}
             }
         }
-    });
+    })
 }
 
 fn handle_job_retry(inner: &ProjectsInner, data: &Value) {
@@ -142,6 +149,8 @@ mod queue_tests;
 mod result_api_tests;
 #[cfg(test)]
 mod retry_tests;
+#[cfg(test)]
+mod session_tests;
 
 fn handle_swarm_models(inner: &Arc<ProjectsInner>, data: &Value) {
     let Some(workers) = data.as_object() else {
@@ -153,10 +162,13 @@ fn handle_swarm_models(inner: &Arc<ProjectsInner>, data: &Value) {
         let api = ProjectsApi {
             inner: inner.clone(),
         };
+        let owner = inner.client.rest.request_session();
         let supported = match api.get_supported_models(false).await {
             Ok(models) => models,
-            Err(_) => {
-                tracing::warn!("failed to resolve live model metadata");
+            Err(error) => {
+                if !ownerless_error(&error, &owner) {
+                    tracing::warn!("failed to resolve live model metadata");
+                }
                 return;
             }
         };
@@ -177,4 +189,9 @@ fn handle_swarm_models(inner: &Arc<ProjectsInner>, data: &Value) {
         *inner.available_models.write() = models.clone();
         inner.events.emit("availableModels", Value::Array(models));
     });
+}
+
+fn ownerless_error(error: &Error, owner: &crate::auth::RequestSession) -> bool {
+    matches!(error, Error::Closed)
+        || (matches!(error, Error::InvalidInput(_)) && owner.check().is_err())
 }
