@@ -30,8 +30,10 @@ const WAN_MODELS: &[&str] = &[
 const SEEDANCE_MODELS: &[&str] = &[
     "seedance-2-0",
     "seedance-2-0-mini",
+    "seedance-2-0-mini-uncensored",
     "seedance-2-0-fast",
     "seedance-2-5",
+    "seedance-2-5-uncensored",
 ];
 const HAPPYHORSE_MODELS: &[&str] = &[
     "happyhorse-1.1-t2v",
@@ -92,7 +94,7 @@ pub fn is_seedance_model(model_id: &str) -> bool {
 
 #[must_use]
 pub fn is_seedance25_model(model_id: &str) -> bool {
-    model_id == "seedance-2-5"
+    matches!(model_id, "seedance-2-5" | "seedance-2-5-uncensored")
 }
 
 #[must_use]
@@ -313,6 +315,35 @@ fn div_ceil(lhs: i64, rhs: i64) -> i64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn seedance_5_63_model_families_accept_only_exact_published_ids() {
+        for (id, is_25) in [
+            ("seedance-2-5-uncensored", true),
+            ("seedance-2-0-mini-uncensored", false),
+        ] {
+            assert!(is_seedance_model(id));
+            assert_eq!(is_seedance25_model(id), is_25);
+            assert!(is_external_video_model(id));
+            assert!(is_video_model(id));
+            assert_eq!(
+                calculate_video_frames(id, 5.0, 24.0, None, None).unwrap(),
+                121
+            );
+        }
+        for id in [
+            "seedance-2-5-spicy",
+            "seedance-2-0-mini-spicy",
+            "seedance-2-0-uncensored",
+            "seedance-2-5-uncensored-extra",
+            "seedance-2-0-mini-uncensored-extra",
+            "Seedance-2-5-Uncensored",
+        ] {
+            assert!(!is_seedance_model(id), "{id}");
+            assert!(!is_seedance25_model(id), "{id}");
+            assert!(!is_video_model(id), "{id}");
+        }
+    }
 
     #[test]
     fn video_frames_match_the_reference_clients() {

@@ -1,11 +1,11 @@
-# sogni-client-by-morlz Rust SDK 5.60.7
+# sogni-client-by-morlz Rust SDK 5.63.1
 
-Compatibility: TypeScript 5.60.7 at 1683bf33a8377a968aa3682021560ff729cb1a2e; hosted protocol 1.0.0-alpha.47.
+Compatibility: TypeScript 5.63.1 at e3797a2ed623689309cf28186180f866683c3569; hosted protocol 1.0.0-alpha.50.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
-Cargo dependency: `sogni-client-by-morlz = "5.60.7"`.
+Cargo dependency: `sogni-client-by-morlz = "5.63.1"`.
 Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
 source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
@@ -38,6 +38,7 @@ Namespaces:
 - `projects`: generation, durable results/history, queue state, uploads, estimates, LoRAs
 - `chat`: socket completion/stream, hosted completion/tools, durable runs
 - `workflows`: durable workflows and `workflows.templates`
+- `worlds.builds`: durable World scene builds, quotes, task review, and replayable events
 - `replay`: RunRecord write/list/get
 - `stats`: leaderboard
 - `announcements`: active/dismiss
@@ -54,6 +55,9 @@ let urls = project.wait_for_completion(None).await?;
 
 Use `.param("wireName", serde_json::json!(value))` for any forward-compatible
 project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
+`.prompt_expanded(bool)` records prior prompt expansion; it does not enable
+expansion. Snapshots/history retain optional params["promptExpanded"], including
+explicit false; omission is unknown.
 
 - Images: `.embed_prompt_metadata(false)` omits worker prompt/settings metadata.
   startingImageStrength is source influence 0–1, default 0.5; explicit zero
@@ -95,6 +99,10 @@ project field. Use `.asset(AssetRole::..., MediaSource::...)` for bytes/files.
   Describe `<Picture N>` chronologically after the workflow's own pictures.
 - Seedance 2.5: outputFormat mov and returnLastFrame; `job.last_frame_url()`
   and `job.get_last_frame_url()` expose the separate image export.
+- `seedance-2-5-uncensored` retains the 2.5 contract; `seedance-2-0-mini-uncensored`
+  retains Mini's 480p/720p, 4–15 second, multimodal contract. Both require the
+  shared likeness and consent agreement in a Sogni app before generation.
+  The SDK exposes refusals and never accepts the agreement or automatically retries.
 - `job.provenance()` carries hashes, mask geometry, and `Sam3Selection` entries.
 - `.world_generation_receipt(...)` supports target still/transition hashes
   with application-selected recipes and service-owned eligibility.
@@ -170,6 +178,16 @@ preserves explicit false.
 Reseeding accepts WorkflowBillingOptions.idempotency_key; reuse it for the same
 take. ReseedWorkflowResult.idempotent reports a server replay as Some(true).
 
+## Worlds
+
+`worlds.builds.start/list/get/events/stream_events/confirm_cost/review/cancel`
+use `/v1/world-builds`. Start from a signed-in account session, not an API key.
+Reuse an idempotency key only for the same start. Review the cost preview before
+choosing confirm/cancel/requote; approve or reject each finished take explicitly.
+The SDK does not approve costs, review takes, or publish to the World studio
+automatically. Stream replay resumes after the caller's last event sequence;
+dropping the stream stops listening, while cancel stops the remote build.
+
 ## Reliability
 
 The socket reconnects with capped exponential backoff. Project recovery is
@@ -193,3 +211,8 @@ ApiError/ChatError.retry_after() returns validated seconds (body before header);
 retry_after_seconds rounds up. details() returns object context; neither retries.
 Job/Project errors preserve optional nonempty vendorFailureCategory strings,
 including unknown future categories. Private vendor diagnostics stay excluded.
+is_model_consent_required_error(&Error) recognizes agreement refusals;
+ApiError/ProjectError.consent_required() returns ModelConsentRequirement when
+supplied. MODEL_CONSENT_REQUIRED_ERROR_CODE=4103 requires agreement acceptance
+in a Sogni app; MODEL_NOT_YET_AVAILABLE_ERROR_CODE=4104 requires choosing an
+available model. Neither refusal is automatically retried.

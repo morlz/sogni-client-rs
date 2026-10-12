@@ -202,6 +202,13 @@ impl ProjectRequest {
         self.param("embedPromptMetadata", enabled)
     }
 
+    /// Record whether the caller expanded the prompt before submitting it.
+    /// This flag does not change prompt text or perform expansion.
+    #[must_use]
+    pub fn prompt_expanded(self, expanded: bool) -> Self {
+        self.param("promptExpanded", expanded)
+    }
+
     /// Select the source-image foreground for a SAM3 segmentation request.
     #[must_use]
     pub fn sam3_prompt(self, value: Sam3ImagePrompt) -> Self {

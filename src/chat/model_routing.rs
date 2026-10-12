@@ -7,7 +7,7 @@ use crate::{
     Error, Result,
     utils::{
         get_video_workflow_type, is_gpt_image_model, is_happyhorse_model, is_ltx_model,
-        is_minimax_h3_model, is_seedance_model, is_wan3_model,
+        is_minimax_h3_model, is_seedance_model, is_seedance25_model, is_wan3_model,
     },
 };
 
@@ -125,11 +125,11 @@ pub fn resolve_hosted_tool_model_selector(tool_name: &str, args: &Value) -> Opti
 pub(super) fn compatible_workflows(model_id: &str) -> Vec<&'static str> {
     if is_wan3_model(model_id) {
         vec!["t2v", "i2v", "flf2v", "r2v", "a2v", "ia2v"]
-    } else if model_id == "seedance-2-5" {
+    } else if is_seedance25_model(model_id) {
         vec!["t2v", "i2v", "flf2v", "r2v", "ia2v", "v2v"]
     } else if matches!(
         model_id,
-        "seedance-2-0" | "seedance-2-0-mini" | "seedance-2-0-fast"
+        "seedance-2-0" | "seedance-2-0-mini" | "seedance-2-0-mini-uncensored" | "seedance-2-0-fast"
     ) {
         vec!["t2v", "i2v", "ia2v", "v2v"]
     } else {
@@ -179,7 +179,10 @@ pub fn get_video_defaults(model_id: &str) -> VideoDefaults {
         Some("s2v" | "animate-move" | "animate-replace")
     ) {
         (832, 480, 16)
-    } else if matches!(model_id, "seedance-2-0-mini" | "seedance-2-0-fast") {
+    } else if matches!(
+        model_id,
+        "seedance-2-0-mini" | "seedance-2-0-mini-uncensored" | "seedance-2-0-fast"
+    ) {
         (1280, 720, 24)
     } else if is_seedance_model(model_id) || is_happyhorse_model(model_id) {
         (1920, 1080, 24)

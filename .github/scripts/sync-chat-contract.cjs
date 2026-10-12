@@ -22,6 +22,8 @@ globalThis.tables = {
 const routing = context.exports;
 const manifest = require(path.join(upstream, 'dist/Chat/_hostedToolsManifest.generated.js')).SOGNI_HOSTED_TOOLS_MANIFEST;
 const version = require(path.join(upstream, 'package.json')).version;
+const builtVersion = require(path.join(upstream, 'dist/version.js')).LIB_VERSION;
+if (builtVersion !== version) throw new Error('Rebuild the upstream SDK before regenerating chat fixtures.');
 const commit = process.env.SOGNI_UPSTREAM_COMMIT || execFileSync('git', ['-C', upstream, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error('An exact upstream commit is required.');
 const write = (relative, value) => {
@@ -80,11 +82,17 @@ async function requestFixtures() {
     ['generate_image', 'executeImageGeneration', { prompt:'a lighthouse', model:'sunburst', gpt_image_quality:' HIGH ', gpt_image_background:'TRANSPARENT', gpt_image_output_compression:0, output_format:'jpeg', width:1024, height:1024, numberOfVariations:3, seed:0 }],
     ['edit_image', 'executeImageEdit', { prompt:'a portrait', model:'flare', source_image_url:png, mask_image_url:'https://cdn.sogni.ai/mask.png', outputFormat:'webp', gptImageBackground:'opaque', gptImageOutputCompression:90 }],
     ['generate_video', 'executeVideoGeneration', { prompt:'ocean', videoModel:'seedance2-5', duration:4, outputFormat:'webm', returnLastFrame:true, generateAudio:false }],
+    ['generate_video', 'executeVideoGeneration', { prompt:'ocean', videoModel:'seedance2-5-uncensored', duration:30, outputFormat:'mov', returnLastFrame:true, generateAudio:false }],
+    ['generate_video', 'executeVideoGeneration', { prompt:'ocean', videoModel:'seedance2-mini-uncensored', duration:15, outputFormat:'mp4', returnLastFrame:false }],
     ['generate_video', 'executeVideoGeneration', { prompt:'walk', videoModel:'minimax-h3-fasth3-turbo-2stage', reference_image_url:png, duration:6, outputFormat:'mp4', returnLastFrame:false }],
     ['generate_video', 'executeVideoGeneration', { prompt:'scene', videoModel:'seedance2-5', referenceImageIndices:[-1], referenceVideoIndices:[0], referenceAudioIndices:[0], returnLastFrame:true }, { mediaContext:{ uploadedImages:['https://cdn.sogni.ai/a.png'], videos:['https://cdn.sogni.ai/a.mp4'], audio:['https://cdn.sogni.ai/a.wav'] } }],
     ['sound_to_video', 'executeSoundToVideo', { prompt:'sing', videoModel:'minimax-h3-fasth3-flfa2v-turbo-2stage', reference_audio_url:wav, reference_image_url:png, reference_image_end_url:png, duration:7, audio_start:2, outputFormat:'webm', returnLastFrame:true }],
     ['sound_to_video', 'executeSoundToVideo', { prompt:'sing', videoModel:'ltx25-ia2v', reference_audio_url:wav, reference_image_url:png, duration:6, width:768, height:512, generateAudio:false }],
+    ['sound_to_video', 'executeSoundToVideo', { prompt:'sing', videoModel:'seedance2-5-uncensored', reference_audio_url:wav, reference_image_url:png, duration:6 }],
+    ['sound_to_video', 'executeSoundToVideo', { prompt:'sing', videoModel:'seedance2-mini-uncensored', reference_audio_url:wav, reference_image_url:png, duration:6 }],
     ['video_to_video', 'executeVideoToVideo', { prompt:'redraw', videoModel:'ltx25-v2v', control_mode:'canny', reference_video_url:mp4, outputFormat:'webm', returnLastFrame:false, detailer_strength:0.4 }],
+    ['video_to_video', 'executeVideoToVideo', { prompt:'redraw', videoModel:'seedance2-5-uncensored', control_mode:'seedance-v2v', reference_video_url:mp4, duration:6 }],
+    ['video_to_video', 'executeVideoToVideo', { prompt:'redraw', videoModel:'seedance2-mini-uncensored', control_mode:'seedance-v2v', reference_video_url:mp4, duration:6 }],
     ['generate_music', 'executeMusicGeneration', { prompt:'music', model:'ace_step_1.5_xl_turbo', duration:20, output_format:'mp3', timesignature:4, composer_mode:false, prompt_strength:0, creativity:0.7 }],
     ['generate_music', 'executeMusicGeneration', { prompt:'Warm lo-fi at 84 BPM in A minor', duration:300, bpm:84, keyscale:'A minor', timesignature:4, language:'en', composer_mode:false, creativity:0.7, prompt_strength:0, lyrics:'[Chorus]\nA song', output_format:'wav', seed:0 }],
     ['generate_music', 'executeMusicGeneration', { prompt:'long track', duration:420 }],

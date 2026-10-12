@@ -1,6 +1,6 @@
 {
-  "version": "5.60.7",
-  "commit": "1683bf33a8377a968aa3682021560ff729cb1a2e",
+  "version": "5.63.1",
+  "commit": "e3797a2ed623689309cf28186180f866683c3569",
   "models": [
     {
       "id": "gpt-image-2",
@@ -144,6 +144,16 @@
     },
     {
       "id": "seedance-2-5",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "seedance-2-5-uncensored",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "seedance-2-0-mini-uncensored",
       "media": "video",
       "workerCount": 1
     },
@@ -443,6 +453,54 @@
     {
       "tool": "generate_video",
       "args": {
+        "prompt": "ocean",
+        "videoModel": "seedance2-5-uncensored",
+        "duration": 30,
+        "outputFormat": "mov",
+        "returnLastFrame": true,
+        "generateAudio": false
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "outputFormat": "mov",
+        "returnLastFrame": true,
+        "modelId": "seedance-2-5-uncensored",
+        "positivePrompt": "ocean",
+        "numberOfMedia": 1,
+        "width": 1920,
+        "height": 1080,
+        "fps": 24,
+        "duration": 30,
+        "generateAudio": false
+      }
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "prompt": "ocean",
+        "videoModel": "seedance2-mini-uncensored",
+        "duration": 15,
+        "outputFormat": "mp4",
+        "returnLastFrame": false
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "outputFormat": "mp4",
+        "returnLastFrame": false,
+        "modelId": "seedance-2-0-mini-uncensored",
+        "positivePrompt": "ocean",
+        "numberOfMedia": 1,
+        "width": 1280,
+        "height": 720,
+        "fps": 24,
+        "duration": 15
+      }
+    },
+    {
+      "tool": "generate_video",
+      "args": {
         "prompt": "walk",
         "videoModel": "minimax-h3-fasth3-turbo-2stage",
         "reference_image_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
@@ -574,6 +632,54 @@
       }
     },
     {
+      "tool": "sound_to_video",
+      "args": {
+        "prompt": "sing",
+        "videoModel": "seedance2-5-uncensored",
+        "reference_audio_url": "data:audio/wav;base64,UklGRgAAAABXQVZF",
+        "reference_image_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+        "duration": 6
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "modelId": "seedance-2-5-uncensored",
+        "positivePrompt": "sing",
+        "numberOfMedia": 1,
+        "referenceAudio": true,
+        "width": 1920,
+        "height": 1080,
+        "fps": 24,
+        "duration": 6,
+        "audioDuration": 6,
+        "referenceImage": true
+      }
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "prompt": "sing",
+        "videoModel": "seedance2-mini-uncensored",
+        "reference_audio_url": "data:audio/wav;base64,UklGRgAAAABXQVZF",
+        "reference_image_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+        "duration": 6
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "modelId": "seedance-2-0-mini-uncensored",
+        "positivePrompt": "sing",
+        "numberOfMedia": 1,
+        "referenceAudio": true,
+        "width": 1280,
+        "height": 720,
+        "fps": 24,
+        "duration": 6,
+        "audioDuration": 6,
+        "referenceImage": true
+      }
+    },
+    {
       "tool": "video_to_video",
       "args": {
         "prompt": "redraw",
@@ -602,6 +708,50 @@
           "strength": 0.85
         },
         "detailerStrength": 0.4
+      }
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "prompt": "redraw",
+        "videoModel": "seedance2-5-uncensored",
+        "control_mode": "seedance-v2v",
+        "reference_video_url": "data:video/mp4;base64,AAAADGZ0eXBpc29t",
+        "duration": 6
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "modelId": "seedance-2-5-uncensored",
+        "positivePrompt": "redraw",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "width": 1920,
+        "height": 1080,
+        "fps": 24,
+        "duration": 6
+      }
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "prompt": "redraw",
+        "videoModel": "seedance2-mini-uncensored",
+        "control_mode": "seedance-v2v",
+        "reference_video_url": "data:video/mp4;base64,AAAADGZ0eXBpc29t",
+        "duration": 6
+      },
+      "options": {},
+      "expected": {
+        "type": "video",
+        "modelId": "seedance-2-0-mini-uncensored",
+        "positivePrompt": "redraw",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "width": 1280,
+        "height": 720,
+        "fps": 24,
+        "duration": 6
       }
     },
     {

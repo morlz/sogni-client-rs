@@ -13,6 +13,8 @@ use sam3::{SAM3_MODEL_ID, normalize_sam3_prompt};
 use video::build_video_keyframe;
 
 #[cfg(test)]
+mod parity_5631_tests;
+#[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod upstream_tests;
@@ -143,6 +145,12 @@ pub(super) fn build_job_request(
         if let Some(value) = params.get(field).filter(|value| !value.is_null()) {
             object.insert(field.into(), value.clone());
         }
+    }
+    if let Some(value) = params.get("promptExpanded") {
+        let value = value
+            .as_bool()
+            .ok_or_else(|| Error::InvalidInput("promptExpanded must be a boolean".into()))?;
+        object.insert("promptExpanded".into(), json!(value));
     }
     if media_type == "image" {
         if let Some(value) = params.get("embedPromptMetadata") {

@@ -1,6 +1,40 @@
 use super::*;
 use crate::SogniClient;
 
+#[test]
+fn prompt_expansion_5_63_recovery_preserves_false_true_and_absence_at_project_root() {
+    for prompt_expanded in [None, Some(false), Some(true)] {
+        let mut request = ProjectRequest::image("flux1-schnell-fp8", "Unchanged prompt.");
+        if let Some(value) = prompt_expanded {
+            request = request.prompt_expanded(value);
+        }
+        assert_eq!(
+            request
+                .params
+                .get("promptExpanded")
+                .and_then(Value::as_bool),
+            prompt_expanded
+        );
+        let wire = json!({"numberOfImages":1,"keyFrames":[{"modelID":"flux1-schnell-fp8","positivePrompt":"Unchanged prompt.","promptExpanded":true}]});
+        let mut raw = json!({"model":{"id":"flux1-schnell-fp8","type":"image"},"clientRequestData":crate::utils::b64_json_encode(&wire).unwrap()});
+        if let Some(value) = prompt_expanded {
+            raw["promptExpanded"] = json!(value);
+        }
+        let recovered = recovered_params(&raw);
+        assert_eq!(
+            recovered.get("promptExpanded").and_then(Value::as_bool),
+            prompt_expanded
+        );
+        assert_eq!(recovered["positivePrompt"], "Unchanged prompt.");
+        if prompt_expanded.is_none() {
+            assert!(
+                recovered.get("promptExpanded").is_none(),
+                "keyframes do not supply the history marker"
+            );
+        }
+    }
+}
+
 #[tokio::test]
 async fn repeated_terminal_recovery_keeps_existing_error_and_settles_remaining_children() {
     let client = SogniClient::builder()

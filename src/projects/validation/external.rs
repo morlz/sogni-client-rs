@@ -195,8 +195,11 @@ pub(super) fn validate_wan3_references(
 
 pub(super) fn seedance_reference_limits(model_id: &str) -> Option<(usize, usize, usize, usize)> {
     match model_id {
-        "seedance-2-0" | "seedance-2-0-mini" | "seedance-2-0-fast" => Some((9, 3, 3, 12)),
-        "seedance-2-5" => Some((30, 10, 10, 50)),
+        "seedance-2-0"
+        | "seedance-2-0-mini"
+        | "seedance-2-0-mini-uncensored"
+        | "seedance-2-0-fast" => Some((9, 3, 3, 12)),
+        "seedance-2-5" | "seedance-2-5-uncensored" => Some((30, 10, 10, 50)),
         _ => None,
     }
 }

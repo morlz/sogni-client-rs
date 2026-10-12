@@ -3,9 +3,9 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.60.7** implements the TypeScript **5.60.7** public contract through
-[`1683bf3`](https://github.com/Sogni-AI/sogni-client/commit/1683bf33a8377a968aa3682021560ff729cb1a2e),
-including hosted tool definitions from Sogni Protocol `1.0.0-alpha.47`.
+Version **5.63.1** implements the TypeScript **5.63.1** public contract through
+[`e3797a2`](https://github.com/Sogni-AI/sogni-client/commit/e3797a2ed623689309cf28186180f866683c3569),
+including hosted tool definitions from Sogni Protocol `1.0.0-alpha.50`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
 See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
@@ -29,6 +29,7 @@ the previous `sogni-client` package.
   durable chat runs with resumable SSE
 - Durable creative workflows, cost confirmation, reseeding, SSE, and template
   CRUD/fork operations
+- Hosted Sogni World builds with explicit cost approval, task review, and resumable events
 - Account balances, wallet operations, rewards, subscriptions, replay records,
   leaderboards, and announcements
 - Rustls TLS, bounded request timeouts, redacted credential diagnostics, no
@@ -51,7 +52,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client-by-morlz = { version = "5.60.7", default-features = false }
+sogni-client-by-morlz = { version = "5.63.1", default-features = false }
 ```
 
 For development against the repository:
@@ -485,6 +486,13 @@ It accepts `.param("outputFormat", "mov")` and
 `.param("returnLastFrame", true)`. Exported final frames are available through
 `job.last_frame_url()` or refreshed with `job.get_last_frame_url().await`.
 
+`seedance-2-5-uncensored` keeps the Seedance 2.5 options under its own model ID.
+`seedance-2-0-mini-uncensored` keeps the Mini model's 480p/720p, 4–15 second,
+and multimodal reference contract. Discover available models at runtime.
+Both require the account to accept their shared likeness and consent agreement
+in a Sogni app. The SDK exposes the required agreement when the service refuses
+a request; it never accepts the agreement or automatically retries that refusal.
+
 ## Upload an input asset
 
 ```rust,no_run
@@ -661,6 +669,41 @@ For workflow reseeding, set `WorkflowBillingOptions::idempotency_key` and reuse
 it only when retrying the same take. `ReseedWorkflowResult::idempotent` is
 `Some(true)` when the service reports a replay of that operation.
 
+## Hosted World builds
+
+`client.worlds.builds` manages durable scene builds through `/v1/world-builds`.
+It provides `start`, `list`, `get`, `events`, `stream_events`, `confirm_cost`,
+`review`, and `cancel`. A build starts from a signed-in account session; API-key
+sessions cannot start one. Use the same idempotency key only when retrying the
+same start operation.
+
+Starting a build stores the run. The service prices it and pauses for cost
+approval. The caller reviews the preview and explicitly chooses confirm,
+cancel, or requote through
+`confirm_cost`. Each finished take requires an explicit approved or rejected
+decision through `review`; a rejection can include a correction note.
+The SDK does not approve costs or takes automatically. Approved content is
+published separately through the World studio.
+
+Use typed run snapshots for status, tasks, waiting reasons, and cost previews.
+`events` reads persisted events; `stream_events` supports replay after the last
+observed sequence. Dropping an event stream stops listening; `cancel` cancels
+the build. Account changes and client shutdown end local requests and streams.
+
+```rust,no_run
+use sogni_client::{Result, SogniClient, StartWorldBuildParams, WorldBuildRecord};
+
+async fn start_build(
+    client: &SogniClient,
+    request: StartWorldBuildParams,
+) -> Result<WorldBuildRecord> {
+    let run = client.worlds.builds.start(request).await?;
+    println!("Build {}: {:?}", run.run_id, run.status);
+    // Read the updated run and present its quote before confirming any cost.
+    Ok(run)
+}
+```
+
 ## Events and state
 
 `SogniClient`, `ProjectsApi`, `Project`, `Job`, `ChatApi`, and `CurrentAccount`
@@ -671,6 +714,11 @@ snapshot after socket authentication and after an internal receiver lag.
 
 Project and job handles are cheap clones backed by synchronized state. Use
 `snapshot()` when an immutable, serializable view is needed.
+
+Use `ProjectRequest::prompt_expanded(bool)` to record whether the submitted
+prompt was expanded. It does not enable expansion. Snapshots and history keep
+the optional `promptExpanded` parameter: explicit false is preserved, while
+omission means unknown.
 
 When the server reassigns a render to another worker, the same `Job` handle and
 logical `job_index()` remain valid while `job.id()` changes to the new attempt.
@@ -685,7 +733,15 @@ another's realtime sessions. Reuse the same job app ID during crash recovery.
 ## Errors
 
 All fallible methods return `sogni_client::Result<T>`. Match the concrete error
-variants when an application needs structured handling:
+variants when an application needs structured handling.
+
+`is_model_consent_required_error(&error)` recognizes a model agreement refusal.
+`ApiError::consent_required()` and `ProjectError::consent_required()` expose its
+`ModelConsentRequirement` when supplied. `MODEL_CONSENT_REQUIRED_ERROR_CODE`
+(4103) requires agreement acceptance in a Sogni app before trying again.
+`MODEL_NOT_YET_AVAILABLE_ERROR_CODE` (4104) means the requested model is not
+available on the selected network; show the service's message and choose an
+available model instead of automatically retrying.
 
 ```rust,no_run
 use sogni_client::{Error, is_subscription_limit_error};

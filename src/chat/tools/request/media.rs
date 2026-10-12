@@ -212,6 +212,34 @@ mod tests {
     use super::*;
 
     #[test]
+    fn large_data_uris_5_63_preserve_png_jpeg_bytes_and_reject_malformed_payloads() {
+        let png = b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR\0\0\x08\0\0\0\x04\x80";
+        let jpeg = b"\xff\xd8\xff\xc0\0\x11\x08\x04\x80\x08\0\x03\x01\x11\0\x02\x11\0\x03\x11\0";
+        for (header, mime) in [
+            (png.as_slice(), "image/png"),
+            (jpeg.as_slice(), "image/jpeg"),
+        ] {
+            let mut bytes = header.to_vec();
+            bytes.resize(3_300_000, 0x5a);
+            let uri = format!("data:{mime};base64,{}", STANDARD.encode(&bytes));
+            let (decoded, declared) = parse_inline(&uri, "image").unwrap();
+            assert_eq!(decoded.as_ref(), bytes);
+            assert_eq!(declared, mime);
+            assert!(parse_inline(&(uri + "!"), "image").is_err());
+        }
+        let oversized = format!(
+            "data:image/png;base64,{}",
+            "A".repeat((byte_limit("image") * 4).div_ceil(3) + 4)
+        );
+        assert!(
+            parse_inline(&oversized, "image")
+                .unwrap_err()
+                .to_string()
+                .contains("20MB limit")
+        );
+    }
+
+    #[test]
     fn inline_media_rejects_wrong_types_bad_base64_and_remote_urls() {
         for input in [
             "https://example.com/a.png",

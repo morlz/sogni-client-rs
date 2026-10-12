@@ -1,12 +1,12 @@
 # sogni-client-by-morlz Rust SDK complete agent reference
 
-Crate version: 5.60.7. Compatible with TypeScript 5.60.7 at upstream commit
-1683bf33a8377a968aa3682021560ff729cb1a2e; hosted protocol 1.0.0-alpha.47.
+Crate version: 5.63.1. Compatible with TypeScript 5.63.1 at upstream commit
+e3797a2ed623689309cf28186180f866683c3569; hosted protocol 1.0.0-alpha.50.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client-by-morlz = "5.60.7"`; disable default features for clients
+Dependency: `sogni-client-by-morlz = "5.63.1"`; disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
@@ -75,7 +75,11 @@ Construct requests with `ProjectRequest::image`, `video`, or `audio`. All set
 `type`, `modelId`, `positivePrompt`, and default `numberOfMedia=1`. Builder
 methods: `param`, `number_of_media`, `steps`, `guidance`, `dimensions`,
 `duration`, `fps`, `network`, `asset`, `keyframes`, `embed_prompt_metadata`, `sam3_prompt`,
-`pixal3d_options`, `world_generation_receipt`, and `attribution`.
+`pixal3d_options`, `world_generation_receipt`, `prompt_expanded`, and `attribution`.
+
+`prompt_expanded(bool)` records whether the submitted prompt was expanded; it
+does not enable expansion. Snapshots and history preserve optional
+params["promptExpanded"], including explicit false; omission means unknown.
 
 `MediaSource::Path` performs async file I/O. `MediaSource::bytes` and
 `named_bytes` accept memory. `AssetRole` includes starting/control/context
@@ -424,6 +428,14 @@ models cannot request MOV or a last-frame export. JobSnapshot exposes
 last_frame_url, last_frame_key, output_format. job.last_frame_url() reads the
 cached export; job.get_last_frame_url().await refreshes it through artifact=lastFrame.
 
+`seedance-2-5-uncensored` retains the Seedance 2.5 contract under its own model ID
+and hosted selector `seedance2-5-uncensored`. `seedance-2-0-mini-uncensored`,
+hosted selector `seedance2-mini-uncensored`, retains Mini's 480p/720p, 4–15 second,
+9 image / 3 video / 3 audio references, 12 total, contract. Discover availability
+from the model catalog. Both require their shared likeness and consent agreement
+to be accepted in a Sogni app. The SDK reports the required agreement when the
+service refuses generation, and never accepts it or automatically retries.
+
 Use runtime model metadata where possible. Model IDs in docs are illustrative.
 
 ## ChatApi
@@ -460,7 +472,7 @@ read through `HostedTools` rather than copying schemas.
 Current hosted definitions include generate_speech, upscale_video, image_to_3d,
 remove_background and segment_image, plus
 FastH3 audio-guide/two-stage and GPT Image 2.5 selectors. These definitions
-come from protocol alpha.47. Hosted sound_to_video accepts ordered loras and
+come from protocol alpha.50. Hosted sound_to_video accepts ordered loras and
 loraStrengths arrays (1–8 entries) for audio-guide generation. The direct local
 sound_to_video tool handler does not forward those LoRA fields; use an explicit
 ProjectRequest or hosted execution when they are needed.
@@ -520,6 +532,34 @@ Reseeding accepts WorkflowBillingOptions.idempotency_key. Reuse a key only for
 the same take; it is sent as Idempotency-Key. ReseedWorkflowResult.idempotent is
 Some(true) only when data.idempotent is true; other responses leave it absent.
 
+## WorldsApi
+
+`client.worlds.builds` uses the durable hosted `/v1/world-builds` API to build
+chosen paths, moments, and collectibles for one scene. Methods are `start`,
+`list`, `get`, `events`, `stream_events`, `confirm_cost`, `review`, and `cancel`.
+Starting a build requires a signed-in account session; API-key sessions cannot
+start one. Optional start idempotency keys replay the same operation; use a new
+key for a different build.
+
+`StartWorldBuildParams` includes world_id, node_id, hotspots, look, audience,
+token_type, billing_mode, idempotency_key, and attribution. Each hotspot carries
+kind, object, action, and optional task_id, leads_to, duration, and point. Wire
+fields use camelCase. Snapshots expose typed run/task states, waiting
+reasons, cost previews, and timestamps. Lists omit the full event stream.
+
+The executor obtains a quote and pauses with cost_approval_required. The caller
+reviews the costPreview and uses confirm_cost with WorldBuildCostDecision
+(Confirm, Cancel, or Requote). Finished takes wait for an explicit
+WorldBuildReviewDecision (Approved or Rejected); rejection can include a
+correction note. The SDK never confirms quotes or reviews tasks automatically.
+Publishing approved content remains a separate World studio action.
+
+events lists persisted events after a sequence. stream_events replays after
+StreamWorldBuildEventsOptions.last_event_id and exposes typed events. Drop the
+stream or use its cancellation handle to stop local listening; cancel cancels
+the remote build. Requests and streams stay bound to the account that started
+them and end locally on account changes or shutdown.
+
 ## Personal LoRAs and billing metadata
 
 Personal LoRAs: projects.personal_loras() exposes list() -> PersonalLoraLibrary,
@@ -568,14 +608,23 @@ timeouts. The WebSocket sends JSON envelopes with a base64-encoded JSON `data`
 field, normalizes `jobID`/`imgID` to uppercase, pings periodically, and applies
 capped jittered exponential reconnect delay.
 
-SSE APIs return `SseStream`; each `SseEvent` includes event, parsed data, id,
-and raw frame. Consumers own endpoint-specific terminal handling and reconnect
-policy.
+General SSE APIs return `SseStream`; each `SseEvent` includes event, parsed data,
+id, and raw frame. Worlds returns a typed `WorldBuildEventStream` instead.
+Consumers own endpoint-specific terminal handling and reconnect policy.
 
 Error variants: `Api`, `Project`, `Chat`, `InvalidInput`, `Protocol`,
 `Transport`, `Timeout`, `Closed`, `Json`, `Url`, `Http`, `Io`.
 `is_subscription_limit_error` recognizes the stable public subscription error
 contract.
+
+MODEL_CONSENT_REQUIRED_ERROR_CODE (4103) and
+is_model_consent_required_error(&Error) identify a refused model request whose
+agreement must be accepted in a Sogni app. ApiError::consent_required() and
+ProjectError::consent_required() expose ModelConsentRequirement { key, version,
+model_id } when supplied. The SDK never accepts agreements. A refused model
+that is unavailable on the selected network has
+MODEL_NOT_YET_AVAILABLE_ERROR_CODE (4104); show its message and choose an
+available model. Neither result is automatically retried.
 
 Never embed secrets. Credential `Debug` output is redacted. Keep one client
 alive, explicitly `close()` it during shutdown, and never interpret a local

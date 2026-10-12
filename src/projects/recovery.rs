@@ -167,6 +167,9 @@ pub(super) fn recovered_params(raw: &Value) -> Value {
     if let Some(value) = request.get("outputFormat") {
         params["outputFormat"] = value.clone();
     }
+    if let Some(value) = raw.get("promptExpanded").and_then(Value::as_bool) {
+        params["promptExpanded"] = json!(value);
+    }
     wire::normalize_utility_params(params.as_object_mut().expect("recovered params object"));
     params
 }

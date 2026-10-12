@@ -8,6 +8,15 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.63.1] - 2026-10-12
+
+- Port the public TypeScript 5.63.1 contract through `e3797a2ed623689309cf28186180f866683c3569`, including 30 hosted tool definitions from Sogni Protocol 1.0.0-alpha.50. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (5.50.3-alpha.1), with no new fork changes to merge.
+- Add typed `worlds.builds` start, list, get, event replay, cost confirmation, task review, and cancellation APIs. Preserve explicit cost approval and review decisions, signed-in session requirements, start idempotency, and account-bound request and stream lifetimes. Publishing approved content remains a separate World studio action.
+- Support Seedance 2.5 Uncensored and Seedance 2.0 Mini Uncensored under their final model IDs and hosted selectors, retaining each family's request, reference, duration, resolution, and export contract.
+- Expose the coarse model consent requirement, error 4103, and model-unavailable error 4104 for application handling. Agreement acceptance remains in a Sogni app; the SDK never accepts agreements or automatically retries these refusals.
+- Add `ProjectRequest::prompt_expanded(bool)` and preserve explicit true, false, and unknown prompt-expansion provenance in submitted and recovered project parameters and history.
+- Retain linear data-URI parsing, Rust-specific recovery and transport behavior, the `sogni-client-by-morlz` package identity, automatic crates.io releases, and Rust 1.88 support. Add regression coverage for the synchronized public contracts.
+
 ## [5.60.7] - 2026-10-05
 
 - Port the public TypeScript 5.60.7 contract through `1683bf33a8377a968aa3682021560ff729cb1a2e`, including 30 hosted tool definitions from Sogni Protocol 1.0.0-alpha.47. The Rust fork remains handled through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (5.50.3-alpha.1), with no new fork commits to merge.

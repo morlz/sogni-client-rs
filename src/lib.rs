@@ -17,6 +17,7 @@ mod stats;
 mod transport;
 mod utils;
 mod workflows;
+mod worlds;
 
 pub use account::{AccountApi, CurrentAccount};
 pub use announcements::AnnouncementsApi;
@@ -35,8 +36,10 @@ pub use chat::{
 };
 pub use client::{ClientBuilder, ClientConfig, Network, SogniClient};
 pub use error::{
-    ApiError, ChatError, Error, ProjectError, RETRYABLE_CHAT_ERROR_TYPES, Result,
-    SUBSCRIPTION_ERROR_CODES, is_retryable_chat_error, is_subscription_limit_error,
+    ApiError, ChatError, Error, MODEL_CONSENT_REQUIRED_ERROR_CODE,
+    MODEL_NOT_YET_AVAILABLE_ERROR_CODE, ModelConsentRequirement, ProjectError,
+    RETRYABLE_CHAT_ERROR_TYPES, Result, SUBSCRIPTION_ERROR_CODES, is_model_consent_required_error,
+    is_model_consent_required_payload, is_retryable_chat_error, is_subscription_limit_error,
 };
 pub use event::{Event, EventReceiver};
 pub use projects::{
@@ -77,6 +80,18 @@ pub use workflows::{
     CREATIVE_WORKFLOW_WAITING_REASONS, CreativeWorkflowTemplatesApi, CreativeWorkflowsApi,
     ReseedWorkflowMetadata, ReseedWorkflowResult, ResumeWorkflowResult, WorkflowBillingOptions,
     WorkflowStart, WorkflowTemplatePage,
+};
+pub use worlds::{
+    ConfirmWorldBuildCostParams, ListWorldBuildsOptions, ReviewWorldBuildTaskParams,
+    StartWorldBuildParams, StreamWorldBuildEventsOptions, WorldBuildAction, WorldBuildAudience,
+    WorldBuildAuthorization, WorldBuildBillingMode, WorldBuildBounds, WorldBuildCostDecision,
+    WorldBuildCostLine, WorldBuildCostPreview, WorldBuildEvent, WorldBuildEventCancellation,
+    WorldBuildEventStream, WorldBuildHotspotInput, WorldBuildHotspotKind, WorldBuildInput,
+    WorldBuildPoint, WorldBuildPointLabel, WorldBuildRecord, WorldBuildReviewDecision,
+    WorldBuildScope, WorldBuildSelectionPoint, WorldBuildStatus, WorldBuildTask,
+    WorldBuildTaskError, WorldBuildTaskProjects, WorldBuildTaskReview, WorldBuildTaskSelection,
+    WorldBuildTaskStep, WorldBuildTimestamps, WorldBuildTokenType, WorldBuildWaiting,
+    WorldBuildWaitingReason, WorldBuildsApi, WorldsApi,
 };
 
 /// Version of this Rust crate; the exact upstream baseline is recorded separately.

@@ -74,6 +74,57 @@ fn bundled_hosted_schemas_match_all_upstream_fingerprints() {
 }
 
 #[test]
+fn seedance_5_63_selectors_keep_distinct_ids_and_animate_schema_exclusions() {
+    for (alias, id) in [
+        ("seedance2-5-uncensored", "seedance-2-5-uncensored"),
+        ("seedance2-mini-uncensored", "seedance-2-0-mini-uncensored"),
+    ] {
+        for tool in ["generate_video", "video_to_video", "sound_to_video"] {
+            let args = json!({"videoModel":alias});
+            assert_eq!(
+                resolve_hosted_tool_model_selector(tool, &args).as_deref(),
+                Some(id)
+            );
+            assert_eq!(
+                resolve_hosted_tool_model_selector(tool, &json!({"videoModel":id})).as_deref(),
+                Some(id)
+            );
+        }
+        for tool in [
+            "generate_video",
+            "video_to_video",
+            "sound_to_video",
+            "extend_video",
+            "replace_video_segment",
+        ] {
+            let schema = crate::HostedTools.get(tool).unwrap();
+            let values = schema
+                .pointer("/function/parameters/properties/videoModel/enum")
+                .unwrap()
+                .as_array()
+                .unwrap();
+            assert!(values.contains(&json!(alias)), "{tool}");
+            assert!(!values.iter().any(|value| {
+                value
+                    .as_str()
+                    .is_some_and(|name| name.starts_with("seedance") && name.contains("spicy"))
+            }));
+        }
+    }
+    let animate = crate::HostedTools.get("animate_photo").unwrap();
+    let values = animate
+        .pointer("/function/parameters/properties/videoModel/enum")
+        .unwrap()
+        .as_array()
+        .unwrap();
+    assert!(!values.iter().any(|value| {
+        value
+            .as_str()
+            .is_some_and(|name| name.starts_with("seedance"))
+    }));
+}
+
+#[test]
 fn selection_prioritizes_compatible_requests_preferences_then_stable_worker_order() {
     let models = vec![
         json!({"id":"ltx23-22b-fp8_t2v_distilled","media":"video","workerCount":1}),

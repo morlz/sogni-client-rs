@@ -1,6 +1,6 @@
 {
-  "version": "5.60.7",
-  "commit": "1683bf33a8377a968aa3682021560ff729cb1a2e",
+  "version": "5.63.1",
+  "commit": "e3797a2ed623689309cf28186180f866683c3569",
   "selectors": [
     {
       "tool": "generate_image",
@@ -1335,6 +1335,20 @@
     {
       "tool": "generate_video",
       "args": {
+        "videoModel": "seedance2-mini-uncensored"
+      },
+      "expected": "seedance-2-0-mini-uncensored"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_MINI_UNCENSORED  "
+      },
+      "expected": "seedance-2-0-mini-uncensored"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
         "videoModel": "seedance2-fast"
       },
       "expected": "seedance-2-0-mini"
@@ -1359,6 +1373,20 @@
         "videoModel": "  SEEDANCE2_5  "
       },
       "expected": "seedance-2-5"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "seedance2-5-uncensored"
+      },
+      "expected": "seedance-2-5-uncensored"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_5_UNCENSORED  "
+      },
+      "expected": "seedance-2-5-uncensored"
     },
     {
       "tool": "generate_video",
@@ -1760,6 +1788,26 @@
         "referenceImageIndices": [
           0
         ],
+        "videoModel": "seedance2-mini-uncensored"
+      },
+      "expected": "seedance-2-0-mini-uncensored"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  SEEDANCE2_MINI_UNCENSORED  "
+      },
+      "expected": "seedance-2-0-mini-uncensored"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
         "videoModel": "seedance2-fast"
       },
       "expected": "seedance-2-0-mini"
@@ -1793,6 +1841,26 @@
         "videoModel": "  SEEDANCE2_5  "
       },
       "expected": "seedance-2-5"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "seedance2-5-uncensored"
+      },
+      "expected": "seedance-2-5-uncensored"
+    },
+    {
+      "tool": "generate_video",
+      "args": {
+        "referenceImageIndices": [
+          0
+        ],
+        "videoModel": "  SEEDANCE2_5_UNCENSORED  "
+      },
+      "expected": "seedance-2-5-uncensored"
     },
     {
       "tool": "generate_video",
@@ -2427,6 +2495,20 @@
     {
       "tool": "animate_photo",
       "args": {
+        "videoModel": "seedance2-mini-uncensored"
+      },
+      "expected": "seedance-2-0-mini-uncensored"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  SEEDANCE2_MINI_UNCENSORED  "
+      },
+      "expected": "seedance-2-0-mini-uncensored"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
         "videoModel": "seedance2-fast"
       },
       "expected": "seedance-2-0-mini"
@@ -2451,6 +2533,20 @@
         "videoModel": "  SEEDANCE2_5  "
       },
       "expected": "seedance-2-5"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "seedance2-5-uncensored"
+      },
+      "expected": "seedance-2-5-uncensored"
+    },
+    {
+      "tool": "animate_photo",
+      "args": {
+        "videoModel": "  SEEDANCE2_5_UNCENSORED  "
+      },
+      "expected": "seedance-2-5-uncensored"
     },
     {
       "tool": "animate_photo",
@@ -2917,6 +3013,20 @@
     {
       "tool": "video_to_video",
       "args": {
+        "videoModel": "seedance2-mini-uncensored"
+      },
+      "expected": "seedance-2-0-mini-uncensored"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_MINI_UNCENSORED  "
+      },
+      "expected": "seedance-2-0-mini-uncensored"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
         "videoModel": "seedance2-5"
       },
       "expected": "seedance-2-5"
@@ -2927,6 +3037,20 @@
         "videoModel": "  SEEDANCE2_5  "
       },
       "expected": "seedance-2-5"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "seedance2-5-uncensored"
+      },
+      "expected": "seedance-2-5-uncensored"
+    },
+    {
+      "tool": "video_to_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_5_UNCENSORED  "
+      },
+      "expected": "seedance-2-5-uncensored"
     },
     {
       "tool": "video_to_video",
@@ -2973,6 +3097,20 @@
     {
       "tool": "sound_to_video",
       "args": {
+        "videoModel": "seedance2-mini-uncensored"
+      },
+      "expected": "seedance-2-0-mini-uncensored"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_MINI_UNCENSORED  "
+      },
+      "expected": "seedance-2-0-mini-uncensored"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
         "videoModel": "seedance2-fast"
       },
       "expected": "seedance-2-0"
@@ -2997,6 +3135,20 @@
         "videoModel": "  SEEDANCE2_5  "
       },
       "expected": "seedance-2-5"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "seedance2-5-uncensored"
+      },
+      "expected": "seedance-2-5-uncensored"
+    },
+    {
+      "tool": "sound_to_video",
+      "args": {
+        "videoModel": "  SEEDANCE2_5_UNCENSORED  "
+      },
+      "expected": "seedance-2-5-uncensored"
     },
     {
       "tool": "sound_to_video",
@@ -3356,6 +3508,16 @@
       "workerCount": 1
     },
     {
+      "id": "seedance-2-5-uncensored",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "seedance-2-0-mini-uncensored",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
       "id": "happyhorse-1.1-t2v",
       "media": "video",
       "workerCount": 1
@@ -3575,6 +3737,8 @@
         "seedance-2-0",
         "seedance-2-0-mini",
         "seedance-2-5",
+        "seedance-2-5-uncensored",
+        "seedance-2-0-mini-uncensored",
         "happyhorse-1.1-t2v",
         "wan3.0-video",
         "wan3.0-spicy-video",
@@ -3594,6 +3758,8 @@
         "seedance-2-0",
         "seedance-2-0-mini",
         "seedance-2-5",
+        "seedance-2-5-uncensored",
+        "seedance-2-0-mini-uncensored",
         "happyhorse-1.1-i2v",
         "wan3.0-video",
         "wan3.0-spicy-video",
@@ -3608,6 +3774,7 @@
       "workflow": "flf2v",
       "expected": [
         "seedance-2-5",
+        "seedance-2-5-uncensored",
         "wan3.0-video",
         "wan3.0-spicy-video",
         "minimax-h3-fl2va-fp8_flf2v",
@@ -3621,6 +3788,7 @@
       "workflow": "r2v",
       "expected": [
         "seedance-2-5",
+        "seedance-2-5-uncensored",
         "happyhorse-1.1-r2v",
         "wan3.0-video",
         "wan3.0-spicy-video",
@@ -3640,6 +3808,8 @@
         "seedance-2-0",
         "seedance-2-0-mini",
         "seedance-2-5",
+        "seedance-2-5-uncensored",
+        "seedance-2-0-mini-uncensored",
         "wan3.0-video",
         "wan3.0-spicy-video",
         "minimax-h3-fastvideo-int8_ia2v_turbo",
@@ -3679,7 +3849,9 @@
         "ltx23-22b-fp8_v2v_distilled",
         "seedance-2-0",
         "seedance-2-0-mini",
-        "seedance-2-5"
+        "seedance-2-5",
+        "seedance-2-5-uncensored",
+        "seedance-2-0-mini-uncensored"
       ]
     },
     {
@@ -3919,6 +4091,22 @@
       "expected": {
         "width": 1920,
         "height": 1080,
+        "fps": 24
+      }
+    },
+    {
+      "id": "seedance-2-5-uncensored",
+      "expected": {
+        "width": 1920,
+        "height": 1080,
+        "fps": 24
+      }
+    },
+    {
+      "id": "seedance-2-0-mini-uncensored",
+      "expected": {
+        "width": 1280,
+        "height": 720,
         "fps": 24
       }
     },
@@ -4385,6 +4573,14 @@
       "expected": false
     },
     {
+      "id": "seedance-2-5-uncensored",
+      "expected": false
+    },
+    {
+      "id": "seedance-2-0-mini-uncensored",
+      "expected": false
+    },
+    {
       "id": "happyhorse-1.1-t2v",
       "expected": false
     },
@@ -4564,11 +4760,11 @@
   "schemas": [
     {
       "name": "generate_image",
-      "sha256": "c46dcf676c91f6d899510d65dbb7c41fbecc4e1519b78d3e6a09b5c7593a5f00"
+      "sha256": "2a8a44ca13b4457e1f23e27e3c83299d41d3b710191b55962f6f55ae344cf7bd"
     },
     {
       "name": "generate_video",
-      "sha256": "d3771e353b1d590af006df6eae12452e04cf60b51f76fbd045e3df7245d20c44"
+      "sha256": "0737f803ec5da4fd32b4adf516fbe5ae12938b5f125912221b7414e5fbc9eb6c"
     },
     {
       "name": "generate_music",
@@ -4580,7 +4776,7 @@
     },
     {
       "name": "edit_image",
-      "sha256": "ec4c0cc752dc13a3db2437dc7429bf927caaed6883ffc5112016acf63cf6665f"
+      "sha256": "45695b2ce0595f9b8514205e691dc61acccd57716a22bc4a81891f701e07d8e7"
     },
     {
       "name": "apply_style",
@@ -4612,7 +4808,7 @@
     },
     {
       "name": "video_to_video",
-      "sha256": "49687ae273ff7a125b2991575eb924077107a676f20cee27e1e4715fd4f44fa1"
+      "sha256": "a7dac87700a6388399735bf032a109dcd1a835a2c1f4fb4050df8d16113e2906"
     },
     {
       "name": "stitch_video",
@@ -4628,15 +4824,15 @@
     },
     {
       "name": "sound_to_video",
-      "sha256": "3d6e954303b85429b2fb6604aabbd5f51bbf160a7fba3d3269a3bfc9c66a7fbb"
+      "sha256": "cb27661e2cb4cc26db458e9a39c2d12bdfa1c27a7b5913a40e99258ca2cedb69"
     },
     {
       "name": "extend_video",
-      "sha256": "73467dc49c9ca9bfdeb9e69cb1870becd62ecb29e4017ee0181be4064d5c87d5"
+      "sha256": "7fcaab9ae225b8bcdf40a8c700866f0209d71478334a101a9c7aa363c15062a4"
     },
     {
       "name": "replace_video_segment",
-      "sha256": "736635d0bec92396900308408a3acb188eed882e4c14ac4908d9eca57e38aecc"
+      "sha256": "24238084bf9d5a537835baa0868c027a9cddfff56069aeb87221fc64c1f2e6ee"
     },
     {
       "name": "overlay_video",

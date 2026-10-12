@@ -183,6 +183,12 @@ pub(super) fn handle_job_error(inner: &Arc<ProjectsInner>, data: &Value) {
             error[key] = value.clone();
         }
     }
+    if let Some(requirement) = data
+        .get("consentRequired")
+        .and_then(crate::error::public_model_consent_requirement)
+    {
+        error["consentRequired"] = requirement;
+    }
     let public_event = public_job_error(data, &error);
     let Some(project) = project_by_id(inner, data) else {
         if data.get("jobID").and_then(Value::as_str).is_some() {
@@ -263,6 +269,9 @@ fn public_job_error(data: &Value, normalized: &Value) -> Value {
     }
     if let Some(category) = normalized.get("vendorFailureCategory") {
         event.insert("vendorFailureCategory".into(), category.clone());
+    }
+    if let Some(requirement) = normalized.get("consentRequired") {
+        event.insert("consentRequired".into(), requirement.clone());
     }
     Value::Object(event)
 }
@@ -373,3 +382,7 @@ mod tests;
 #[cfg(test)]
 #[path = "error_category_tests.rs"]
 mod error_category_tests;
+
+#[cfg(test)]
+#[path = "consent_tests.rs"]
+mod consent_tests;

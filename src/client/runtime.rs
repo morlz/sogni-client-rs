@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, sync::Arc};
 use super::config::{ClientBuilder, ClientConfig};
 use crate::{
     AccountApi, AnnouncementsApi, AuthBackup, AuthKind, ChatApi, CreativeWorkflowsApi,
-    CurrentAccount, Error, EventReceiver, ProjectsApi, ReplayApi, Result, StatsApi,
+    CurrentAccount, Error, EventReceiver, ProjectsApi, ReplayApi, Result, StatsApi, WorldsApi,
     auth::AuthManager,
     transport::{ApiClient, HttpClients},
 };
@@ -15,6 +15,7 @@ pub struct SogniClient {
     pub stats: StatsApi,
     pub chat: ChatApi,
     pub workflows: CreativeWorkflowsApi,
+    pub worlds: WorldsApi,
     pub replay: ReplayApi,
     pub announcements: AnnouncementsApi,
     api_client: Arc<ApiClient>,
@@ -86,6 +87,7 @@ impl SogniClient {
             stats: StatsApi::new(api_client.clone()),
             chat: ChatApi::new(api_client.clone(), projects.clone()),
             workflows: CreativeWorkflowsApi::new(api_client.clone()),
+            worlds: WorldsApi::new(api_client.clone()),
             replay: ReplayApi::new(api_client.clone()),
             announcements: AnnouncementsApi::new(api_client.clone()),
             projects,

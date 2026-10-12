@@ -249,6 +249,44 @@ mod tests {
     use super::*;
 
     #[test]
+    fn large_mask_data_uri_5_63_preserves_uploaded_bytes_without_changing_limits() {
+        use base64::Engine as _;
+        let mut bytes = b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR\0\0\x08\0\0\0\x04\x80".to_vec();
+        bytes.resize(3_300_000, 0x5a);
+        let uri = format!(
+            "data:image/png;base64,{}",
+            base64::engine::general_purpose::STANDARD.encode(&bytes)
+        );
+        let mut request = ProjectRequest::image("gpt-image-2.5-flare", "edit")
+            .param("gptImageMaskUrl", uri.clone());
+        normalize_inline_mask(&mut request).unwrap();
+        let MediaSource::Bytes { data, .. } = &request.assets[0].1 else {
+            panic!("expected inline mask bytes")
+        };
+        assert_eq!(data.as_ref(), bytes);
+        for invalid in [
+            uri.clone() + "!",
+            uri.replace("data:image/png", "data:image/jpeg"),
+        ] {
+            let mut request = ProjectRequest::image("gpt-image-2.5-flare", "edit")
+                .param("gptImageMaskUrl", invalid);
+            assert!(normalize_inline_mask(&mut request).is_err());
+        }
+        let oversized = format!(
+            "data:image/png;base64,{}",
+            "A".repeat((50 * 1024 * 1024_usize * 4).div_ceil(3))
+        );
+        let mut request = ProjectRequest::image("gpt-image-2.5-flare", "edit")
+            .param("gptImageMaskUrl", oversized);
+        assert!(
+            normalize_inline_mask(&mut request)
+                .unwrap_err()
+                .to_string()
+                .contains("smaller than 50 MB")
+        );
+    }
+
+    #[test]
     fn reserved_project_identity_is_canonical_and_rejects_paths() {
         assert_eq!(
             normalize_project_id("a3f360cb-7f84-4d56-b360-a047e7cfb3cd").unwrap(),
