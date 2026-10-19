@@ -3,9 +3,9 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.63.1** implements the TypeScript **5.63.1** public contract through
-[`e3797a2`](https://github.com/Sogni-AI/sogni-client/commit/e3797a2ed623689309cf28186180f866683c3569),
-including hosted tool definitions from Sogni Protocol `1.0.0-alpha.50`.
+Version **5.66.0** implements the TypeScript **5.66.0** public contract through
+[`9805a8c`](https://github.com/Sogni-AI/sogni-client/commit/9805a8c146dea25065d080881e07da4c5c878a88),
+including hosted tool definitions from Sogni Protocol `1.0.0-alpha.52`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
 See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
@@ -23,6 +23,7 @@ the previous `sogni-client` package.
   queue explanations, durable result lookup, uploads, estimates, and recovery
 - SAM3 segmentation/cutouts, BiRefNet background removal, Pixal3D multi-view
   GLB reconstruction, GPT Image 2.5 editing, and worker result provenance
+- FLUX 3 Image Klein generation/editing and MOSS text-to-image presets
 - Speech/voice cloning, FlashVSR video upscaling, MiniMax H3 keyframes,
   two-stage/audio-guide video with LoRAs, Seedance exports, and private uploads
 - Socket-native streaming LLM chat, hosted chat completions, hosted tools, and
@@ -52,7 +53,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client-by-morlz = { version = "5.63.1", default-features = false }
+sogni-client-by-morlz = { version = "5.66.0", default-features = false }
 ```
 
 For development against the repository:
@@ -122,6 +123,9 @@ from the previous account. Old `Project` and `Job` handles cannot start operatio
 for the new account; existing waiters receive a session-ended error. This does
 not cancel remote generation. Refreshing tokens for the same wallet preserves
 ongoing work.
+An unsuccessful token renewal that returns no valid token pair signs out that
+session and reports a protocol error. A delayed response cannot sign out a newer
+account session.
 
 Supply a stable `app_id` for WebSocket clients and persist it across restarts.
 Blank IDs now fail locally when sockets are enabled, including deferred socket
@@ -182,6 +186,20 @@ prompt/settings from worker image metadata; omission leaves the worker default
 enabled. `startingImageStrength` is source-image influence from 0 to 1: 0 requests
 full denoising and 1 preserves the input. Omission or null uses 0.5. Explicit
 zero values for strength, guidance, seed, and preview count remain on the wire.
+
+FLUX 3 Image Klein (`flux3_image_klein_sd_int8_convrot`) supports generation and
+editing with a starting image and up to ten context images. Custom dimensions
+range from 256 to 4096 pixels per edge. Hosted selectors include `flux-3-klein`
+and `flux3-klein` for both `generate_image` and `edit_image`.
+
+MOSS-Image SFT (`moss_image_sft_int8_convrot`, hosted selector `moss-image`) and
+its eight-step preset (`moss_image_sft_dmd8_int8_convrot`, `moss-image-8step`)
+generate from text with custom dimensions from 512 to 2048 pixels per edge.
+Guide and context images are rejected before uploads. Direct `ProjectRequest`
+builders `.moss_rope_scale_x(value)` and `.moss_rope_scale_y(value)` accept finite
+spatial scales from 0 to 100. Omitted or neutral `1` preserves the default;
+non-neutral scales change composition while keeping the output dimensions.
+These direct controls do not add fields to the published hosted-tool schemas.
 
 For Stable Diffusion ControlNet, set `controlNet.preprocess` to `true` when
 `AssetRole::ControlNetImage` is an ordinary photo: the worker builds the map
@@ -528,6 +546,10 @@ fn request() -> ProjectRequest {
 }
 ```
 
+FLAC, Ogg and WebM references are identified from their bytes, including
+in-memory inputs without a filename. An explicit content type supplied through
+`MediaSource::named_bytes` retains precedence over detection and filename hints.
+
 Numbered H3 audio/video slots must be contiguous from slot 1. The SDK validates
 H3's frame lattice, dimensions, fixed FPS/steps/guidance, reference limits, and
 duration hints before uploading. It also applies the current Wan 3, Seedance,
@@ -628,6 +650,9 @@ Socket chat keeps confirmed surviving streams across reconnection. A lost
 request is surfaced as a structured retryable error rather than replaying an
 LLM turn. Use `ChatError::retryable()` or `is_retryable_chat_error(&error)`
 for `server_restarting` and `transport_lost` results.
+Reauthentication reconciles requests already sent against the server's retained
+job list, including when no earlier disconnect notification was observed.
+Initial requests still waiting for authentication remain eligible to send.
 
 ## Durable chat and workflows
 

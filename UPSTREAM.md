@@ -9,6 +9,15 @@ includes Sogni-AI's authentication and streaming fixes from source version
 `5.50.3-alpha.1` through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f`.
 Thank you to the fork's contributors for these fixes and regression tests.
 
+The current TypeScript contract is version `5.66.0` through
+`9805a8c146dea25065d080881e07da4c5c878a88`, including Sogni Protocol
+`1.0.0-alpha.52`. The Rust fork was reviewed again on 2026-10-19 and remains at
+the commit above; no additional fork merge was needed.
+
+The 5.66.0 release also requires Rustls 0.23.46 for the existing runtime and
+development TLS dependencies and locks `quinn-proto` to 0.11.18. These reviewed
+security updates preserve the dependency features and Rust 1.88 minimum.
+
 ## Weekly process
 
 The existing Codex task runs every Monday at **06:00 UTC** (09:00 Moscow) and

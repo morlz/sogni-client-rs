@@ -1,12 +1,12 @@
 # sogni-client-by-morlz Rust SDK complete agent reference
 
-Crate version: 5.63.1. Compatible with TypeScript 5.63.1 at upstream commit
-e3797a2ed623689309cf28186180f866683c3569; hosted protocol 1.0.0-alpha.50.
+Crate version: 5.66.0. Compatible with TypeScript 5.66.0 at upstream commit
+9805a8c146dea25065d080881e07da4c5c878a88; hosted protocol 1.0.0-alpha.52.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client-by-morlz = "5.63.1"`; disable default features for clients
+Dependency: `sogni-client-by-morlz = "5.66.0"`; disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
@@ -48,6 +48,9 @@ unauthorized responses cannot replace or clear a newer session. Cookie-auth
 sockets send only cookies matching
 the WebSocket's host, path, and security requirements. EIP-712 signatures retain
 the wire-required 0x prefix.
+Successful refresh responses without a valid token pair clear only the matching
+authentication session and return a coarse protocol error. A newer session
+survives a delayed malformed refresh response.
 
 For SSE streams, `request_timeout` limits connection setup and idle reads,
 not total stream duration. Data resets the idle timeout. Drop the stream to
@@ -75,7 +78,8 @@ Construct requests with `ProjectRequest::image`, `video`, or `audio`. All set
 `type`, `modelId`, `positivePrompt`, and default `numberOfMedia=1`. Builder
 methods: `param`, `number_of_media`, `steps`, `guidance`, `dimensions`,
 `duration`, `fps`, `network`, `asset`, `keyframes`, `embed_prompt_metadata`, `sam3_prompt`,
-`pixal3d_options`, `world_generation_receipt`, `prompt_expanded`, and `attribution`.
+`pixal3d_options`, `world_generation_receipt`, `prompt_expanded`,
+`moss_rope_scale_x`, `moss_rope_scale_y`, and `attribution`.
 
 `prompt_expanded(bool)` records whether the submitted prompt was expanded; it
 does not enable expansion. Snapshots and history preserve optional
@@ -94,6 +98,10 @@ slots 1, 2, and 3; subsets retain the named view's slot.
 Prefer `.keyframes(Vec<MinimaxH3Keyframe>)` to set the images and frame indices
 together, preserving caller order. It replaces only prior keyframe assets.
 
+FLAC (fLaC), Ogg (OggS) and WebM references are detected from their bytes before
+filename fallback, including unnamed in-memory inputs. Explicit content types
+on MediaSource::named_bytes retain precedence through uploads.
+
 `projects.create(request)` uploads assets, submits `jobRequest`, and returns a
 cloneable `Project`. `Project` methods: `id`, `status`, `jobs`, `progress`,
 `result_urls`, `snapshot`, `subscribe`, `wait_for_completion`, `cancel`,
@@ -110,6 +118,21 @@ the worker default true. Only booleans are accepted; this is an image field.
 startingImageStrength is source influence in [0,1], mapped to denoising strength
 1-influence. Omission or null means 0.5. Malformed/out-of-range values fail before
 upload; explicit zero strength, guidance, seed and preview count are preserved.
+
+FLUX 3 Image Klein: model `flux3_image_klein_sd_int8_convrot` supports text
+generation, starting images and up to ten context images, with custom width
+and height each 256–4096 pixels. Hosted generate_image and edit_image accept
+flux-3-klein, flux3-klein, flux-3-image-klein and flux3-image-klein selectors.
+
+MOSS-Image SFT: `moss_image_sft_int8_convrot` (hosted moss-image/moss-image-sft)
+and `moss_image_sft_dmd8_int8_convrot` (hosted moss-image-8step) generate from
+text. Custom width and height are each 512–2048 pixels. Starting/guide and
+context images are rejected before uploads. Direct ProjectRequest builders
+moss_rope_scale_x(f64) and moss_rope_scale_y(f64) set optional keyframe
+mossRopeScaleX/mossRopeScaleY. Values must be finite and in 0–100; explicit zero
+is preserved and neutral 1 is omitted. Scaling changes composition while
+preserving dimensions. These fields are specific to direct MOSS requests;
+the hosted tool schemas do not expose spatial-scale arguments.
 
 Stable Diffusion ControlNet: set .param("controlNet", json!({"name":"depth",
 "preprocess":true})) and upload the photo as AssetRole::ControlNetImage.
@@ -471,8 +494,8 @@ read through `HostedTools` rather than copying schemas.
 
 Current hosted definitions include generate_speech, upscale_video, image_to_3d,
 remove_background and segment_image, plus
-FastH3 audio-guide/two-stage and GPT Image 2.5 selectors. These definitions
-come from protocol alpha.50. Hosted sound_to_video accepts ordered loras and
+FastH3 audio-guide/two-stage, GPT Image 2.5, FLUX 3 Image Klein and MOSS selectors.
+These definitions come from protocol alpha.52. Hosted sound_to_video accepts ordered loras and
 loraStrengths arrays (1–8 entries) for audio-guide generation. The direct local
 sound_to_video tool handler does not forward those LoRA fields; use an explicit
 ProjectRequest or hosted execution when they are needed.
@@ -607,6 +630,11 @@ bounded redirect policy, uses Rustls/native roots, and applies request/connect
 timeouts. The WebSocket sends JSON envelopes with a base64-encoded JSON `data`
 field, normalizes `jobID`/`imgID` to uppercase, pings periodically, and applies
 capped jittered exponential reconnect delay.
+
+Socket chat reconciles already-sent requests on each reauthentication handshake,
+even when no previous disconnect notification was observed. Server-retained
+streams continue; missing turns report a retryable transport error. Requests
+still waiting for their initial authentication remain eligible to send.
 
 General SSE APIs return `SseStream`; each `SseEvent` includes event, parsed data,
 id, and raw frame. Worlds returns a typed `WorldBuildEventStream` instead.

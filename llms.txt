@@ -1,11 +1,11 @@
-# sogni-client-by-morlz Rust SDK 5.63.1
+# sogni-client-by-morlz Rust SDK 5.66.0
 
-Compatibility: TypeScript 5.63.1 at e3797a2ed623689309cf28186180f866683c3569; hosted protocol 1.0.0-alpha.50.
+Compatibility: TypeScript 5.66.0 at 9805a8c146dea25065d080881e07da4c5c878a88; hosted protocol 1.0.0-alpha.52.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
-Cargo dependency: `sogni-client-by-morlz = "5.63.1"`.
+Cargo dependency: `sogni-client-by-morlz = "5.66.0"`.
 Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
 source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
@@ -31,6 +31,8 @@ act for the new account; local waiters end even if remote work continues.
 Same-wallet token renewal preserves ongoing work. Healthy SSE streams can exceed
 request_timeout, which limits connection setup and idle reads instead of total
 stream duration.
+Malformed successful refresh responses without a valid token pair sign out only
+the matching session and return a protocol error; newer sessions are preserved.
 
 Namespaces:
 
@@ -62,6 +64,15 @@ explicit false; omission is unknown.
 - Images: `.embed_prompt_metadata(false)` omits worker prompt/settings metadata.
   startingImageStrength is source influence 0–1, default 0.5; explicit zero
   strength/guidance/seed/previews survive serialization.
+- FLUX 3 Image Klein: `flux3_image_klein_sd_int8_convrot`, generation/editing,
+  starting image and up to ten context images, 256–4096 pixels per edge.
+  Hosted `generate_image`/`edit_image` selectors include flux-3-klein and flux3-klein.
+- MOSS: `moss_image_sft_int8_convrot` and `moss_image_sft_dmd8_int8_convrot`,
+  text-to-image only, 512–2048 pixels per edge; guide/context inputs fail before
+  upload. Hosted selectors: moss-image and moss-image-8step. Direct request
+  `.moss_rope_scale_x(value)` / `.moss_rope_scale_y(value)` accept finite 0–100;
+  neutral 1 is omitted, output dimensions are unchanged. These controls remain
+  direct-request options, outside the published hosted-tool argument schemas.
 - ControlNet: `.param("controlNet", json!({"name":"depth","preprocess":true}))`
   with `AssetRole::ControlNetImage` makes the map from a photo on the worker.
   Omitted/false preserves ready-made maps. Only boolean preprocess is accepted.
@@ -109,6 +120,8 @@ explicit false; omission is unknown.
 - `job.preparation()` exposes typed download/unload/load phases.
 - `projects.assets().upload/list/remove/bind` manages private saved files.
   Normal `.asset(...)` requests automatically reuse eligible verified files.
+  FLAC/Ogg/WebM references are identified from bytes, including unnamed memory;
+  `MediaSource::named_bytes` preserves an explicit MIME override.
 - `projects.personal_loras().list/get/import/remove/catalog` manages private
   adapters. Imports require an explicit rights_confirmed choice. Discover
   supported import models from list().models; private responses are not cached.
@@ -162,6 +175,11 @@ LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
   execute via hosted chat or durable runs.
 - Model routing: `resolve_hosted_tool_model_selector`, `is_edit_image_model`,
   `get_video_defaults`, `filter_video_models_by_workflow`, `select_backbone_model`.
+
+Socket reauthentication reconciles already-sent chat turns with the retained
+server job list even without an earlier disconnect notification. Retained
+streams continue; absent turns surface retryable errors, and initial requests
+waiting for authentication remain eligible to send.
 
 Vision socket/hosted chat supports PNG/JPEG data URIs, URLs, or local paths.
 Durable runs/workflows require HTTP(S) media URLs.

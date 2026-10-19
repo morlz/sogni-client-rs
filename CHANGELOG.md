@@ -8,6 +8,17 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.66.0] - 2026-10-19
+
+- Port the public TypeScript 5.66.0 contract through `9805a8c146dea25065d080881e07da4c5c878a88`, including 30 hosted tool definitions from Sogni Protocol 1.0.0-alpha.52. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (5.50.3-alpha.1), with no new fork changes to merge.
+- Support FLUX 3 Image Klein generation and editing, its hosted selectors, up to ten context images, and custom dimensions from 256 to 4096 pixels per edge.
+- Support the MOSS-Image SFT and eight-step text-to-image presets with 512–2048 pixel dimensions. Reject guide and context images before uploads. Add direct `ProjectRequest` spatial RoPE scale builders, preserving neutral behavior and the published hosted schemas.
+- Detect FLAC, Ogg and WebM references from their bytes across uploads, retaining explicit MIME overrides and filename fallback.
+- Clear the matching authentication session when a successful refresh response lacks a valid token pair, while preserving newer sessions and valid same-wallet renewals.
+- Reconcile sent socket-chat requests against reauthentication handshakes even without a prior disconnect event. Preserve retained streams, queued initial requests, terminal results, and existing Rust recovery behavior.
+- Require patched Rustls 0.23.46 for runtime and development dependencies and update the locked Quinn protocol dependency to 0.11.18, addressing the current dependency audit while retaining existing features and Rust 1.88 support.
+- Add regression coverage showing that project admission grace begins after asset preparation. Keep the existing production timing, Rust 1.88 minimum, maintained crate identity and automatic crates.io release policy.
+
 ## [5.63.1] - 2026-10-12
 
 - Port the public TypeScript 5.63.1 contract through `e3797a2ed623689309cf28186180f866683c3569`, including 30 hosted tool definitions from Sogni Protocol 1.0.0-alpha.50. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (5.50.3-alpha.1), with no new fork changes to merge.

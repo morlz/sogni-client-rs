@@ -2621,7 +2621,7 @@ dependencies = [
 
 [[package]]
 name = "sogni-client-by-morlz"
-version = "5.63.1"
+version = "5.66.0"
 dependencies = [
  "anyhow",
  "async-stream",
