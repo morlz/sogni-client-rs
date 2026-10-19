@@ -558,21 +558,26 @@ impl AuthManager {
             }
             return Err(ApiError::new(status.as_u16(), payload).into());
         }
-        let data = payload
-            .get("data")
-            .and_then(Value::as_object)
-            .ok_or_else(|| Error::Protocol("token refresh response did not include data".into()))?;
-        let token = data.get("token").and_then(Value::as_str).ok_or_else(|| {
-            Error::Protocol("token refresh response did not include token".into())
-        })?;
-        let next_refresh = data
-            .get("refreshToken")
-            .and_then(Value::as_str)
-            .ok_or_else(|| {
-                Error::Protocol("token refresh response did not include refreshToken".into())
-            })?;
-        let token_exp = jwt_exp(token)?;
-        let refresh_exp = jwt_exp(next_refresh)?;
+        let tokens = (|| {
+            let data = payload.get("data")?.as_object()?;
+            let token = data.get("token")?.as_str()?;
+            let next_refresh = data.get("refreshToken")?.as_str()?;
+            Some((
+                token,
+                next_refresh,
+                jwt_exp(token).ok()?,
+                jwt_exp(next_refresh).ok()?,
+            ))
+        })();
+        let Some((token, next_refresh, token_exp, refresh_exp)) = tokens else {
+            // A malformed success cannot keep the expired credentials available
+            // for another renewal, or clear credentials installed by a new login.
+            self.clear_if_version(version);
+            return Err(Error::Protocol(format!(
+                "token refresh response did not include a valid token pair (HTTP {})",
+                status.as_u16()
+            )));
+        };
         let mut state = self.inner.state.write();
         if self.inner.closed.load(Ordering::Acquire) {
             return Err(Error::Closed);
