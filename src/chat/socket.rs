@@ -157,28 +157,31 @@ impl ChatApi {
                 changed: changed.clone(),
             },
         );
-        if let Err(error) = owner
-            .run(
-                self.inner
-                    .client
-                    .send_socket_in_session("llmJobRequest", &request, session),
-            )
+        let sent_after_event = match owner
+            .run(self.inner.client.send_socket_ordered_in_session(
+                "llmJobRequest",
+                &request,
+                session,
+            ))
             .await
         {
-            self.inner.active.write().remove(&job_id);
-            self.inner.recovery.lock().forget(&job_id);
-            if owner.check().is_err() {
-                return Err(super::events::session_error(&owner, Some(&job_id)));
+            Ok(sequence) => sequence,
+            Err(error) => {
+                self.inner.active.write().remove(&job_id);
+                self.inner.recovery.lock().forget(&job_id);
+                if owner.check().is_err() {
+                    return Err(super::events::session_error(&owner, Some(&job_id)));
+                }
+                if let Some(error) = &state.read().error {
+                    return Err(error.clone().into());
+                }
+                if matches!(error, Error::InvalidInput(_)) {
+                    return Err(error);
+                }
+                return Err(super::events::transport_error(&job_id, Some(&error)).into());
             }
-            if let Some(error) = &state.read().error {
-                return Err(error.clone().into());
-            }
-            if matches!(error, Error::InvalidInput(_)) {
-                return Err(error);
-            }
-            return Err(super::events::transport_error(&job_id, Some(&error)).into());
-        }
-        super::events::submitted(&self.inner, &job_id);
+        };
+        super::events::submitted(&self.inner, &job_id, sent_after_event);
         Ok(ChatStream {
             job_id,
             receiver,

@@ -244,6 +244,7 @@ async fn buffered_old_chat_payloads_cannot_complete_a_current_account_job() {
                     data,
                 },
                 session: Some(previous),
+                sequence: 0,
             },
         );
     }
@@ -257,6 +258,7 @@ async fn buffered_old_chat_payloads_cannot_complete_a_current_account_job() {
                 data: json!({"jobID":"REUSED","content":"current"}),
             },
             session: Some(auth.version().session),
+            sequence: 0,
         },
     );
     handle_chat_event(
@@ -267,6 +269,7 @@ async fn buffered_old_chat_payloads_cannot_complete_a_current_account_job() {
                 data: json!({"jobID":"REUSED","content":"current"}),
             },
             session: Some(auth.version().session),
+            sequence: 0,
         },
     );
     assert_eq!(stream.wait(None).await.unwrap().content, "current");

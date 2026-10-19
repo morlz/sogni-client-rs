@@ -18,6 +18,7 @@ async fn expired_command_is_not_written_even_before_its_caller_timeout_runs() {
         },
         7,
         1,
+        &EventBus::default(),
     )
     .await;
     assert!(result.is_ok());

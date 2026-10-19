@@ -24,9 +24,9 @@ use tokio_tungstenite::{
 use self::policy::{DisconnectDisposition, disconnect_disposition, transport_loss};
 use super::{
     PROTOCOL_VERSION, RECONNECT_BASE_DELAY, RECONNECT_MAX_DELAY, SWITCH_CONNECTION, SocketCommand,
-    SocketInner,
+    SocketInner, SocketSendReceipt,
 };
-use crate::{Error, Network, Result, auth::AuthVersion, utils::b64_json_decode};
+use crate::{Error, Network, Result, auth::AuthVersion, event::EventBus, utils::b64_json_decode};
 
 pub(super) async fn socket_manager(
     inner: Arc<SocketInner>,
@@ -304,6 +304,7 @@ where
                     command,
                     session,
                     inner.generation.load(Ordering::Acquire),
+                    &inner.events,
                 )
                 .await
                 {
@@ -379,6 +380,7 @@ async fn send_command<S>(
     command: SocketCommand,
     connection_session: u64,
     generation: u64,
+    events: &EventBus,
 ) -> std::result::Result<(), SocketCommand>
 where
     S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin,
@@ -416,7 +418,10 @@ where
                     deadline,
                 });
             }
-            let _ = response.send(Ok(generation));
+            let _ = response.send(Ok(SocketSendReceipt {
+                generation,
+                event_sequence: events.sequence(),
+            }));
             Ok(())
         }
     }

@@ -77,7 +77,9 @@ fn handle_chat_event(inner: &Arc<ChatInner>, scoped: ScopedEvent) {
         "jobState" => handle_state(inner, &event.data),
         "connecting" => transport_recovery::lost(inner, scoped.session),
         "disconnected" => transport_recovery::closed(inner, &event.data, scoped.session),
-        "authenticated" => transport_recovery::authenticated(inner, &event.data, scoped.session),
+        "authenticated" => {
+            transport_recovery::authenticated(inner, &event.data, scoped.session, scoped.sequence)
+        }
         _ => {}
     }
 }

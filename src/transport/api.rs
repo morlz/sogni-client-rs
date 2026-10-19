@@ -161,18 +161,19 @@ impl ApiClient {
         socket.get(path, query).await
     }
 
-    pub(crate) async fn send_socket_in_session<T: Serialize>(
+    pub(crate) async fn send_socket_ordered_in_session<T: Serialize>(
         &self,
         message_type: &str,
         data: &T,
         session: u64,
-    ) -> Result<()> {
+    ) -> Result<u64> {
         let socket = self.socket.as_ref().ok_or_else(|| {
             Error::InvalidInput("this client was created with disable_socket=true".into())
         })?;
         socket
-            .send_in_session(message_type, &serde_json::to_value(data)?, session)
+            .send_receipt_in_session(message_type, &serde_json::to_value(data)?, session)
             .await
+            .map(|receipt| receipt.event_sequence)
     }
 
     pub async fn switch_network(&self, network: Network) -> Result<Network> {

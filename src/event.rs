@@ -1,3 +1,8 @@
+use std::sync::{
+    Arc,
+    atomic::{AtomicU64, Ordering},
+};
+
 use serde_json::Value;
 use tokio::sync::broadcast;
 
@@ -14,12 +19,14 @@ pub type EventReceiver = broadcast::Receiver<Event>;
 pub(crate) struct ScopedEvent {
     pub(crate) event: Event,
     pub(crate) session: Option<u64>,
+    pub(crate) sequence: u64,
 }
 
 #[derive(Clone, Debug)]
 pub(crate) struct EventBus {
     sender: broadcast::Sender<Event>,
     scoped_sender: broadcast::Sender<ScopedEvent>,
+    sequence: Arc<AtomicU64>,
 }
 
 impl Default for EventBus {
@@ -35,6 +42,7 @@ impl EventBus {
         Self {
             sender,
             scoped_sender,
+            sequence: Arc::new(AtomicU64::new(0)),
         }
     }
 
@@ -47,12 +55,21 @@ impl EventBus {
     }
 
     fn emit_with_session(&self, name: impl Into<String>, data: Value, session: Option<u64>) {
+        let sequence = self.sequence.fetch_add(1, Ordering::AcqRel) + 1;
         let event = Event {
             name: name.into(),
             data,
         };
         let _ = self.sender.send(event.clone());
-        let _ = self.scoped_sender.send(ScopedEvent { event, session });
+        let _ = self.scoped_sender.send(ScopedEvent {
+            event,
+            session,
+            sequence,
+        });
+    }
+
+    pub(crate) fn sequence(&self) -> u64 {
+        self.sequence.load(Ordering::Acquire)
     }
 
     pub(crate) fn subscribe(&self) -> EventReceiver {

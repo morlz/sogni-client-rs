@@ -11,6 +11,7 @@ const TRANSPORT_LOST_MESSAGE: &str =
 #[derive(Default)]
 pub(in crate::chat) struct TransportRecovery {
     unsent: HashMap<String, PendingSend>,
+    sent: HashMap<String, u64>,
     awaiting: HashMap<String, u64>,
     timer_epoch: u64,
 }
@@ -18,6 +19,13 @@ pub(in crate::chat) struct TransportRecovery {
 struct PendingSend {
     session: u64,
     closed: bool,
+    handshake: Option<Handshake>,
+}
+
+#[derive(Clone, Copy)]
+struct Handshake {
+    sequence: u64,
+    kept: bool,
 }
 
 impl TransportRecovery {
@@ -27,29 +35,41 @@ impl TransportRecovery {
             PendingSend {
                 session,
                 closed: false,
+                handshake: None,
             },
         );
     }
 
     pub(in crate::chat) fn forget(&mut self, id: &str) {
         self.unsent.remove(id);
+        self.sent.remove(id);
         self.awaiting.remove(id);
     }
 }
 
-pub(in crate::chat) fn submitted(inner: &ChatInner, id: &str) {
-    let closed_during_send = {
+pub(in crate::chat) fn submitted(inner: &ChatInner, id: &str, sent_after_event: u64) {
+    let ended_during_send = {
         let mut recovery = inner.recovery.lock();
-        recovery
-            .unsent
-            .remove(id)
-            .is_some_and(|pending| pending.closed)
+        let Some(pending) = recovery.unsent.remove(id) else {
+            // A terminal frame may finish the stream before the submitter wakes.
+            return;
+        };
+        let ended = pending.closed
+            || pending
+                .handshake
+                .is_some_and(|handshake| !handshake.kept && sent_after_event < handshake.sequence);
+        if !ended {
+            recovery.sent.insert(id.to_owned(), sent_after_event);
+        }
+        ended
     };
     // The socket can acknowledge a write and close before the submitter runs
     // again. Such work was skipped as unsent by closed(), but cannot survive a
     // terminal close of its own account. Another session's delayed close must
     // not invalidate a successful submission on the new account's socket.
-    if closed_during_send {
+    // A handshake can likewise arrive before the write acknowledgement is
+    // consumed. Only writes before that frame are eligible for reconciliation.
+    if ended_during_send {
         fail(inner, id);
     }
 }
@@ -150,7 +170,7 @@ fn expire(inner: &ChatInner, epoch: u64) {
     }
 }
 
-pub(super) fn authenticated(inner: &ChatInner, data: &Value, session: Option<u64>) {
+pub(super) fn authenticated(inner: &ChatInner, data: &Value, session: Option<u64>, sequence: u64) {
     let Some(ids) = data.get("activeLLMJobIDs").and_then(Value::as_array) else {
         return;
     };
@@ -168,11 +188,27 @@ pub(super) fn authenticated(inner: &ChatInner, data: &Value, session: Option<u64
         .collect();
     let gone = {
         let mut recovery = inner.recovery.lock();
-        active
-            .into_iter()
-            .filter(|id| recovery.awaiting.remove(id).is_some())
-            .filter(|id| !live.contains(&id.to_uppercase()))
-            .collect::<Vec<_>>()
+        let mut gone = Vec::new();
+        for id in active {
+            recovery.awaiting.remove(&id);
+            let kept = live.contains(&id.to_uppercase());
+            if let Some(pending) = recovery.unsent.get_mut(&id) {
+                if pending
+                    .handshake
+                    .is_none_or(|previous| previous.sequence < sequence)
+                {
+                    pending.handshake = Some(Handshake { sequence, kept });
+                }
+            } else if !kept
+                && recovery
+                    .sent
+                    .get(&id)
+                    .is_none_or(|sent_after_event| *sent_after_event < sequence)
+            {
+                gone.push(id);
+            }
+        }
+        gone
     };
     for id in gone {
         fail(inner, &id);
@@ -199,6 +235,105 @@ mod tests {
     use futures_util::StreamExt;
 
     #[tokio::test]
+    async fn missing_handshake_settles_an_earlier_write_with_a_delayed_acknowledgement() {
+        let client = SogniClient::builder()
+            .disable_socket(true)
+            .build()
+            .await
+            .unwrap();
+        let inner = &client.chat.inner;
+        let (chat, stream) = active_chat("EARLIER");
+        inner.recovery.lock().submitting("EARLIER".into(), 0);
+        inner.active.write().insert("EARLIER".into(), chat);
+
+        // The writer completed before frame 2, but its caller has not resumed.
+        authenticated(inner, &json!({"activeLLMJobIDs": []}), None, 2);
+        submitted(inner, "EARLIER", 1);
+        assert!(crate::is_retryable_chat_error(
+            &stream.wait(None).await.unwrap_err()
+        ));
+        assert!(inner.active.read().is_empty());
+        assert!(inner.recovery.lock().sent.is_empty());
+        client.close().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn delayed_handshake_does_not_reject_a_write_that_followed_its_frame() {
+        let client = SogniClient::builder()
+            .disable_socket(true)
+            .build()
+            .await
+            .unwrap();
+        let inner = &client.chat.inner;
+        let (chat, stream) = active_chat("LATER");
+        inner.recovery.lock().submitting("LATER".into(), 0);
+        inner.active.write().insert("LATER".into(), chat);
+
+        // Frame 2 unblocked the writer. Its acknowledgement reached the caller
+        // before the separate chat listener consumed that same frame.
+        submitted(inner, "LATER", 2);
+        authenticated(inner, &json!({"activeLLMJobIDs": []}), None, 2);
+        assert!(!stream.state.read().complete);
+        handle_result(inner, &json!({"jobID": "LATER"}));
+        assert!(stream.wait(None).await.is_ok());
+        assert!(inner.recovery.lock().sent.is_empty());
+        client.close().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn terminal_result_before_a_late_receipt_does_not_recreate_recovery_state() {
+        let client = SogniClient::builder()
+            .disable_socket(true)
+            .build()
+            .await
+            .unwrap();
+        let inner = &client.chat.inner;
+        let (chat, stream) = active_chat("DONE");
+        inner.recovery.lock().submitting("DONE".into(), 0);
+        inner.active.write().insert("DONE".into(), chat);
+        let mut events = inner.events.subscribe();
+
+        authenticated(inner, &json!({"activeLLMJobIDs": []}), None, 2);
+        handle_result(inner, &json!({"jobID": "DONE"}));
+        submitted(inner, "DONE", 1);
+        assert!(stream.wait(None).await.is_ok());
+        assert_eq!(events.try_recv().unwrap().name, "completed");
+        assert!(events.try_recv().is_err());
+        {
+            let recovery = inner.recovery.lock();
+            assert!(
+                recovery.unsent.is_empty()
+                    && recovery.sent.is_empty()
+                    && recovery.awaiting.is_empty()
+            );
+        }
+        client.close().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_later_kept_handshake_clears_a_pending_missing_decision() {
+        let client = SogniClient::builder()
+            .disable_socket(true)
+            .build()
+            .await
+            .unwrap();
+        let inner = &client.chat.inner;
+        let (chat, stream) = active_chat("KEPT");
+        inner.recovery.lock().submitting("KEPT".into(), 0);
+        inner.active.write().insert("KEPT".into(), chat);
+
+        authenticated(inner, &json!({"activeLLMJobIDs": []}), None, 2);
+        authenticated(inner, &json!({"activeLLMJobIDs": ["kept"]}), None, 3);
+        authenticated(inner, &json!({"activeLLMJobIDs": []}), None, 2);
+        submitted(inner, "KEPT", 1);
+        assert!(!stream.state.read().complete);
+        handle_result(inner, &json!({"jobID": "KEPT"}));
+        assert!(stream.wait(None).await.is_ok());
+        assert!(inner.recovery.lock().sent.is_empty());
+        client.close().await.unwrap();
+    }
+
+    #[tokio::test]
     async fn terminal_close_before_send_completion_settles_unbounded_stream_wait() {
         let client = SogniClient::builder()
             .disable_socket(true)
@@ -214,7 +349,7 @@ mod tests {
         // whose submitter has not resumed when the terminal close is handled.
         closed(inner, &json!({"code":1000}), None);
         assert!(!stream.state.read().complete);
-        submitted(inner, "JOB");
+        submitted(inner, "JOB", 0);
 
         let error = tokio::time::timeout(Duration::from_millis(50), stream.wait(None))
             .await
@@ -256,8 +391,8 @@ mod tests {
         assert!(!sent_stream.state.read().complete);
         assert!(!queued_stream.state.read().complete);
 
-        authenticated(inner, &json!({"activeLLMJobIDs":["sent"]}), None);
-        submitted(inner, "QUEUED");
+        authenticated(inner, &json!({"activeLLMJobIDs":["sent"]}), None, 1);
+        submitted(inner, "QUEUED", 1);
         expire(inner, grace_epoch);
         assert!(!sent_stream.state.read().complete);
         assert!(!queued_stream.state.read().complete);
@@ -290,7 +425,7 @@ mod tests {
         ]);
         inner.recovery.lock().submitting("UNSENT".into(), 0);
         lost(inner, None);
-        authenticated(inner, &json!({"activeLLMJobIDs":["present"]}), None);
+        authenticated(inner, &json!({"activeLLMJobIDs":["present"]}), None, 1);
         let error = gone_stream
             .wait(Some(Duration::from_millis(50)))
             .await
@@ -372,8 +507,8 @@ mod tests {
             super::super::handle_chat_event(inner, delayed_listener.try_recv().unwrap());
         }
         // Successful send acknowledgements arrive after the delayed close.
-        submitted(inner, "OLD_QUEUED");
-        submitted(inner, "NEW_QUEUED");
+        submitted(inner, "OLD_QUEUED", wire_events.sequence());
+        submitted(inner, "NEW_QUEUED", wire_events.sequence());
         assert!(crate::is_retryable_chat_error(
             &old_sent_stream.wait(None).await.unwrap_err()
         ));
@@ -387,7 +522,12 @@ mod tests {
         assert!(!new_sent_stream.state.read().complete);
         assert!(inner.recovery.lock().awaiting.contains_key("NEW_SENT"));
 
-        authenticated(inner, &json!({"activeLLMJobIDs":["NEW_SENT"]}), Some(8));
+        authenticated(
+            inner,
+            &json!({"activeLLMJobIDs":["NEW_SENT", "NEW_QUEUED"]}),
+            Some(8),
+            wire_events.sequence() + 1,
+        );
         expire(inner, new_timer);
         for id in ["NEW_SENT", "NEW_QUEUED"] {
             handle_tokens(inner, &json!({"jobID":id,"content":"done"}));

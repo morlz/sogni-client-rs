@@ -31,10 +31,16 @@ const RECONNECT_MAX_DELAY: f64 = 15.0;
 enum SocketCommand {
     Send {
         message: Message,
-        response: oneshot::Sender<Result<u64>>,
+        response: oneshot::Sender<Result<SocketSendReceipt>>,
         session: u64,
         deadline: tokio::time::Instant,
     },
+}
+
+#[derive(Clone, Copy, Debug)]
+pub(super) struct SocketSendReceipt {
+    pub(super) generation: u64,
+    pub(super) event_sequence: u64,
 }
 
 #[derive(Clone)]
@@ -202,6 +208,17 @@ impl SocketTransport {
         data: &Value,
         session: u64,
     ) -> Result<u64> {
+        self.send_receipt_in_session(message_type, data, session)
+            .await
+            .map(|receipt| receipt.generation)
+    }
+
+    pub(super) async fn send_receipt_in_session(
+        &self,
+        message_type: &str,
+        data: &Value,
+        session: u64,
+    ) -> Result<SocketSendReceipt> {
         self.start().await?;
         if self.inner.auth.version().session != session {
             return Err(Error::InvalidInput(
