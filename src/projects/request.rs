@@ -70,6 +70,39 @@ impl MediaSource {
             }),
         }
     }
+
+    pub(super) async fn read_for_role(&self, role: &AssetRole) -> Result<LoadedMedia> {
+        let mut media = self.read().await?;
+        if matches!(
+            self,
+            Self::Bytes {
+                content_type: Some(_),
+                ..
+            }
+        ) {
+            return Ok(media);
+        }
+        // Ogg and WebM can contain either audio or video; the reference slot
+        // supplies that distinction without changing an explicit caller type.
+        if media.data.starts_with(b"OggS")
+            && matches!(
+                role,
+                AssetRole::ReferenceVideo | AssetRole::ReferenceVideoSlot(_)
+            )
+        {
+            media.content_type = Some("video/ogg".into());
+        } else if media.data.starts_with(b"\x1a\x45\xdf\xa3")
+            && matches!(
+                role,
+                AssetRole::ReferenceAudio
+                    | AssetRole::ReferenceAudioSlot(_)
+                    | AssetRole::ReferenceAudioIdentity
+            )
+        {
+            media.content_type = Some("audio/webm".into());
+        }
+        Ok(media)
+    }
 }
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]

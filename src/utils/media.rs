@@ -32,6 +32,15 @@ pub fn detect_content_type(path: Option<&Path>, bytes: &[u8]) -> Option<String> 
         }
         return Some("video/mp4".into());
     }
+    if bytes.starts_with(b"fLaC") {
+        return Some("audio/flac".into());
+    }
+    if bytes.starts_with(b"OggS") {
+        return Some("audio/ogg".into());
+    }
+    if bytes.starts_with(b"\x1a\x45\xdf\xa3") {
+        return Some("video/webm".into());
+    }
     path.and_then(|path| {
         mime_guess::from_path(path)
             .first_raw()
