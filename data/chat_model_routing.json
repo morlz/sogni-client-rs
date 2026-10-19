@@ -1,6 +1,6 @@
 {
-  "version": "5.63.1",
-  "commit": "e3797a2ed623689309cf28186180f866683c3569",
+  "version": "5.66.0",
+  "commit": "9805a8c146dea25065d080881e07da4c5c878a88",
   "selectors": {
     "image": {
       "chatgpt": "gpt-image-2",
@@ -30,6 +30,13 @@
       "z-turbo": "z_image_turbo_bf16",
       "krea-2-turbo": "krea2_turbo_fp8_scaled",
       "krea2-turbo": "krea2_turbo_fp8_scaled",
+      "moss-image": "moss_image_sft_int8_convrot",
+      "moss-image-sft": "moss_image_sft_int8_convrot",
+      "moss-image-8step": "moss_image_sft_dmd8_int8_convrot",
+      "flux-3-klein": "flux3_image_klein_sd_int8_convrot",
+      "flux3-klein": "flux3_image_klein_sd_int8_convrot",
+      "flux-3-image-klein": "flux3_image_klein_sd_int8_convrot",
+      "flux3-image-klein": "flux3_image_klein_sd_int8_convrot",
       "z-image": "z_image_bf16",
       "chroma-v46-flash": "chroma-v.46-flash_fp8",
       "chroma-detail": "chroma-v48-detail-svd_fp8",
@@ -84,6 +91,10 @@
       "flare": "gpt-image-2.5-flare",
       "qwen-lightning": "qwen_image_edit_2511_fp8_lightning",
       "qwen": "qwen_image_edit_2511_fp8",
+      "flux-3-klein": "flux3_image_klein_sd_int8_convrot",
+      "flux3-klein": "flux3_image_klein_sd_int8_convrot",
+      "flux-3-image-klein": "flux3_image_klein_sd_int8_convrot",
+      "flux3-image-klein": "flux3_image_klein_sd_int8_convrot",
       "krea-2-identity-edit": "krea2_identity_edit_v1_2",
       "krea2-identity-edit": "krea2_identity_edit_v1_2",
       "krea-identity-edit": "krea2_identity_edit_v1_2",
@@ -205,6 +216,9 @@
       "chromaFlash": "chroma-v.46-flash_fp8",
       "zTurbo": "z_image_turbo_bf16",
       "krea2Turbo": "krea2_turbo_fp8_scaled",
+      "mossImage": "moss_image_sft_int8_convrot",
+      "mossImage8Step": "moss_image_sft_dmd8_int8_convrot",
+      "flux3ImageKlein": "flux3_image_klein_sd_int8_convrot",
       "krea2IdentityEdit": "krea2_identity_edit_v1_2",
       "darkBeastKrea2IdentityEdit": "dark_beast_krea2_identity_edit_v1_2",
       "rtxVsr": "rtx_vsr_pro"

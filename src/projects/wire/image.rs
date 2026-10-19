@@ -5,12 +5,64 @@ pub(super) fn build_image_keyframe(
     keyframe: &mut Map<String, Value>,
 ) -> Result<()> {
     let model_id = required_str(params, "modelId")?;
+    let moss = matches!(
+        model_id,
+        "moss_image_sft_int8_convrot" | "moss_image_sft_dmd8_int8_convrot"
+    );
+    // Asset builders also mark numbered slots. Count their union with the
+    // contextImages array, so a reference represented both ways is counted once.
+    let context_slots = (1_usize..=16)
+        .filter(|index| truthy(params.get(&format!("contextImage{index}"))))
+        .max()
+        .unwrap_or(0)
+        .max(
+            params
+                .get("contextImages")
+                .and_then(Value::as_array)
+                .map_or(0, Vec::len),
+        );
+    if moss && (truthy(params.get("startingImage")) || context_slots != 0) {
+        return Err(Error::InvalidInput(
+            "MOSS-Image SFT generates from text and does not accept guide or reference images."
+                .into(),
+        ));
+    }
+    if model_id == "flux3_image_klein_sd_int8_convrot"
+        && context_slots > max_context_images(model_id)
+    {
+        return Err(Error::InvalidInput(format!(
+            "Up to {} context images are supported for this model",
+            max_context_images(model_id)
+        )));
+    }
+    for field in ["mossRopeScaleX", "mossRopeScaleY"] {
+        if let Some(value) = params.get(field) {
+            if !moss {
+                return Err(Error::InvalidInput(format!(
+                    "{field} is only supported by MOSS-Image"
+                )));
+            }
+            let scale = value
+                .as_f64()
+                .filter(|number| number.is_finite() && (0.0..=100.0).contains(number))
+                .ok_or_else(|| {
+                    Error::InvalidInput(format!(
+                        "{field} must be a finite number between 0 and 100"
+                    ))
+                })?;
+            if scale != 1.0 {
+                keyframe.insert(field.into(), value.clone());
+            }
+        }
+    }
     let comfy = [
         "z_image_",
         "dark_beast_z_image_",
         "krea2_",
+        "moss_image_",
         "dark_beast_krea2_",
         "qwen_image_",
+        "flux3_",
         "wan_",
         "ace_step",
         "rtx_vsr_",
@@ -191,3 +243,7 @@ pub(super) fn build_image_keyframe(
 #[cfg(test)]
 #[path = "image_controlnet_tests.rs"]
 mod controlnet_tests;
+
+#[cfg(test)]
+#[path = "image_contracts_566_tests.rs"]
+mod contracts_566_tests;

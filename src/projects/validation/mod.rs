@@ -4,6 +4,7 @@ mod external;
 mod gpt_image;
 mod h3;
 mod keyframes;
+pub(crate) use assets::max_context_images;
 pub(super) use assets::{custom_image_size_bounds, video_asset_requirements};
 use external::{seedance_reference_limits, validate_seedance_task, validate_wan3_references};
 pub(super) use gpt_image::validate_gpt_image_options;

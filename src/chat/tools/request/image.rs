@@ -34,13 +34,7 @@ pub(super) fn plan(
                 "edit_image requires source_image_url or reference_image_urls".into(),
             ));
         }
-        let max = if crate::utils::is_gpt_image_model(&model) {
-            16
-        } else if model.contains("krea2_identity_edit") {
-            2
-        } else {
-            3
-        };
+        let max = crate::projects::max_context_images(&model);
         if inputs.len() > max {
             return Err(Error::InvalidInput(format!(
                 "{model} accepts at most {max} reference images; this request supplies {}",
@@ -119,3 +113,7 @@ pub(super) fn plan(
     }
     Ok(plan)
 }
+
+#[cfg(test)]
+#[path = "image_566_tests.rs"]
+mod contracts_566_tests;

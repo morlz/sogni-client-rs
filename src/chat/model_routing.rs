@@ -157,7 +157,8 @@ pub fn is_edit_image_model(model_id: &str) -> bool {
     is_gpt_image_model(model_id)
         || matches!(
             model_id,
-            "qwen_image_edit_2511_fp8"
+            "flux3_image_klein_sd_int8_convrot"
+                | "qwen_image_edit_2511_fp8"
                 | "qwen_image_edit_2511_fp8_lightning"
                 | "krea2_identity_edit_v1_2"
                 | "dark_beast_krea2_identity_edit_v1_2"

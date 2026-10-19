@@ -80,6 +80,7 @@ pub use snapshots::{
     ProjectStatus,
 };
 pub use submission::{ProjectSubmissionError, SubmissionPhase};
+pub(crate) use validation::max_context_images;
 
 use events::{cancel_project, listen_for_project_events};
 use helpers::*;

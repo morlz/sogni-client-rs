@@ -1,6 +1,6 @@
 {
-  "version": "5.63.1",
-  "commit": "e3797a2ed623689309cf28186180f866683c3569",
+  "version": "5.66.0",
+  "commit": "9805a8c146dea25065d080881e07da4c5c878a88",
   "models": [
     {
       "id": "gpt-image-2",
@@ -34,6 +34,21 @@
     },
     {
       "id": "krea2_turbo_fp8_scaled",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "moss_image_sft_int8_convrot",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "moss_image_sft_dmd8_int8_convrot",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "flux3_image_klein_sd_int8_convrot",
       "media": "image",
       "workerCount": 1
     },
@@ -369,6 +384,114 @@
     }
   ],
   "requests": [
+    {
+      "tool": "generate_image",
+      "args": {
+        "prompt": "{\"caption\":\"Exact text 山海\"}",
+        "model": "moss-image",
+        "width": 513,
+        "height": 2047,
+        "steps": 50,
+        "seed": 0
+      },
+      "options": {},
+      "expected": {
+        "type": "image",
+        "modelId": "moss_image_sft_int8_convrot",
+        "positivePrompt": "{\"caption\":\"Exact text 山海\"}",
+        "numberOfMedia": 1,
+        "width": 513,
+        "height": 2047,
+        "sizePreset": "custom",
+        "steps": 50,
+        "seed": 0
+      }
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "prompt": "a lighthouse",
+        "model": "moss-image-8step",
+        "width": 1024,
+        "height": 1024,
+        "steps": 8
+      },
+      "options": {},
+      "expected": {
+        "type": "image",
+        "modelId": "moss_image_sft_dmd8_int8_convrot",
+        "positivePrompt": "a lighthouse",
+        "numberOfMedia": 1,
+        "width": 1024,
+        "height": 1024,
+        "sizePreset": "custom",
+        "steps": 8
+      }
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "prompt": "a lighthouse",
+        "model": "flux-3-klein",
+        "width": 4096,
+        "height": 256,
+        "steps": 16
+      },
+      "options": {},
+      "expected": {
+        "type": "image",
+        "modelId": "flux3_image_klein_sd_int8_convrot",
+        "positivePrompt": "a lighthouse",
+        "numberOfMedia": 1,
+        "width": 4096,
+        "height": 256,
+        "sizePreset": "custom",
+        "steps": 16
+      }
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "prompt": "keep all references",
+        "model": "flux-3-klein",
+        "source_image_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+        "reference_image_urls": [
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII=",
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a6c0AAAAASUVORK5CYII="
+        ],
+        "width": 256,
+        "height": 4096
+      },
+      "options": {},
+      "expected": {
+        "type": "image",
+        "modelId": "flux3_image_klein_sd_int8_convrot",
+        "positivePrompt": "keep all references",
+        "numberOfMedia": 1,
+        "contextImages": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "width": 256,
+        "height": 4096,
+        "sizePreset": "custom"
+      }
+    },
     {
       "tool": "generate_image",
       "args": {

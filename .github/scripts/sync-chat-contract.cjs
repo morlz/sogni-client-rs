@@ -79,6 +79,10 @@ async function requestFixtures() {
   const wav = 'data:audio/wav;base64,' + Buffer.from('RIFF\0\0\0\0WAVE', 'binary').toString('base64');
   const mp4 = 'data:video/mp4;base64,' + Buffer.from([0,0,0,12,...Buffer.from('ftypisom')]).toString('base64');
   const cases = [
+    ['generate_image', 'executeImageGeneration', { prompt:'{"caption":"Exact text 山海"}', model:'moss-image', width:513, height:2047, steps:50, seed:0 }],
+    ['generate_image', 'executeImageGeneration', { prompt:'a lighthouse', model:'moss-image-8step', width:1024, height:1024, steps:8 }],
+    ['generate_image', 'executeImageGeneration', { prompt:'a lighthouse', model:'flux-3-klein', width:4096, height:256, steps:16 }],
+    ['edit_image', 'executeImageEdit', { prompt:'keep all references', model:'flux-3-klein', source_image_url:png, reference_image_urls:Array(9).fill(png), width:256, height:4096 }],
     ['generate_image', 'executeImageGeneration', { prompt:'a lighthouse', model:'sunburst', gpt_image_quality:' HIGH ', gpt_image_background:'TRANSPARENT', gpt_image_output_compression:0, output_format:'jpeg', width:1024, height:1024, numberOfVariations:3, seed:0 }],
     ['edit_image', 'executeImageEdit', { prompt:'a portrait', model:'flare', source_image_url:png, mask_image_url:'https://cdn.sogni.ai/mask.png', outputFormat:'webp', gptImageBackground:'opaque', gptImageOutputCompression:90 }],
     ['generate_video', 'executeVideoGeneration', { prompt:'ocean', videoModel:'seedance2-5', duration:4, outputFormat:'webm', returnLastFrame:true, generateAudio:false }],

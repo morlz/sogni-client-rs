@@ -209,6 +209,20 @@ impl ProjectRequest {
         self.param("promptExpanded", expanded)
     }
 
+    /// Set the horizontal spatial RoPE scale for a MOSS image request.
+    /// Finite values from 0 through 100 are accepted; neutral 1 is omitted on wire.
+    #[must_use]
+    pub fn moss_rope_scale_x(self, value: f64) -> Self {
+        self.param("mossRopeScaleX", value)
+    }
+
+    /// Set the vertical spatial RoPE scale for a MOSS image request.
+    /// Finite values from 0 through 100 are accepted; neutral 1 is omitted on wire.
+    #[must_use]
+    pub fn moss_rope_scale_y(self, value: f64) -> Self {
+        self.param("mossRopeScaleY", value)
+    }
+
     /// Select the source-image foreground for a SAM3 segmentation request.
     #[must_use]
     pub fn sam3_prompt(self, value: Sam3ImagePrompt) -> Self {

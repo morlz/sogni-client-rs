@@ -1,6 +1,6 @@
 {
-  "version": "5.63.1",
-  "commit": "e3797a2ed623689309cf28186180f866683c3569",
+  "version": "5.66.0",
+  "commit": "9805a8c146dea25065d080881e07da4c5c878a88",
   "selectors": [
     {
       "tool": "generate_image",
@@ -379,6 +379,104 @@
         "model": "  KREA2_TURBO  "
       },
       "expected": "krea2_turbo_fp8_scaled"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "moss-image"
+      },
+      "expected": "moss_image_sft_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  MOSS_IMAGE  "
+      },
+      "expected": "moss_image_sft_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "moss-image-sft"
+      },
+      "expected": "moss_image_sft_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  MOSS_IMAGE_SFT  "
+      },
+      "expected": "moss_image_sft_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "moss-image-8step"
+      },
+      "expected": "moss_image_sft_dmd8_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  MOSS_IMAGE_8STEP  "
+      },
+      "expected": "moss_image_sft_dmd8_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "flux-3-klein"
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  FLUX_3_KLEIN  "
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "flux3-klein"
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  FLUX3_KLEIN  "
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "flux-3-image-klein"
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  FLUX_3_IMAGE_KLEIN  "
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "flux3-image-klein"
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  FLUX3_IMAGE_KLEIN  "
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
     },
     {
       "tool": "generate_image",
@@ -1121,6 +1219,62 @@
         "model": "  QWEN  "
       },
       "expected": "qwen_image_edit_2511_fp8"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "flux-3-klein"
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  FLUX_3_KLEIN  "
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "flux3-klein"
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  FLUX3_KLEIN  "
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "flux-3-image-klein"
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  FLUX_3_IMAGE_KLEIN  "
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "flux3-image-klein"
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  FLUX3_IMAGE_KLEIN  "
+      },
+      "expected": "flux3_image_klein_sd_int8_convrot"
     },
     {
       "tool": "edit_image",
@@ -3398,6 +3552,21 @@
       "workerCount": 1
     },
     {
+      "id": "moss_image_sft_int8_convrot",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "moss_image_sft_dmd8_int8_convrot",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "flux3_image_klein_sd_int8_convrot",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
       "id": "krea2_identity_edit_v1_2",
       "media": "image",
       "workerCount": 1
@@ -3912,6 +4081,30 @@
     },
     {
       "id": "krea2_turbo_fp8_scaled",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "moss_image_sft_int8_convrot",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "moss_image_sft_dmd8_int8_convrot",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "flux3_image_klein_sd_int8_convrot",
       "expected": {
         "width": 848,
         "height": 480,
@@ -4485,6 +4678,18 @@
       "expected": false
     },
     {
+      "id": "moss_image_sft_int8_convrot",
+      "expected": false
+    },
+    {
+      "id": "moss_image_sft_dmd8_int8_convrot",
+      "expected": false
+    },
+    {
+      "id": "flux3_image_klein_sd_int8_convrot",
+      "expected": true
+    },
+    {
       "id": "krea2_identity_edit_v1_2",
       "expected": true
     },
@@ -4760,7 +4965,7 @@
   "schemas": [
     {
       "name": "generate_image",
-      "sha256": "2a8a44ca13b4457e1f23e27e3c83299d41d3b710191b55962f6f55ae344cf7bd"
+      "sha256": "b2d42d9bc73ab0bee44a562d6bebceb9c0e819f06308c49f3133fa5a82c6ea8b"
     },
     {
       "name": "generate_video",
@@ -4776,7 +4981,7 @@
     },
     {
       "name": "edit_image",
-      "sha256": "45695b2ce0595f9b8514205e691dc61acccd57716a22bc4a81891f701e07d8e7"
+      "sha256": "011413a46e300ed05ec2710b078f1507edf4f29552c53a2e01b0dd70296f2562"
     },
     {
       "name": "apply_style",

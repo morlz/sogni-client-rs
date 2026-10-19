@@ -113,7 +113,12 @@ pub(in crate::projects) fn video_asset_requirements(
 }
 
 pub(in crate::projects) fn custom_image_size_bounds(model_id: &str) -> (f64, f64) {
-    if model_id == "rtx_vsr_pro" {
+    if matches!(
+        model_id,
+        "moss_image_sft_int8_convrot" | "moss_image_sft_dmd8_int8_convrot"
+    ) {
+        (512.0, 2_048.0)
+    } else if model_id == "rtx_vsr_pro" {
         (512.0, 15_360.0)
     } else if matches!(
         model_id,
@@ -122,6 +127,8 @@ pub(in crate::projects) fn custom_image_size_bounds(model_id: &str) -> (f64, f64
         (512.0, 2_048.0)
     } else if is_gpt_image_model(model_id) {
         (256.0, 3_840.0)
+    } else if model_id == "flux3_image_klein_sd_int8_convrot" {
+        (256.0, 4_096.0)
     } else if matches!(
         model_id,
         "z_image_bf16"
@@ -135,5 +142,26 @@ pub(in crate::projects) fn custom_image_size_bounds(model_id: &str) -> (f64, f64
         (256.0, 2_560.0)
     } else {
         (256.0, 2_048.0)
+    }
+}
+
+pub(crate) fn max_context_images(model_id: &str) -> usize {
+    if matches!(
+        model_id,
+        "moss_image_sft_int8_convrot" | "moss_image_sft_dmd8_int8_convrot"
+    ) {
+        0
+    } else if is_gpt_image_model(model_id) {
+        16
+    } else if model_id == "flux3_image_klein_sd_int8_convrot" {
+        10
+    } else if matches!(
+        model_id,
+        "krea2_identity_edit_v1_2" | "dark_beast_krea2_identity_edit_v1_2"
+    ) || model_id.contains("kontext")
+    {
+        2
+    } else {
+        3
     }
 }
