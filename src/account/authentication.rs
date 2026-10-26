@@ -42,8 +42,6 @@ impl AccountApi {
         remember_me: bool,
         app_source: Option<&str>,
     ) -> Result<Value> {
-        use ethers_signers::Signer as _;
-
         let session = self.client.rest.request_session();
         let wallet = wallet(username, password)?;
         let address = format!("{:#x}", wallet.address());
@@ -85,8 +83,6 @@ impl AccountApi {
         password: &str,
         options: Value,
     ) -> Result<Value> {
-        use ethers_signers::Signer as _;
-
         let session = self.client.rest.request_session();
         if username.is_empty() || email.is_empty() || password.is_empty() {
             return Err(Error::InvalidInput(

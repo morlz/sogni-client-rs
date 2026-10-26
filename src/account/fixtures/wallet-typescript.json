@@ -1,0 +1,536 @@
+{
+  "version": "5.69.1",
+  "commit": "5970a1bd40b88f678719188969c8633bc313b665",
+  "wallets": [
+    {
+      "username": "TestUser",
+      "password": "correct horse battery staple",
+      "address": "0x930fbddbfa47bf6263330d551414750c2688be5a"
+    },
+    {
+      "username": "testuser",
+      "password": "correct horse battery staple",
+      "address": "0x930fbddbfa47bf6263330d551414750c2688be5a"
+    },
+    {
+      "username": "Пользователь",
+      "password": "public fixture 🔑",
+      "address": "0xc136b39e0a3e4f5d1870c4cafdf40ff0f558070f"
+    },
+    {
+      "username": " User ",
+      "password": "synthetic-only-password",
+      "address": "0x61e9ed88731a68320d541279320907fa9758d173"
+    }
+  ],
+  "cases": [
+    {
+      "name": "authentication",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "Authentication": [
+            {
+              "name": "walletAddress",
+              "type": "address"
+            },
+            {
+              "name": "nonce",
+              "type": "string"
+            }
+          ]
+        },
+        "primaryType": "Authentication",
+        "domain": {
+          "name": "Sogni AI",
+          "version": "1",
+          "chainId": 8453,
+          "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+        },
+        "message": {
+          "walletAddress": "0x930fbddbfa47bf6263330d551414750c2688be5a",
+          "nonce": "alpha-test-nonce"
+        }
+      },
+      "hash": "0xe5f3797dcd1ab85214e4d8ad53c7770b3e0bdf9299225f8857de566cfef69477",
+      "signature": "0x6b129f1e57545143aa6805c34422ab44779933880bd21c5f42e49729f6851d57355bcb5ae449c242533c59b9dfe2ccd92064dd939517609e9f1b1079d2f6c3f11b"
+    },
+    {
+      "name": "testnet-unicode",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "Authentication": [
+            {
+              "name": "walletAddress",
+              "type": "address"
+            },
+            {
+              "name": "nonce",
+              "type": "string"
+            }
+          ]
+        },
+        "primaryType": "Authentication",
+        "domain": {
+          "name": "Sogni-testnet",
+          "version": "1",
+          "chainId": 84532,
+          "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+        },
+        "message": {
+          "walletAddress": "0x930fbddbfa47bf6263330d551414750c2688be5a",
+          "nonce": "校验 🔑"
+        }
+      },
+      "hash": "0xff5871c522370dec464644ace6d15185fb3bd2c4e425e9eb7c67f7428f71cf71",
+      "signature": "0x613e19d5a2f88ddd654ebd2c7358eb03b8a787d9d845de27069f7e09cc240a451450ac7f444f6a63a40c54e6f64a6b8ef69c203aef8535e5108edcec1b417b251c"
+    },
+    {
+      "name": "permit-big-decimal",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "Permit": [
+            {
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "name": "spender",
+              "type": "address"
+            },
+            {
+              "name": "value",
+              "type": "uint256"
+            },
+            {
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
+              "name": "deadline",
+              "type": "uint256"
+            }
+          ]
+        },
+        "primaryType": "Permit",
+        "domain": {
+          "name": "Sogni AI",
+          "version": "1",
+          "chainId": 8453,
+          "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+        },
+        "message": {
+          "owner": "0x930fbddbfa47bf6263330d551414750c2688be5a",
+          "spender": "0x0000000000000000000000000000000000000001",
+          "value": "1234567890123456789012345678901234567890123456789012345678901234567890",
+          "nonce": "0x2105",
+          "deadline": "18446744073709551615"
+        }
+      },
+      "hash": "0x3ddbd052a299ddd1c690307c87c7f50ff782cab4cc032451c1e2f4c0611a93ac",
+      "signature": "0x62987f60e9a98b274e4e656834f950c09bfaa9800ffed416b03cff49f13f41ef2d51a8d154815afa80f7f46ebc79c5a32821d4fad633d3fe88e544c30d097d831b"
+    },
+    {
+      "name": "primitives-false",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "Primitive": [
+            {
+              "name": "flag",
+              "type": "bool"
+            },
+            {
+              "name": "small",
+              "type": "uint8"
+            },
+            {
+              "name": "signed",
+              "type": "int8"
+            },
+            {
+              "name": "large",
+              "type": "uint256"
+            },
+            {
+              "name": "minimum",
+              "type": "int256"
+            },
+            {
+              "name": "who",
+              "type": "address"
+            },
+            {
+              "name": "blob",
+              "type": "bytes"
+            },
+            {
+              "name": "tag",
+              "type": "bytes1"
+            },
+            {
+              "name": "digest",
+              "type": "bytes32"
+            },
+            {
+              "name": "text",
+              "type": "string"
+            }
+          ]
+        },
+        "primaryType": "Primitive",
+        "domain": {
+          "name": "Sogni AI",
+          "version": "1",
+          "chainId": 8453,
+          "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+        },
+        "message": {
+          "flag": false,
+          "small": 255,
+          "signed": -128,
+          "large": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+          "minimum": "-57896044618658097711785492504343953926634992332820282019728792003956564819968",
+          "who": "0x930fbddbfa47bf6263330d551414750c2688be5a",
+          "blob": "0x012345",
+          "tag": "0xff",
+          "digest": "0xabababababababababababababababababababababababababababababababab",
+          "text": "Exact text 山海\n"
+        }
+      },
+      "hash": "0x009941eb244d17013932d4ad3824a332d1730aac40fae566a4875fc512701d0a",
+      "signature": "0x419fa2cd3623bdd7e2c5b5832b61dd3e4b9af89b168ce195bf32ecade073d196355a72005842abb5d868ac7cc5d05ffc16b410c3ab3561f1cc17bc8eb6e1c9f91c"
+    },
+    {
+      "name": "primitives-true",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "Primitive": [
+            {
+              "name": "flag",
+              "type": "bool"
+            },
+            {
+              "name": "small",
+              "type": "uint8"
+            },
+            {
+              "name": "signed",
+              "type": "int8"
+            },
+            {
+              "name": "large",
+              "type": "uint256"
+            },
+            {
+              "name": "minimum",
+              "type": "int256"
+            },
+            {
+              "name": "who",
+              "type": "address"
+            },
+            {
+              "name": "blob",
+              "type": "bytes"
+            },
+            {
+              "name": "tag",
+              "type": "bytes1"
+            },
+            {
+              "name": "digest",
+              "type": "bytes32"
+            },
+            {
+              "name": "text",
+              "type": "string"
+            }
+          ]
+        },
+        "primaryType": "Primitive",
+        "domain": {
+          "name": "Sogni AI",
+          "version": "1",
+          "chainId": 8453,
+          "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+        },
+        "message": {
+          "flag": true,
+          "small": 255,
+          "signed": -128,
+          "large": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+          "minimum": "-57896044618658097711785492504343953926634992332820282019728792003956564819968",
+          "who": "0x930fbddbfa47bf6263330d551414750c2688be5a",
+          "blob": "0x",
+          "tag": "0xff",
+          "digest": "0xabababababababababababababababababababababababababababababababab",
+          "text": "Exact text 山海\n"
+        }
+      },
+      "hash": "0x868f0270407b376bb1b0fd5821a01a70b5e0207fd2f8e95447cbc8df6a329bda",
+      "signature": "0x13b9442836f5ec92983523d95d1ca13f4a746cb6ec7d8bdd024614402eedca54597369033df48cf48a7b8b8661fc6df506ca7dbad021443d7706d606b0b8c9461c"
+    },
+    {
+      "name": "nested-mail",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "Person": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "wallet",
+              "type": "address"
+            }
+          ],
+          "Mail": [
+            {
+              "name": "from",
+              "type": "Person"
+            },
+            {
+              "name": "to",
+              "type": "Person"
+            },
+            {
+              "name": "contents",
+              "type": "string"
+            }
+          ]
+        },
+        "primaryType": "Mail",
+        "domain": {
+          "name": "Sogni AI",
+          "version": "1",
+          "chainId": 8453,
+          "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+        },
+        "message": {
+          "from": {
+            "name": "Cow",
+            "wallet": "0x930fbddbfa47bf6263330d551414750c2688be5a"
+          },
+          "to": {
+            "name": "Bob",
+            "wallet": "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
+          },
+          "contents": "Hello, Bob!"
+        }
+      },
+      "hash": "0x21a121851d910a28b1796c294272200dd63744bb600f5265bd0e53de365f26a4",
+      "signature": "0xd11b1297019fa2935e2a2d7b2e22bbef7720d0f90112340be2a08f02f31c845b5fd7d55f8820634beb2ae0921c6b488333a2d9e47c165df1642a877bead61cd21b"
+    },
+    {
+      "name": "arrays",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "Batch": [
+            {
+              "name": "numbers",
+              "type": "uint256[2]"
+            },
+            {
+              "name": "matrix",
+              "type": "int32[2][]"
+            },
+            {
+              "name": "texts",
+              "type": "string[]"
+            },
+            {
+              "name": "items",
+              "type": "Item[]"
+            }
+          ],
+          "Item": [
+            {
+              "name": "ok",
+              "type": "bool"
+            },
+            {
+              "name": "data",
+              "type": "bytes"
+            }
+          ]
+        },
+        "primaryType": "Batch",
+        "domain": {
+          "name": "Sogni AI",
+          "version": "1",
+          "chainId": 8453,
+          "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+        },
+        "message": {
+          "numbers": [
+            0,
+            "0x2105"
+          ],
+          "matrix": [
+            [
+              -2147483648,
+              2147483647
+            ],
+            [
+              0,
+              -1
+            ]
+          ],
+          "texts": [
+            "",
+            "雪"
+          ],
+          "items": [
+            {
+              "ok": true,
+              "data": "0x1234"
+            },
+            {
+              "ok": false,
+              "data": "0x"
+            }
+          ]
+        }
+      },
+      "hash": "0xfdb016deb07ac8741c5513e2987182d5c4c1fdf8eac97372f9b5cfadf446f931",
+      "signature": "0x88c7c86a6342ebbce71ccb967b49fabafd6b19794ee4cf993c23c3a2256f0cec7ce5c27f42de6de6f51943fec6eaca6da31bb77c7721e52071718c3c52816d391c"
+    },
+    {
+      "name": "empty-arrays",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "Batch": [
+            {
+              "name": "numbers",
+              "type": "uint256[2]"
+            },
+            {
+              "name": "matrix",
+              "type": "int32[2][]"
+            },
+            {
+              "name": "texts",
+              "type": "string[]"
+            },
+            {
+              "name": "items",
+              "type": "Item[]"
+            }
+          ],
+          "Item": [
+            {
+              "name": "ok",
+              "type": "bool"
+            },
+            {
+              "name": "data",
+              "type": "bytes"
+            }
+          ]
+        },
+        "primaryType": "Batch",
+        "domain": {
+          "name": "Sogni AI",
+          "version": "1",
+          "chainId": 8453,
+          "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+        },
+        "message": {
+          "numbers": [
+            0,
+            0
+          ],
+          "matrix": [],
+          "texts": [],
+          "items": []
+        }
+      },
+      "hash": "0xd6a4ce31cff3700137cf86a2754762ec03d355ee5c523623a6c4d194ac9d121e",
+      "signature": "0x10f52a19c2e4ee63e2faebdd8e1daa8dad5c5953a8ec874f61765557e8b51c0e204cb57dce6fb6d6a9898eb4747e63bc935e8efd60175a3d6d80712d8d35d0b41c"
+    },
+    {
+      "name": "domain-salt",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "Authentication": [
+            {
+              "name": "walletAddress",
+              "type": "address"
+            },
+            {
+              "name": "nonce",
+              "type": "string"
+            }
+          ]
+        },
+        "primaryType": "Authentication",
+        "domain": {
+          "name": "Sogni AI",
+          "version": "1",
+          "chainId": 8453,
+          "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+          "salt": "0x4242424242424242424242424242424242424242424242424242424242424242"
+        },
+        "message": {
+          "walletAddress": "0x930fbddbfa47bf6263330d551414750c2688be5a",
+          "nonce": "salt"
+        }
+      },
+      "hash": "0xecb87e82f99af10eb6d09696fcb0222b5a8898c52bb005b0e58e36f0b8f4e188",
+      "signature": "0x4db107615cee06e1f7b5347a79fa2348e07a49105b243201578b48d97c7745862d095dd6a31d36127c6599ecca7c86e2c5fa1fdd1e303dc1edd911664fc2a9e81b"
+    },
+    {
+      "name": "sparse-domain",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "Authentication": [
+            {
+              "name": "walletAddress",
+              "type": "address"
+            },
+            {
+              "name": "nonce",
+              "type": "string"
+            }
+          ]
+        },
+        "primaryType": "Authentication",
+        "domain": {},
+        "message": {
+          "walletAddress": "0x930fbddbfa47bf6263330d551414750c2688be5a",
+          "nonce": "sparse"
+        }
+      },
+      "hash": "0xcd9bcb6096923086d32b23287711fdb5b5561599d4cb1e81ee847596d69670a5",
+      "signature": "0xec4459b7e72731b474a6201d45139a9308ecb798aed2cac65bd32f451a4074d15e91965679632aad1ce3fb16391ec9b6e973d117dd54fb4176535e4630828e871b"
+    },
+    {
+      "name": "domain-primary",
+      "wallet": 0,
+      "data": {
+        "types": {
+          "EIP712Domain": []
+        },
+        "primaryType": "EIP712Domain",
+        "domain": {
+          "name": "Sogni AI",
+          "version": "1",
+          "chainId": 8453,
+          "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+        },
+        "message": {}
+      },
+      "hash": "0xcb5667755661e77335550c6e2a7149039d35fd02394215564844465354cf2758",
+      "signature": "0xfaf716ea53be2f755b6b71d0bed44975e279d60e9657c00851ff2cd66dc55cba617ff0afd1bc44a0216a86fdea15ee94026ab8348e7ce1c1edb60f8b8e1e5cfe1b"
+    }
+  ]
+}

@@ -1,5 +1,3 @@
-use ethers_core::types::transaction::eip712::TypedData;
-use ethers_signers::{LocalWallet, Signer};
 use pbkdf2::pbkdf2_hmac;
 use serde_json::{Map, Value, json};
 use sha2::Sha256;
@@ -7,6 +5,17 @@ use zeroize::{Zeroize, Zeroizing};
 
 use super::AccountApi;
 use crate::{ApiError, Error, Result};
+
+#[path = "wallet_signer.rs"]
+mod signer;
+#[path = "wallet_typed_data.rs"]
+mod typed_data;
+use signer::LocalWallet;
+use typed_data::TypedData;
+
+#[cfg(test)]
+#[path = "wallet_crypto_fixtures.rs"]
+mod contract_tests;
 
 const VERIFYING_CONTRACT: &str = "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC";
 

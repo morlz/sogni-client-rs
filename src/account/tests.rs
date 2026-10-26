@@ -17,8 +17,6 @@ mod request_session;
 #[cfg(feature = "wallet")]
 #[test]
 fn wallet_derivation_matches_the_typescript_client() {
-    use ethers_signers::Signer as _;
-
     let derived = wallet("TestUser", "correct horse battery staple").expect("wallet");
     assert_eq!(
         format!("{:#x}", derived.address()),
@@ -35,8 +33,6 @@ fn wallet_derivation_matches_the_typescript_client() {
 #[cfg(feature = "wallet")]
 #[tokio::test]
 async fn typed_signatures_match_the_typescript_wire_format() {
-    use ethers_signers::Signer as _;
-
     let wallet = wallet("TestUser", "correct horse battery staple").unwrap();
     let client = crate::SogniClient::builder()
         .disable_socket(true)

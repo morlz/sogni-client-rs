@@ -87,8 +87,6 @@ impl AccountApi {
 
     #[cfg(feature = "wallet")]
     pub async fn withdraw(&self, password: &str, amount: &str, provider: &str) -> Result<()> {
-        use ethers_signers::Signer as _;
-
         let wallet = self.current_wallet(password)?;
         let address = format!("{:#x}", wallet.address());
         let payload = json!({
@@ -114,8 +112,6 @@ impl AccountApi {
 
     #[cfg(feature = "wallet")]
     pub async fn deposit(&self, password: &str, amount: &str, provider: &str) -> Result<()> {
-        use ethers_signers::Signer as _;
-
         let wallet = self.current_wallet(password)?;
         let address = format!("{:#x}", wallet.address());
         let body = json!({
@@ -158,8 +154,6 @@ impl AccountApi {
         spender: &str,
         provider: &str,
     ) -> Result<()> {
-        use ethers_signers::Signer as _;
-
         if !matches!(spender, "account" | "staker") {
             return Err(Error::InvalidInput(
                 "spender must be 'account' or 'staker'".into(),
