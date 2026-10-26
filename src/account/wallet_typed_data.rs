@@ -1,5 +1,5 @@
 //! EIP-712 structured encoding using ethabi's public Solidity value encoder.
-//! https://eips.ethereum.org/EIPS/eip-712
+//! <https://eips.ethereum.org/EIPS/eip-712>
 
 use std::collections::{BTreeMap, BTreeSet};
 
