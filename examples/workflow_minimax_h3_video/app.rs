@@ -102,12 +102,19 @@ fn build(args: &Args, probed: &Probed) -> Result<(ProjectRequest, i64)> {
                 );
             }
         }
-        Mode::T2v => {}
+        Mode::T2v => {
+            if let Some(path) = &args.source_video {
+                request = request.asset(AssetRole::ReferenceVideo, MediaSource::Path(path.clone()));
+                if let Some(output) = &args.extend_output {
+                    request = request.extend_output(output);
+                }
+            }
+        }
     }
     Ok((request, frames))
 }
 fn estimate(p: &Value, frames: i64, args: &Args, probed: &Probed) -> Value {
-    json!({"tokenType":p["tokenType"],"model":p["modelId"],"width":p["width"],"height":p["height"],"frames":frames,"fps":24,"steps":p["steps"],"numberOfMedia":p["numberOfMedia"],"referenceImageCount":args.ref_images.len(),"referenceVideoCount":args.ref_videos.len(),"referenceVideoDurationSeconds":probed.video.iter().filter_map(|v|v.duration_seconds).sum::<f64>()})
+    json!({"tokenType":p["tokenType"],"model":p["modelId"],"width":p["width"],"height":p["height"],"frames":frames,"fps":24,"steps":p["steps"],"numberOfMedia":p["numberOfMedia"],"hasVideoInput":args.source_video.is_some(),"referenceImageCount":args.ref_images.len(),"referenceVideoCount":args.ref_videos.len(),"referenceVideoDurationSeconds":probed.video.iter().filter_map(|v|v.duration_seconds).sum::<f64>()})
 }
 pub async fn run() -> Result<()> {
     let args = Args::parse();
@@ -177,6 +184,83 @@ pub async fn run() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn extension_uses_one_source_slot_and_prices_video_input() {
+        for model in [
+            "minimax-h3-fl2va-fp8_t2v",
+            "minimax-h3-fl2va-fp8_t2v_balanced",
+            "minimax-h3-fastvideo-int8_t2v_turbo",
+            "minimax-h3-fastvideo-int8_t2v_turbo_2stage",
+        ] {
+            let args = Args::try_parse_from([
+                "x",
+                "--model",
+                model,
+                "--source-video",
+                "source.mp4",
+                "--extend-output",
+                "continuation",
+            ])
+            .unwrap();
+            validate_shape(&args).unwrap();
+            let probed = no_probe(&args);
+            let (request, frames) = build(&args, &probed).unwrap();
+            let params = request.params();
+            assert_eq!(params["referenceVideo"], true);
+            assert_eq!(params["extendOutput"], "continuation");
+            assert!(params.get("referenceVideo1").is_none());
+            assert_eq!(
+                estimate(&params, frames, &args, &probed)["hasVideoInput"],
+                true
+            );
+        }
+        let args = Args::try_parse_from([
+            "x",
+            "--model",
+            "minimax-h3-fl2va-fp8_t2v_turbo",
+            "--source-video",
+            "source.mp4",
+        ])
+        .unwrap();
+        assert!(validate_shape(&args).is_err());
+    }
+
+    #[test]
+    fn fasth3_reference_selectors_keep_the_eight_step_canvas() {
+        for (selector, model) in [
+            (
+                "minimax-h3-fasth3-r2v-turbo",
+                "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+            ),
+            (
+                "minimax-h3-fasth3-r2v-turbo-2stage",
+                "minimax-h3-fastvideo-omni-int8_r2v_turbo_2stage",
+            ),
+            (
+                "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+                "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+            ),
+        ] {
+            let args = Args::try_parse_from([
+                "x",
+                "--model",
+                selector,
+                "--ref-image",
+                "reference.png",
+                "--lora",
+                "public-synthetic-adapter",
+                "--lora-strength",
+                "0.7",
+            ])
+            .unwrap();
+            validate_shape(&args).unwrap();
+            let spec = spec(&args).unwrap();
+            assert_eq!(spec.id, model);
+            assert_eq!(spec.steps, 8);
+            assert_eq!((spec.width, spec.height), (1344, 768));
+            assert_eq!(spec.sampler, Some("euler"));
+        }
+    }
     #[test]
     fn request_uses_duration_not_frames_and_numbered_reference_slots() {
         let args = Args::try_parse_from([

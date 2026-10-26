@@ -55,6 +55,11 @@ pub struct Args {
     pub ref_videos: Vec<PathBuf>,
     #[arg(long = "ref-audio")]
     pub ref_audios: Vec<PathBuf>,
+    /// A source clip to extend with an eligible text-to-video model.
+    #[arg(long, conflicts_with_all = ["image", "end_image", "ref_images", "ref_videos", "ref_audios"])]
+    pub source_video: Option<PathBuf>,
+    #[arg(long, value_parser = ["extended", "continuation"], requires = "source_video")]
+    pub extend_output: Option<String>,
     #[arg(long = "lora")]
     pub loras: Vec<String>,
     #[arg(long = "lora-strength", allow_hyphen_values = true)]
@@ -174,6 +179,11 @@ pub fn validate_shape(args: &Args) -> Result<()> {
         bail!("H3 R2V limits are 9 images, 3 videos, 3 audios, and 12 files total");
     }
     let model = spec(args)?;
+    if args.source_video.is_some()
+        && (mode != Mode::T2v || !sogni_client::is_minimax_h3_extend_model(&model.id))
+    {
+        bail!("--source-video requires a MiniMax H3 text-to-video model that supports extension");
+    }
     dimensions(args, &model)?;
     frames_and_duration(args)?;
     Ok(())

@@ -18,6 +18,7 @@ pub fn probe(args: &Args) -> Result<Probed> {
         .chain(args.ref_images.iter())
         .chain(args.ref_videos.iter())
         .chain(args.ref_audios.iter())
+        .chain(args.source_video.iter())
     {
         require_file(path, "reference media")?;
     }
@@ -164,7 +165,12 @@ pub fn no_probe(args: &Args) -> Probed {
 }
 pub fn validate_live_mode(args: &Args) -> Result<()> {
     if resolved_mode(args)? != Mode::R2v {
-        for path in args.image.iter().chain(args.end_image.iter()) {
+        for path in args
+            .image
+            .iter()
+            .chain(args.end_image.iter())
+            .chain(args.source_video.iter())
+        {
             require_file(path, "frame image")?;
         }
     }

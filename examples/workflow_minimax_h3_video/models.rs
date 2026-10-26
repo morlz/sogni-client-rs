@@ -39,16 +39,26 @@ pub fn spec(args: &Args) -> Result<Spec> {
     // ids; already-canonical ids pass through after their mode is checked.
     let direct = key.contains("-fl2va-") || key.contains("-ref2va-") || key.contains("-fastvideo-");
     let fast_h3 = key.contains("-fasth3-") || key.contains("-fastvideo-");
-    if fast_h3 && model_mode == Mode::R2v {
-        bail!("FastH3 has no R2V mode");
-    }
-    let turbo = key.ends_with("-turbo") || key.ends_with("_turbo");
-    let balanced = key.ends_with("-balanced") || key.ends_with("_balanced");
-    validate_alias(&key, model_mode, direct, fast_h3, turbo, balanced)?;
+    let two_stage = key.ends_with("-2stage") || key.ends_with("_2stage");
+    let base = key.trim_end_matches("-2stage").trim_end_matches("_2stage");
+    let turbo = base.ends_with("-turbo") || base.ends_with("_turbo");
+    let balanced = base.ends_with("-balanced") || base.ends_with("_balanced");
+    validate_alias(
+        &key, model_mode, direct, fast_h3, turbo, balanced, two_stage,
+    )?;
     let id = if direct {
         key
     } else if fast_h3 {
-        format!("minimax-h3-fastvideo-int8_{}_turbo", model_mode.as_str())
+        let checkpoint = if model_mode == Mode::R2v {
+            "fastvideo-omni-int8"
+        } else {
+            "fastvideo-int8"
+        };
+        format!(
+            "minimax-h3-{checkpoint}_{}_turbo{}",
+            model_mode.as_str(),
+            if two_stage { "_2stage" } else { "" }
+        )
     } else {
         let checkpoint = if model_mode == Mode::R2v {
             "ref2va"
@@ -63,14 +73,21 @@ pub fn spec(args: &Args) -> Result<Spec> {
             ""
         };
         format!(
-            "minimax-h3-{checkpoint}-fp8_{}{suffix}",
-            model_mode.as_str()
+            "minimax-h3-{checkpoint}-fp8_{}{suffix}{}",
+            model_mode.as_str(),
+            if two_stage { "_2stage" } else { "" }
         )
     };
-    let reference_turbo = model_mode == Mode::R2v && turbo;
+    if !sogni_client::is_minimax_h3_model(&id) {
+        bail!("unknown MiniMax H3 model id: {id}");
+    }
+    let fast_reference = sogni_client::is_minimax_h3_fasth3_reference_model(&id);
+    let reference_turbo = model_mode == Mode::R2v && turbo && !fast_reference;
     Ok(Spec {
         id,
-        steps: if turbo {
+        steps: if fast_reference {
+            8
+        } else if turbo {
             4
         } else if balanced {
             8
@@ -169,6 +186,7 @@ fn validate_alias(
     fast_h3: bool,
     turbo: bool,
     balanced: bool,
+    two_stage: bool,
 ) -> Result<()> {
     if direct {
         if !key.starts_with("minimax-h3-") {
@@ -190,6 +208,11 @@ fn validate_alias(
                 ""
             }
         )
+    };
+    let expected = if two_stage {
+        format!("{expected}-2stage")
+    } else {
+        expected
     };
     if key != expected {
         bail!("unknown MiniMax H3 model key: {key}");
