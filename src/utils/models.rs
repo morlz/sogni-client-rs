@@ -220,7 +220,7 @@ fn speech_models_are_audio_and_h3_keyframes_exclude_text_generation() {
             .iter()
             .filter(|model| is_minimax_h3_keyframe_model(model))
             .count(),
-        21
+        23
     );
     assert!(!is_minimax_h3_keyframe_model(
         "minimax-h3-fastvideo-int8_t2v_turbo"
