@@ -68,6 +68,8 @@ const MINIMAX_H3_MODELS: &[&str] = &[
     "minimax-h3-ref2va-fp8_r2v_balanced",
     "minimax-h3-ref2va-fp8_r2v_2stage",
     "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+    "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+    "minimax-h3-fastvideo-omni-int8_r2v_turbo_2stage",
 ];
 
 #[must_use]
@@ -120,6 +122,7 @@ pub fn is_minimax_h3_model(model_id: &str) -> bool {
 #[must_use]
 pub fn is_minimax_h3_turbo_model(model_id: &str) -> bool {
     is_minimax_h3_model(model_id)
+        && !is_minimax_h3_fasth3_reference_model(model_id)
         && (model_id.ends_with("_turbo") || model_id.ends_with("_turbo_2stage"))
         // Match upstream's historical sampling classification. These retired
         // history IDs are not video-model IDs and cannot be submitted.
@@ -133,6 +136,28 @@ pub fn is_minimax_h3_turbo_model(model_id: &str) -> bool {
 pub fn is_minimax_h3_balanced_model(model_id: &str) -> bool {
     is_minimax_h3_model(model_id)
         && (model_id.ends_with("_balanced") || model_id.ends_with("_balanced_2stage"))
+}
+
+/// FastH3 Reference uses eight sampling steps despite its `_turbo` suffix.
+#[must_use]
+pub fn is_minimax_h3_fasth3_reference_model(model_id: &str) -> bool {
+    matches!(
+        model_id,
+        "minimax-h3-fastvideo-omni-int8_r2v_turbo"
+            | "minimax-h3-fastvideo-omni-int8_r2v_turbo_2stage"
+    )
+}
+
+/// H3 text-to-video models accepting an uploaded video to extend.
+#[must_use]
+pub fn is_minimax_h3_extend_model(model_id: &str) -> bool {
+    matches!(
+        model_id,
+        "minimax-h3-fl2va-fp8_t2v"
+            | "minimax-h3-fl2va-fp8_t2v_balanced"
+            | "minimax-h3-fastvideo-int8_t2v_turbo"
+            | "minimax-h3-fastvideo-int8_t2v_turbo_2stage"
+    )
 }
 
 #[must_use]

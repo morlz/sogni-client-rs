@@ -35,6 +35,11 @@ pub(super) fn build_image_keyframe(
             max_context_images(model_id)
         )));
     }
+    if crate::utils::is_seedream_model(model_id) && context_slots > 10 {
+        return Err(Error::InvalidInput(format!(
+            "{model_id} accepts up to 10 non-empty reference images in source order"
+        )));
+    }
     for field in ["mossRopeScaleX", "mossRopeScaleY"] {
         if let Some(value) = params.get(field) {
             if !moss {
@@ -225,6 +230,7 @@ pub(super) fn build_image_keyframe(
         keyframe.insert("currentControlNetsJob".into(), json!([raw]));
     }
     validation::validate_gpt_image_options(params, model_id)?;
+    validation::validate_seedream_options(params, model_id)?;
     if truthy(params.get("gptImageMask")) {
         keyframe.insert("hasReferenceMask".into(), json!(true));
         keyframe.insert("referenceMaskContentType".into(), json!("image/png"));

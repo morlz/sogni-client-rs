@@ -155,6 +155,7 @@ pub fn filter_video_models_by_workflow(models: &[Value], workflows: &[&str]) -> 
 #[must_use]
 pub fn is_edit_image_model(model_id: &str) -> bool {
     is_gpt_image_model(model_id)
+        || crate::utils::is_seedream_model(model_id)
         || matches!(
             model_id,
             "flux3_image_klein_sd_int8_convrot"

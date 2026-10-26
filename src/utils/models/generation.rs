@@ -6,6 +6,7 @@ pub const PIXAL3D_IMAGE_TO_3D_MODEL_ID: &str = "pixal3d_int8_i23d";
 pub const PIXAL3D_MULTIVIEW_IMAGE_TO_3D_MODEL_ID: &str = "pixal3d_multiview_int8_i23d";
 pub const SAM3_IMAGE_SEGMENT_MODEL_ID: &str = "sam3_image_segment_bf16";
 pub const BIREFNET_BACKGROUND_REMOVAL_MODEL_ID: &str = "birefnet_image_background_removal_fp16";
+pub const SEEDREAM_5_PRO_UNCENSORED_MODEL_ID: &str = "seedream-5-0-pro-uncensored";
 pub const MINIMAX_H3_FASTH3_IA2V_MODEL_ID: &str = "minimax-h3-fastvideo-int8_ia2v_turbo";
 pub const MINIMAX_H3_FASTH3_FLFA2V_MODEL_ID: &str = "minimax-h3-fastvideo-int8_flfa2v_turbo";
 pub const MINIMAX_H3_FASTH3_A2V_MODEL_ID: &str = "minimax-h3-fastvideo-int8_a2v_turbo";
@@ -55,6 +56,12 @@ pub fn is_gpt_image_model(model_id: &str) -> bool {
         model_id,
         "gpt-image-2" | "gpt-image-2.5-sunburst" | "gpt-image-2.5-flare"
     )
+}
+
+/// The external Seedream image model is selected explicitly by callers.
+#[must_use]
+pub fn is_seedream_model(model_id: &str) -> bool {
+    model_id == SEEDREAM_5_PRO_UNCENSORED_MODEL_ID
 }
 
 /// Qwen3-TTS speech family. Use the runtime catalog for individual capabilities.

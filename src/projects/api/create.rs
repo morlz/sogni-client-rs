@@ -245,6 +245,10 @@ pub(super) fn normalize_project_id(id: &str) -> Result<String> {
 }
 
 #[cfg(test)]
+#[path = "create_569_tests.rs"]
+mod upstream_569_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
 

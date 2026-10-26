@@ -291,6 +291,13 @@ impl ProjectRequest {
     pub fn params(&self) -> Value {
         Value::Object(self.params.clone())
     }
+
+    /// Choose `extended` (source plus new footage) or `continuation` (new footage
+    /// only) for a supported MiniMax H3 extension with an uploaded source video.
+    #[must_use]
+    pub fn extend_output(self, output: impl Into<String>) -> Self {
+        self.param("extendOutput", output.into())
+    }
 }
 
 #[cfg(test)]

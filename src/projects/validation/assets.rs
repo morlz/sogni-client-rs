@@ -106,10 +106,14 @@ pub(in crate::projects) fn video_asset_requirements(
             _ => return BTreeMap::new(),
         }
     };
-    fields
+    let mut requirements: BTreeMap<String, String> = fields
         .into_iter()
         .map(|(name, value)| (name.into(), value.into()))
-        .collect()
+        .collect();
+    if workflow == "t2v" && crate::utils::is_minimax_h3_extend_model(model_id) {
+        requirements.insert("referenceVideo".into(), "optional".into());
+    }
+    requirements
 }
 
 pub(in crate::projects) fn custom_image_size_bounds(model_id: &str) -> (f64, f64) {
@@ -125,6 +129,8 @@ pub(in crate::projects) fn custom_image_size_bounds(model_id: &str) -> (f64, f64
         "krea2_identity_edit_v1_2" | "dark_beast_krea2_identity_edit_v1_2"
     ) {
         (512.0, 2_048.0)
+    } else if crate::utils::is_seedream_model(model_id) {
+        (240.0, 8_192.0)
     } else if is_gpt_image_model(model_id) {
         (256.0, 3_840.0)
     } else if model_id == "flux3_image_klein_sd_int8_convrot" {
@@ -153,7 +159,9 @@ pub(crate) fn max_context_images(model_id: &str) -> usize {
         0
     } else if is_gpt_image_model(model_id) {
         16
-    } else if model_id == "flux3_image_klein_sd_int8_convrot" {
+    } else if model_id == "flux3_image_klein_sd_int8_convrot"
+        || crate::utils::is_seedream_model(model_id)
+    {
         10
     } else if matches!(
         model_id,

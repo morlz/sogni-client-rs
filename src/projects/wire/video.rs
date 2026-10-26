@@ -22,6 +22,21 @@ pub(super) fn build_video_keyframe(
     }
     validation::reject_retired_output_scale(params)?;
     validate_h3_params(params, model_id)?;
+    if let Some(output) = params.get("extendOutput") {
+        if !truthy(params.get("referenceVideo"))
+            || !crate::utils::is_minimax_h3_extend_model(model_id)
+        {
+            return Err(Error::InvalidInput(
+                "extendOutput applies only to a MiniMax H3 video extension: a referenceVideo on a model that extends (isMinimaxH3ExtendModel).".into(),
+            ));
+        }
+        if !matches!(output.as_str(), Some("extended" | "continuation")) {
+            return Err(Error::InvalidInput(
+                "extendOutput must be 'extended' (the source and the new footage as one video) or 'continuation' (the new footage alone).".into(),
+            ));
+        }
+        keyframe.insert("extendOutput".into(), output.clone());
+    }
     for (field, target) in [
         ("referenceImage", "hasReferenceImage"),
         ("referenceImageEnd", "hasReferenceImageEnd"),

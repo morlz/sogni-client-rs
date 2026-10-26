@@ -17,6 +17,8 @@ mod parity_5631_tests;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
+mod upstream_569_tests;
+#[cfg(test)]
 mod upstream_tests;
 #[cfg(test)]
 mod utility_tests;
@@ -82,6 +84,7 @@ pub(super) fn build_job_request(
         }
     }
     if media_type == "audio"
+        || media_type == "image" && crate::utils::is_seedream_model(model_id)
         || media_type == "video"
             && (is_external_video_model(model_id) || is_minimax_h3_model(model_id))
     {

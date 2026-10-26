@@ -21,12 +21,16 @@ async fn model_consent_5_63_survives_tracked_failures_and_sanitized_public_event
         .build()
         .await
         .unwrap();
-    for model_id in ["seedance-2-5-uncensored", "seedance-2-0-mini-uncensored"] {
+    for model_id in [
+        "seedance-2-5-uncensored",
+        "seedance-2-0-mini-uncensored",
+        "seedream-5-0-pro-uncensored",
+    ] {
         for job_id in [Some("RENDER"), None] {
             for code in [json!(4103), json!("4103")] {
                 let project = Project::new(
                     "PROJECT".into(),
-                    json!({"type":"video","numberOfMedia":1}),
+                    json!({"type":if crate::is_seedream_model(model_id) {"image"} else {"video"},"modelId":model_id,"numberOfMedia":1}),
                     false,
                     Arc::downgrade(&client.projects.inner),
                 );

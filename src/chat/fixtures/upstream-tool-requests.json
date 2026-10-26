@@ -1,6 +1,6 @@
 {
-  "version": "5.66.0",
-  "commit": "9805a8c146dea25065d080881e07da4c5c878a88",
+  "version": "5.69.1",
+  "commit": "5970a1bd40b88f678719188969c8633bc313b665",
   "models": [
     {
       "id": "gpt-image-2",
@@ -14,6 +14,11 @@
     },
     {
       "id": "gpt-image-2.5-flare",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "seedream-5-0-pro-uncensored",
       "media": "image",
       "workerCount": 1
     },
@@ -324,6 +329,16 @@
     },
     {
       "id": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+      "media": "video",
+      "workerCount": 1
+    },
+    {
+      "id": "minimax-h3-fastvideo-omni-int8_r2v_turbo_2stage",
       "media": "video",
       "workerCount": 1
     },

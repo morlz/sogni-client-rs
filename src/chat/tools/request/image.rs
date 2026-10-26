@@ -8,14 +8,17 @@ pub(super) fn plan(
 ) -> Result<ToolRequestPlan> {
     let requested = resolve_hosted_tool_model_selector(tool, args);
     let edit = tool == "edit_image";
-    let model = select(
-        models,
-        "image",
-        requested.as_deref(),
-        None,
-        &[],
-        edit.then_some(is_edit_image_model),
-    )?;
+    let explicit_seedream = requested
+        .as_deref()
+        .is_some_and(crate::utils::is_seedream_model);
+    let filter: Option<fn(&str) -> bool> = if explicit_seedream {
+        None
+    } else if edit {
+        Some(|id| is_edit_image_model(id) && !crate::utils::is_seedream_model(id))
+    } else {
+        Some(|id| !crate::utils::is_seedream_model(id))
+    };
+    let model = select(models, "image", requested.as_deref(), None, &[], filter)?;
     let mut plan = ToolRequestPlan::new("image", &model, args, options)?;
     if edit {
         let inputs: Vec<_> = string(args, "source_image_url")
@@ -51,13 +54,15 @@ pub(super) fn plan(
                 false,
             );
         }
-    } else {
+    } else if !crate::utils::is_seedream_model(&model) {
         plan.copy(args, &[("steps", "steps")]);
     }
-    plan.copy(
-        args,
-        &[("negative_prompt", "negativePrompt"), ("seed", "seed")],
-    );
+    if !crate::utils::is_seedream_model(&model) {
+        plan.copy(
+            args,
+            &[("negative_prompt", "negativePrompt"), ("seed", "seed")],
+        );
+    }
     if args
         .get("width")
         .and_then(Value::as_f64)
@@ -117,3 +122,6 @@ pub(super) fn plan(
 #[cfg(test)]
 #[path = "image_566_tests.rs"]
 mod contracts_566_tests;
+#[cfg(test)]
+#[path = "image_569_tests.rs"]
+mod contracts_569_tests;
