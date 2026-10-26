@@ -9,14 +9,21 @@ includes Sogni-AI's authentication and streaming fixes from source version
 `5.50.3-alpha.1` through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f`.
 Thank you to the fork's contributors for these fixes and regression tests.
 
-The current TypeScript contract is version `5.66.0` through
-`9805a8c146dea25065d080881e07da4c5c878a88`, including Sogni Protocol
-`1.0.0-alpha.52`. The Rust fork was reviewed again on 2026-10-19 and remains at
+The current TypeScript contract is version `5.69.1` through
+`5970a1bd40b88f678719188969c8633bc313b665`, including Sogni Protocol
+`1.0.0-alpha.55`. The Rust fork was reviewed again on 2026-10-26 and remains at
 the commit above; no additional fork merge was needed.
 
 The 5.66.0 release also requires Rustls 0.23.46 for the existing runtime and
 development TLS dependencies and locks `quinn-proto` to 0.11.18. These reviewed
 security updates preserve the dependency features and Rust 1.88 minimum.
+
+The 5.69.1 release requires Tokio 1.53.3 and rustls-webpki 0.103.16. The
+private wallet signer uses secp256k1 with ethabi/SHA-3 EIP-712 encoding instead
+of the ethers dependency chain containing affected crypto-bigint versions.
+Public wallet APIs, password derivation, addresses and signature bytes remain
+compatible, verified against independent TypeScript SDK vectors. These changes
+preserve Rust 1.88 and the existing wallet feature.
 
 ## Weekly process
 

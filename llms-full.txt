@@ -1,12 +1,12 @@
 # sogni-client-by-morlz Rust SDK complete agent reference
 
-Crate version: 5.66.0. Compatible with TypeScript 5.66.0 at upstream commit
-9805a8c146dea25065d080881e07da4c5c878a88; hosted protocol 1.0.0-alpha.52.
+Crate version: 5.69.1. Compatible with TypeScript 5.69.1 at upstream commit
+5970a1bd40b88f678719188969c8633bc313b665; hosted protocol 1.0.0-alpha.55.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client-by-morlz = "5.66.0"`; disable default features for clients
+Dependency: `sogni-client-by-morlz = "5.69.1"`; disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
@@ -329,6 +329,16 @@ an explicit false through client.set_socket_event_subscriptions(...).
 
 ## GPT Image and speech controls
 
+Seedream 5.0 Pro Uncensored: SEEDREAM_5_PRO_UNCENSORED_MODEL_ID is
+seedream-5-0-pro-uncensored; is_seedream_model identifies it. Use an image
+ProjectRequest with text or up to ten ordered ContextImage assets. Custom size
+is 240–8192 per edge, 921,600–4,194,304 pixels total, with aspect 1:16–16:1.
+Spark-only; the server owns billing and consent enforcement. It shares the
+seedance-2-5-uncensored agreement and reports MODEL_CONSENT_REQUIRED_ERROR_CODE
+with the same public consentRequired shape. The SDK never accepts the agreement.
+Named hosted generate_image/edit_image selection omits negativePrompt, seed and
+steps; model-less calls exclude Seedream. Image serialization omits its negative prompt.
+
 GPT IDs: gpt-image-2, gpt-image-2.5-sunburst, gpt-image-2.5-flare.
 Custom width/height: 256–3840. Up to 16 ordered context references. A PNG alpha
 mask uses AssetRole::GptImageMask or gptImageMaskUrl (URL/PNG data URI), requires
@@ -381,7 +391,8 @@ over 300. --dry-run validates and shows the request without credentials or work.
 Call `calculate_video_frames(model_id, duration, fps, min, max)`.
 
 - WAN 2.2: generation is fixed at 16 FPS; output FPS may represent later
-  interpolation. Frames = rounded(duration * 16) + 1.
+  interpolation. Frames = rounded(duration * 16) + 1. Workers cap output at
+  1,048,576 pixels; larger requested canvases are scaled down at their aspect ratio.
 - LTX families: generate at requested FPS, then snap to `1 + n*8`.
 - MiniMax H3: fixed 24 FPS and `124 + n*17`, clamped to supported limits.
 - FlashVSR: rounded(duration * fps), retaining the exact source frame count.
@@ -400,6 +411,21 @@ and estimate that canvas with the selected _2stage ID. outputScale is retired
 and rejected whenever present, including false/null. _turbo_2stage_720p IDs
 are retired and cannot be submitted.
 
+FastH3 Reference is minimax-h3-fastvideo-omni-int8_r2v_turbo or its _2stage
+variant, with fixed eight steps despite the suffix. is_minimax_h3_fasth3_reference_model
+identifies it; it is not a four-step turbo model. The ordinary H3 R2V references,
+keyframes, catalog and Personal LoRAs apply. Hosted selectors are
+minimax-h3-fasth3-r2v-turbo and minimax-h3-fasth3-r2v-turbo-2stage.
+
+is_minimax_h3_extend_model accepts Standard/Balanced/FastH3 t2v and FastH3 t2v
+two-stage IDs with an optional uploaded ReferenceVideo. LightX2V Turbo cannot
+extend. .extend_output("extended") delivers source plus continuation (the default
+when omitted); "continuation" delivers only new footage. The source uses the
+unnumbered video upload and hasReferenceVideo, not numbered R2V slots. Keep the
+requested H3 frame count; the worker handles source conditioning and the join.
+External reference URLs remain unsupported. Include referenceVideo or
+hasVideoInput when estimating the exact model/canvas for an extension.
+
 Audio-guide ia2v requires referenceImage + referenceAudio; flfa2v also requires
 referenceImageEnd; a2v requires only referenceAudio. Intermediate keyframe images
 are also accepted; unrelated reference roles are rejected. Fixed 24fps, 4 steps,
@@ -414,7 +440,7 @@ all H3 IDs reject audioDuration.
 
 MiniMax H3 keyframes: `MinimaxH3Keyframe { image: MediaSource, frame_index: u32 }`
 or `MinimaxH3Keyframe::new(image, frame_index)`. `.keyframes(vec![...])` accepts
-at most MINIMAX_H3_MAX_KEYFRAMES=8 on the 21 public i2v/flf2v/ia2v/flfa2v/a2v/r2v
+at most MINIMAX_H3_MAX_KEYFRAMES=8 on the 23 public i2v/flf2v/ia2v/flfa2v/a2v/r2v
 model IDs selected by is_minimax_h3_keyframe_model; t2v and other families reject
 a nonempty list. Empty lists are equivalent to omission. Every image gets its
 own keyframeImage1..8 upload slot in caller order; the SDK never sorts the list.
@@ -495,7 +521,7 @@ read through `HostedTools` rather than copying schemas.
 Current hosted definitions include generate_speech, upscale_video, image_to_3d,
 remove_background and segment_image, plus
 FastH3 audio-guide/two-stage, GPT Image 2.5, FLUX 3 Image Klein and MOSS selectors.
-These definitions come from protocol alpha.52. Hosted sound_to_video accepts ordered loras and
+These definitions come from protocol alpha.55. Hosted sound_to_video accepts ordered loras and
 loraStrengths arrays (1–8 entries) for audio-guide generation. The direct local
 sound_to_video tool handler does not forward those LoRA fields; use an explicit
 ProjectRequest or hosted execution when they are needed.

@@ -8,6 +8,16 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.69.1] - 2026-10-26
+
+- Port the public TypeScript 5.69.1 contract through `5970a1bd40b88f678719188969c8633bc313b665`, including 30 hosted tools from Sogni Protocol 1.0.0-alpha.55. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (main, source 5.50.3-alpha.1), with no new fork changes to merge.
+- Extend uploaded videos on MiniMax H3 Standard, Balanced, FastH3 Turbo and FastH3 Two-Stage text-to-video models. Add `extend_output` for combined or continuation-only delivery while retaining ordinary text-to-video requests and rejecting LightX2V Turbo extensions.
+- Add FastH3 Reference and its two-stage model, eight-step validation, hosted selectors, references, keyframes and Personal LoRAs. Preserve the existing four-step Turbo classification and exact-model video estimates.
+- Add explicit Seedream 5.0 Pro Uncensored image generation/editing with ten ordered references, public size limits, root model helpers and the existing server-owned consent contract. Model-less image tools exclude it; named calls omit unsupported sampling controls and image requests omit its negative prompt.
+- Replace the private ethers wallet dependency chain with secp256k1 signing and ethabi/SHA-3 structured encoding, retaining PBKDF2 wallet derivation and byte-exact EIP-712 compatibility. Cover independent TypeScript address/hash/signature vectors and reject malformed typed values before signing.
+- Require patched rustls-webpki 0.103.16 and Tokio 1.53.3, resolving the current certificate-validation, wallet-arithmetic and Tokio audit findings. Preserve Rustls 0.23.46, Quinn 0.11.18, Rust 1.88, package identity and the automatic crates.io release policy.
+- Update the MiniMax H3 example with extension inputs, matching estimates and FastH3 Reference selectors. Document the public WAN 2.2 worker output-area limit and add regression coverage for pre-upload refusals, routing, request bytes and consent events.
+
 ## [5.66.0] - 2026-10-19
 
 - Port the public TypeScript 5.66.0 contract through `9805a8c146dea25065d080881e07da4c5c878a88`, including 30 hosted tool definitions from Sogni Protocol 1.0.0-alpha.52. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (5.50.3-alpha.1), with no new fork changes to merge.

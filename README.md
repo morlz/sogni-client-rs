@@ -3,9 +3,9 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.66.0** implements the TypeScript **5.66.0** public contract through
-[`9805a8c`](https://github.com/Sogni-AI/sogni-client/commit/9805a8c146dea25065d080881e07da4c5c878a88),
-including hosted tool definitions from Sogni Protocol `1.0.0-alpha.52`.
+Version **5.69.1** implements the TypeScript **5.69.1** public contract through
+[`5970a1b`](https://github.com/Sogni-AI/sogni-client/commit/5970a1bd40b88f678719188969c8633bc313b665),
+including hosted tool definitions from Sogni Protocol `1.0.0-alpha.55`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
 See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
@@ -24,6 +24,8 @@ the previous `sogni-client` package.
 - SAM3 segmentation/cutouts, BiRefNet background removal, Pixal3D multi-view
   GLB reconstruction, GPT Image 2.5 editing, and worker result provenance
 - FLUX 3 Image Klein generation/editing and MOSS text-to-image presets
+- Explicit Seedream 5.0 Pro Uncensored image generation/editing, FastH3
+  Reference, and MiniMax H3 video extension
 - Speech/voice cloning, FlashVSR video upscaling, MiniMax H3 keyframes,
   two-stage/audio-guide video with LoRAs, Seedance exports, and private uploads
 - Socket-native streaming LLM chat, hosted chat completions, hosted tools, and
@@ -53,7 +55,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client-by-morlz = { version = "5.66.0", default-features = false }
+sogni-client-by-morlz = { version = "5.69.1", default-features = false }
 ```
 
 For development against the repository:
@@ -256,6 +258,47 @@ while a worker downloads LoRAs, unloads a model, or loads the next model. Match
 the enum variant before reading its fields. Model phases include a `Start` or
 `End` step and optional elapsed seconds. Raw preparation data remains in the
 snapshot's `extra` map, including future phases.
+
+## Seedream images and MiniMax H3 extension
+
+`SEEDREAM_5_PRO_UNCENSORED_MODEL_ID` (`seedream-5-0-pro-uncensored`) supports
+text-to-image and edits with up to ten ordered context images. Custom dimensions
+use 240–8192 pixels per edge, 921,600–4,194,304 pixels total, and aspect ratios
+from 1:16 to 16:1. It is Spark-only and shares the likeness/consent agreement of
+Seedance 2.5 Uncensored. Accept that agreement in a Sogni app; the SDK reports
+the server's consent requirement and does not accept or retry it automatically.
+Hosted image tools select Seedream only when explicitly named and omit its
+unsupported negative prompt, seed, and steps. Image requests never send it a
+negative prompt. Availability remains discoverable from the model catalog.
+
+MiniMax H3 Standard, Balanced, FastH3 Turbo and FastH3 Two-Stage text-to-video
+models accept an uploaded source video to extend. LightX2V Turbo does not.
+Omit `extendOutput` for combined source and new footage, or use
+`.extend_output("continuation")` for only the new footage:
+
+```rust
+use sogni_client::{AssetRole, MediaSource, ProjectRequest};
+
+fn continue_video(source: std::path::PathBuf) -> ProjectRequest {
+    ProjectRequest::video("minimax-h3-fastvideo-int8_t2v_turbo", "Continue the scene")
+        .asset(AssetRole::ReferenceVideo, MediaSource::Path(source))
+        .extend_output("continuation")
+}
+
+let request = continue_video("source.mp4".into());
+assert_eq!(request.params()["extendOutput"], "continuation");
+```
+
+FastH3 Reference IDs `minimax-h3-fastvideo-omni-int8_r2v_turbo` and its
+`_2stage` variant accept the same uploaded references, keyframes, catalog and
+Personal LoRAs as the other H3 R2V models. They use **eight steps** despite the
+`_turbo` suffix. The two-stage ID delivers twice the canvas. Quote the exact
+model and canvas with `estimate_video_cost`; include `referenceVideo` or
+`hasVideoInput: true` when quoting an extension.
+
+The `workflow_minimax_h3_video` example accepts `--source-video` and
+`--extend-output continuation`, and the new `minimax-h3-fasth3-r2v-turbo`
+and `minimax-h3-fasth3-r2v-turbo-2stage` selectors.
 
 ## Look up results and queue state
 

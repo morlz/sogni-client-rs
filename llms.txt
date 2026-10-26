@@ -1,11 +1,11 @@
-# sogni-client-by-morlz Rust SDK 5.66.0
+# sogni-client-by-morlz Rust SDK 5.69.1
 
-Compatibility: TypeScript 5.66.0 at 9805a8c146dea25065d080881e07da4c5c878a88; hosted protocol 1.0.0-alpha.52.
+Compatibility: TypeScript 5.69.1 at 5970a1bd40b88f678719188969c8633bc313b665; hosted protocol 1.0.0-alpha.55.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
-Cargo dependency: `sogni-client-by-morlz = "5.66.0"`.
+Cargo dependency: `sogni-client-by-morlz = "5.69.1"`.
 Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
 source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
@@ -67,6 +67,10 @@ explicit false; omission is unknown.
 - FLUX 3 Image Klein: `flux3_image_klein_sd_int8_convrot`, generation/editing,
   starting image and up to ten context images, 256–4096 pixels per edge.
   Hosted `generate_image`/`edit_image` selectors include flux-3-klein and flux3-klein.
+- Seedream: `SEEDREAM_5_PRO_UNCENSORED_MODEL_ID`, text-to-image or 1–10 ordered
+  context images; Spark-only, explicit hosted selection, no negative prompt.
+  Custom size: 240–8192 per edge, 921,600–4,194,304 pixels, aspect 1:16–16:1.
+  It shares Seedance 2.5 Uncensored's agreement; acceptance remains in a Sogni app.
 - MOSS: `moss_image_sft_int8_convrot` and `moss_image_sft_dmd8_int8_convrot`,
   text-to-image only, 512–2048 pixels per edge; guide/context inputs fail before
   upload. Hosted selectors: moss-image and moss-image-8step. Direct request
@@ -102,6 +106,12 @@ explicit false; omission is unknown.
 - FastH3: `_turbo_2stage` doubles the canvas; ia2v/flfa2v/a2v audio-guide modes
   require driving audio and exact image anchors; loras/loraStrengths are allowed. Use
   `get_minimax_h3_frames_for_audio_duration`; outputScale and retired720p IDs fail.
+- FastH3 Reference: `minimax-h3-fastvideo-omni-int8_r2v_turbo` and `_2stage`;
+  eight steps, ordinary H3 references/keyframes and catalog/Personal LoRAs.
+- H3 extension: eligible Standard/Balanced/FastH3 t2v models accept an uploaded
+  `AssetRole::ReferenceVideo`. `.extend_output("extended")` selects combined
+  output; `.extend_output("continuation")` selects new footage only. Omission keeps combined output.
+  LightX2V Turbo cannot extend. Estimates need referenceVideo/hasVideoInput.
 - MiniMax H3 keyframes: `.keyframes(Vec<MinimaxH3Keyframe>)`, whose constructor
   takes (MediaSource, frame_index), accepts up to 8 intermediate stills for
   i2v/flf2v/ia2v/flfa2v/a2v/r2v. Caller order is preserved in separate upload
