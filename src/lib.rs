@@ -19,7 +19,7 @@ mod utils;
 mod workflows;
 mod worlds;
 
-pub use account::{AccountApi, CurrentAccount};
+pub use account::{AccountApi, CurrentAccount, LoginOptions};
 pub use announcements::AnnouncementsApi;
 pub use attribution::{
     Attribution, ConnectionAttribution, ExecutionMode, InteractionKind, OperationScope,
@@ -36,7 +36,7 @@ pub use chat::{
 };
 pub use client::{ClientBuilder, ClientConfig, Network, SogniClient};
 pub use error::{
-    ApiError, ChatError, Error, MODEL_CONSENT_REQUIRED_ERROR_CODE,
+    ACCOUNT_RESTORABLE_ERROR_CODE, ApiError, ChatError, Error, MODEL_CONSENT_REQUIRED_ERROR_CODE,
     MODEL_NOT_YET_AVAILABLE_ERROR_CODE, ModelConsentRequirement, ProjectError,
     RETRYABLE_CHAT_ERROR_TYPES, Result, SUBSCRIPTION_ERROR_CODES, is_model_consent_required_error,
     is_model_consent_required_payload, is_retryable_chat_error, is_subscription_limit_error,

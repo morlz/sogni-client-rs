@@ -8,73 +8,11 @@ use super::{AccountApi, AuthProjectionState, CurrentAccount, SubscriptionProject
 use crate::AuthKind;
 use crate::{Error, Result, auth::RequestSession, transport::ApiClient};
 
+#[path = "login.rs"]
+mod login;
+pub use login::LoginOptions;
+
 impl AccountApi {
-    pub async fn get_nonce(&self, wallet_address: &str) -> Result<String> {
-        if wallet_address.trim().is_empty() {
-            return Err(Error::InvalidInput("wallet_address is required".into()));
-        }
-        let response = self
-            .client
-            .rest
-            .post(
-                "/v1/account/nonce",
-                &json!({"walletAddress": wallet_address}),
-            )
-            .await?;
-        data(&response)
-            .get("nonce")
-            .and_then(Value::as_str)
-            .map(ToOwned::to_owned)
-            .ok_or_else(|| Error::Protocol("nonce response did not include data.nonce".into()))
-    }
-
-    #[cfg(feature = "wallet")]
-    pub async fn login(&self, username: &str, password: &str) -> Result<Value> {
-        self.login_with_options(username, password, false, None)
-            .await
-    }
-
-    #[cfg(feature = "wallet")]
-    pub async fn login_with_options(
-        &self,
-        username: &str,
-        password: &str,
-        remember_me: bool,
-        app_source: Option<&str>,
-    ) -> Result<Value> {
-        let session = self.client.rest.request_session();
-        let wallet = wallet(username, password)?;
-        let address = format!("{:#x}", wallet.address());
-        let nonce = session.run(self.get_nonce(&address)).await?;
-        let signature = session
-            .run(self.sign_named(
-                &wallet,
-                "Authentication",
-                json!([
-                    {"name": "walletAddress", "type": "address"},
-                    {"name": "nonce", "type": "string"}
-                ]),
-                json!({"walletAddress": address, "nonce": nonce}),
-            ))
-            .await?;
-        let mut body = json!({
-            "walletAddress": address,
-            "signature": signature,
-            "rememberMe": remember_me,
-        });
-        if let Some(source) = app_source.or_else(|| self.client.app_source()) {
-            body["appSource"] = json!(source);
-        }
-        let response = session
-            .run(self.client.rest.post("/v1/account/login", &body))
-            .await?;
-        let payload = data(&response).clone();
-        self.authenticate_response_and_hydrate(&payload, &address, &session)
-            .await?;
-        self.client.start().await?;
-        Ok(payload)
-    }
-
     #[cfg(feature = "wallet")]
     pub async fn create_account(
         &self,

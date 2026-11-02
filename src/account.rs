@@ -19,6 +19,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use self::listeners::AccountListenerLifecycle;
 use crate::transport::ApiClient;
 
+pub use authentication::LoginOptions;
 pub use current::CurrentAccount;
 
 #[derive(Clone)]

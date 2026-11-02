@@ -4,6 +4,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use thiserror::Error;
 
+/// Sign-in can restore the deleted account after the person confirms.
+pub const ACCOUNT_RESTORABLE_ERROR_CODE: i64 = 196;
+
 /// Stable public subscription-related protocol codes.
 pub const SUBSCRIPTION_ERROR_CODES: [(&str, i64); 4] = [
     ("NOT_ENTITLED", 4078),

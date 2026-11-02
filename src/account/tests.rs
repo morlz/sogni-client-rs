@@ -12,6 +12,8 @@ mod auth_state;
 #[cfg(feature = "wallet")]
 mod cookie_rollback;
 mod cookie_session;
+#[cfg(feature = "wallet")]
+mod login_572;
 mod request_session;
 
 #[cfg(feature = "wallet")]
