@@ -22,6 +22,23 @@ pub(super) fn build_video_keyframe(
     }
     validation::reject_retired_output_scale(params)?;
     validate_h3_params(params, model_id)?;
+    if let Some(compression) = params.get("referenceVideoCompression") {
+        if !matches!(compression.as_str(), Some("none" | "vpack")) {
+            return Err(Error::InvalidInput(
+                "referenceVideoCompression must be none or vpack.".into(),
+            ));
+        }
+        if compression == "vpack" {
+            if !is_minimax_h3_reference_model(model_id)
+                || model_id.ends_with("_2stage")
+                || media_slot_count(params.get("referenceVideo"), params.get("referenceVideos"))
+                    == 0
+            {
+                return Err(Error::InvalidInput("VPack requires an uploaded reference video on a one-stage MiniMax H3 Reference to Video model.".into()));
+            }
+            keyframe.insert("referenceVideoCompression".into(), json!("vpack"));
+        }
+    }
     if let Some(output) = params.get("extendOutput") {
         if !truthy(params.get("referenceVideo"))
             || !crate::utils::is_minimax_h3_extend_model(model_id)

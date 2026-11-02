@@ -1,0 +1,4009 @@
+{
+  "version": "5.72.0",
+  "commit": "0e5e31075fdeea276a4241c924bd3423c60804ce",
+  "protocolVersion": "1.0.0-alpha.55",
+  "cases": [
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v-undefined",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v",
+        "steps": 20,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 20,
+          "max": 20,
+          "step": 1,
+          "default": 20
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 20,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v-none",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v",
+        "steps": 20,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "none"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 20,
+          "max": 20,
+          "step": 1,
+          "default": 20
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 20,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v-vpack",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v",
+        "steps": 20,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 20,
+          "max": 20,
+          "step": 1,
+          "default": 20
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 20,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "referenceVideoCompression": "vpack",
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v-array",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v",
+        "steps": 20,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideos": [
+          true
+        ],
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 20,
+          "max": 20,
+          "step": 1,
+          "default": 20
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 20,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "referenceVideoCompression": "vpack",
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v-2stage-none",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_2stage",
+        "steps": 20,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "none"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 20,
+          "max": 20,
+          "step": 1,
+          "default": 20
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 20,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_balanced-undefined",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_balanced",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_balanced-none",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "none"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_balanced",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_balanced-vpack",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_balanced",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "referenceVideoCompression": "vpack",
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_balanced-array",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideos": [
+          true
+        ],
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_balanced",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "referenceVideoCompression": "vpack",
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_balanced-2stage-none",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "none"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_turbo-undefined",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_turbo",
+        "steps": 4,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 4,
+          "max": 4,
+          "step": 1,
+          "default": 4
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_turbo-none",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_turbo",
+        "steps": 4,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "none"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 4,
+          "max": 4,
+          "step": 1,
+          "default": 4
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_turbo-vpack",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_turbo",
+        "steps": 4,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 4,
+          "max": 4,
+          "step": 1,
+          "default": 4
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "referenceVideoCompression": "vpack",
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_turbo-array",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_turbo",
+        "steps": 4,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideos": [
+          true
+        ],
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 4,
+          "max": 4,
+          "step": 1,
+          "default": 4
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 4,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-ref2va-fp8_r2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "referenceVideoCompression": "vpack",
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-fastvideo-omni-int8_r2v_turbo-undefined",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-fastvideo-omni-int8_r2v_turbo-none",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "none"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-fastvideo-omni-int8_r2v_turbo-vpack",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "referenceVideoCompression": "vpack",
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-fastvideo-omni-int8_r2v_turbo-array",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideos": [
+          true
+        ],
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "referenceVideoCompression": "vpack",
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "minimax-h3-fastvideo-omni-int8_r2v_turbo-2stage-none",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-omni-int8_r2v_turbo_2stage",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "none"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "steps": 8,
+            "cnRotation": 0,
+            "guidanceScale": 1,
+            "siZoomScale": 1,
+            "modelID": "minimax-h3-fastvideo-omni-int8_r2v_turbo_2stage",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A character walks.",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasReferenceVideo1": true,
+            "fps": 24,
+            "frames": 124,
+            "width": 1344,
+            "height": 768,
+            "comfySampler": null,
+            "comfyScheduler": "simple"
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "mp4"
+      }
+    },
+    {
+      "name": "seedream-undefined-false",
+      "params": {
+        "type": "image",
+        "modelId": "seedream-5-0-pro-uncensored",
+        "positivePrompt": "A portrait",
+        "numberOfMedia": 1
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [],
+          "default": null
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "seedream-5-0-pro-uncensored",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A portrait",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "png"
+      }
+    },
+    {
+      "name": "seedream-undefined-true",
+      "params": {
+        "type": "image",
+        "modelId": "seedream-5-0-pro-uncensored",
+        "positivePrompt": "A portrait",
+        "numberOfMedia": 1,
+        "contextImages": [
+          true
+        ]
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [],
+          "default": null
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "seedream-5-0-pro-uncensored",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A portrait",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": true,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "png"
+      }
+    },
+    {
+      "name": "seedream-png-false",
+      "params": {
+        "type": "image",
+        "modelId": "seedream-5-0-pro-uncensored",
+        "positivePrompt": "A portrait",
+        "numberOfMedia": 1,
+        "outputFormat": "png"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [],
+          "default": null
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "seedream-5-0-pro-uncensored",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A portrait",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "png"
+      }
+    },
+    {
+      "name": "seedream-png-true",
+      "params": {
+        "type": "image",
+        "modelId": "seedream-5-0-pro-uncensored",
+        "positivePrompt": "A portrait",
+        "numberOfMedia": 1,
+        "outputFormat": "png",
+        "contextImages": [
+          true
+        ]
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [],
+          "default": null
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "seedream-5-0-pro-uncensored",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A portrait",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": true,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "png"
+      }
+    },
+    {
+      "name": "seedream-jpg-false",
+      "params": {
+        "type": "image",
+        "modelId": "seedream-5-0-pro-uncensored",
+        "positivePrompt": "A portrait",
+        "numberOfMedia": 1,
+        "outputFormat": "jpg"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [],
+          "default": null
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "seedream-5-0-pro-uncensored",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A portrait",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "jpg"
+      }
+    },
+    {
+      "name": "seedream-jpg-true",
+      "params": {
+        "type": "image",
+        "modelId": "seedream-5-0-pro-uncensored",
+        "positivePrompt": "A portrait",
+        "numberOfMedia": 1,
+        "outputFormat": "jpg",
+        "contextImages": [
+          true
+        ]
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [],
+          "default": null
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "seedream-5-0-pro-uncensored",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A portrait",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": true,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "jpg"
+      }
+    },
+    {
+      "name": "seedream-webp-false",
+      "params": {
+        "type": "image",
+        "modelId": "seedream-5-0-pro-uncensored",
+        "positivePrompt": "A portrait",
+        "numberOfMedia": 1,
+        "outputFormat": "webp"
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [],
+          "default": null
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "seedream-5-0-pro-uncensored",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A portrait",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": false,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "webp"
+      }
+    },
+    {
+      "name": "seedream-webp-true",
+      "params": {
+        "type": "image",
+        "modelId": "seedream-5-0-pro-uncensored",
+        "positivePrompt": "A portrait",
+        "numberOfMedia": 1,
+        "outputFormat": "webp",
+        "contextImages": [
+          true
+        ]
+      },
+      "options": {
+        "type": "image",
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [],
+          "default": null
+        }
+      },
+      "wire": {
+        "selectedUpscalingModel": "OFF",
+        "cnVideoFramesSketch": [],
+        "cnVideoFramesSegmentedSubject": [],
+        "cnVideoFramesFace": [],
+        "doCanvasBlending": false,
+        "animationIsOn": false,
+        "cnVideoFramesBoth": [],
+        "cnVideoFramesDepth": [],
+        "keyFrames": [
+          {
+            "stepsIsEnabled": true,
+            "siRotation": 0,
+            "siDragOffsetIsEnabled": true,
+            "strength": 0.5,
+            "siZoomScaleIsEnabled": true,
+            "isEnabled": true,
+            "processing": "CPU, GPU",
+            "useLastImageAsGuideImageInAnimation": true,
+            "guidanceScaleIsEnabled": true,
+            "siImageBackgroundColor": "black",
+            "cnDragOffset": [
+              0,
+              0
+            ],
+            "scheduler": null,
+            "timeStepSpacing": null,
+            "cnRotation": 0,
+            "siZoomScale": 1,
+            "modelID": "seedream-5-0-pro-uncensored",
+            "cnRotationIsEnabled": true,
+            "startingImageZoomPanIsOn": false,
+            "siRotationIsEnabled": true,
+            "cnImageBackgroundColor": "clear",
+            "strengthIsEnabled": true,
+            "siDragOffset": [
+              0,
+              0
+            ],
+            "useLastImageAsCNImageInAnimation": false,
+            "positivePrompt": "A portrait",
+            "controlNetZoomPanIsOn": false,
+            "cnZoomScaleIsEnabled": true,
+            "currentControlNets": null,
+            "stylePrompt": "",
+            "cnDragOffsetIsEnabled": true,
+            "frameIndex": 0,
+            "startingImage": null,
+            "cnZoomScale": 1,
+            "hasContextImage1": true,
+            "hasContextImage2": false,
+            "hasContextImage3": false,
+            "hasContextImage4": false,
+            "hasContextImage5": false,
+            "hasContextImage6": false,
+            "hasContextImage7": false,
+            "hasContextImage8": false,
+            "hasContextImage9": false,
+            "hasContextImage10": false,
+            "hasContextImage11": false,
+            "hasContextImage12": false,
+            "hasContextImage13": false,
+            "hasContextImage14": false,
+            "hasContextImage15": false,
+            "hasContextImage16": false
+          }
+        ],
+        "previews": 0,
+        "frameRate": 24,
+        "generatedVideoSeconds": 10,
+        "canvasIsOn": false,
+        "cnVideoFrames": [],
+        "disableSafety": false,
+        "cnVideoFramesSegmentedBackground": [],
+        "cnVideoFramesSegmented": [],
+        "numberOfImages": 1,
+        "cnVideoFramesPose": [],
+        "jobID": "UPSTREAM-5-72",
+        "siVideoFrames": [],
+        "outputFormat": "webp"
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v-2stage-vpack",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_2stage",
+        "steps": 20,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 20,
+          "max": 20,
+          "step": 1,
+          "default": 20
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "VPack requires an uploaded reference video on a one-stage MiniMax H3 Reference to Video model."
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v-image-only",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v",
+        "steps": 20,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceImage": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 20,
+          "max": 20,
+          "step": 1,
+          "default": 20
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "VPack requires an uploaded reference video on a one-stage MiniMax H3 Reference to Video model."
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_balanced-2stage-vpack",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "VPack requires an uploaded reference video on a one-stage MiniMax H3 Reference to Video model."
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_balanced-image-only",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceImage": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "VPack requires an uploaded reference video on a one-stage MiniMax H3 Reference to Video model."
+    },
+    {
+      "name": "minimax-h3-ref2va-fp8_r2v_turbo-image-only",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_turbo",
+        "steps": 4,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceImage": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 4,
+          "max": 4,
+          "step": 1,
+          "default": 4
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "VPack requires an uploaded reference video on a one-stage MiniMax H3 Reference to Video model."
+    },
+    {
+      "name": "minimax-h3-fastvideo-omni-int8_r2v_turbo-2stage-vpack",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-omni-int8_r2v_turbo_2stage",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "VPack requires an uploaded reference video on a one-stage MiniMax H3 Reference to Video model."
+    },
+    {
+      "name": "minimax-h3-fastvideo-omni-int8_r2v_turbo-image-only",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fastvideo-omni-int8_r2v_turbo",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceImage": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "VPack requires an uploaded reference video on a one-stage MiniMax H3 Reference to Video model."
+    },
+    {
+      "name": "bad-mode-automatic",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "automatic"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "referenceVideoCompression must be none or vpack."
+    },
+    {
+      "name": "bad-mode-null",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": null
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "referenceVideoCompression must be none or vpack."
+    },
+    {
+      "name": "bad-mode-true",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": true
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "referenceVideoCompression must be none or vpack."
+    },
+    {
+      "name": "bad-mode-0",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-ref2va-fp8_r2v_balanced",
+        "steps": 8,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": 0
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 8,
+          "max": 8,
+          "step": 1,
+          "default": 8
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "referenceVideoCompression must be none or vpack."
+    },
+    {
+      "name": "t2v-vpack",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fl2va-fp8_t2v",
+        "steps": 20,
+        "guidance": 1,
+        "scheduler": "simple",
+        "positivePrompt": "A character walks.",
+        "numberOfMedia": 1,
+        "frames": 124,
+        "width": 1344,
+        "height": 768,
+        "referenceVideo": true,
+        "referenceVideoCompression": "vpack"
+      },
+      "options": {
+        "type": "video",
+        "steps": {
+          "min": 20,
+          "max": 20,
+          "step": 1,
+          "default": 20
+        },
+        "guidance": {
+          "min": 1,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "fps": {
+          "allowed": [
+            24
+          ],
+          "default": 24
+        },
+        "sampler": {
+          "allowed": [],
+          "default": null
+        },
+        "scheduler": {
+          "allowed": [
+            "simple"
+          ],
+          "default": "simple"
+        }
+      },
+      "message": "VPack requires an uploaded reference video on a one-stage MiniMax H3 Reference to Video model."
+    }
+  ],
+  "failures": [
+    {
+      "name": "failure-0",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": []
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-1",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": null
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-2",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": {}
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-3",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": []
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-4",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": 17
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-5",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": "failure"
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-6",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": {
+          "code": "PROVIDER_CODE",
+          "category": "content_policy",
+          "message": "Public explanation",
+          "extra": "not public"
+        }
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "failure": {
+          "code": "PROVIDER_CODE",
+          "category": "content_policy",
+          "message": "Public explanation"
+        },
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-7",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": {
+          "code": "future-code"
+        }
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "failure": {
+          "code": "future-code"
+        },
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-8",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": {
+          "category": "future_category"
+        }
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "failure": {
+          "category": "future_category"
+        },
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-9",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": {
+          "message": " "
+        }
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "failure": {
+          "message": " "
+        },
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-10",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": {
+          "code": 17,
+          "category": false,
+          "message": "usable",
+          "extra": {
+            "private": true
+          }
+        }
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "failure": {
+          "message": "usable"
+        },
+        "jobs": []
+      }
+    },
+    {
+      "name": "failure-11",
+      "snapshot": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "statusOnly": true,
+        "workerJobs": [],
+        "completedWorkerJobs": [],
+        "failure": {
+          "code": "",
+          "category": "",
+          "message": ""
+        }
+      },
+      "expected": {
+        "id": "P",
+        "status": "failed",
+        "finished": true,
+        "jobs": []
+      }
+    }
+  ]
+}

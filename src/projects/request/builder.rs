@@ -298,6 +298,13 @@ impl ProjectRequest {
     pub fn extend_output(self, output: impl Into<String>) -> Self {
         self.param("extendOutput", output.into())
     }
+
+    /// Opt into `vpack` for uploaded videos on one-stage H3 Reference models.
+    /// Fine detail and motion can change. Omitted or `none` keeps ordinary processing.
+    #[must_use]
+    pub fn reference_video_compression(self, compression: impl Into<String>) -> Self {
+        self.param("referenceVideoCompression", compression.into())
+    }
 }
 
 #[cfg(test)]
