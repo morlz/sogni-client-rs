@@ -18,8 +18,8 @@ pub use personal_loras::{
 pub use result_media::ResultMediaKind;
 pub(super) use result_media::{ResultMediaEvidence, result_media_evidence};
 pub use results::{
-    GetProjectResultOptions, ListRecentProjectsOptions, ProjectResult, ProjectResultJob,
-    RecentProject, RecentProjectJob, ResultUrlUnavailable,
+    GetProjectResultOptions, ListRecentProjectsOptions, ProjectFailure, ProjectResult,
+    ProjectResultJob, RecentProject, RecentProjectJob, ResultUrlUnavailable,
 };
 pub use reusable::{ReusableUploads, SavedUpload, SavedUploadBinding};
 

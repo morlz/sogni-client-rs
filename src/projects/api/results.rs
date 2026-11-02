@@ -42,6 +42,37 @@ pub struct ProjectResultJob {
     pub seed: Option<u64>,
 }
 
+/// The server's public explanation of a failed, account-owned project.
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
+pub struct ProjectFailure {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub category: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+}
+
+impl ProjectFailure {
+    fn from_value(value: Option<&Value>) -> Option<Self> {
+        let value = value?.as_object()?;
+        let field = |name| {
+            value
+                .get(name)
+                .and_then(Value::as_str)
+                .filter(|s| !s.is_empty())
+                .map(ToOwned::to_owned)
+        };
+        let failure = Self {
+            code: field("code"),
+            category: field("category"),
+            message: field("message"),
+        };
+        (failure.code.is_some() || failure.category.is_some() || failure.message.is_some())
+            .then_some(failure)
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ProjectResult {
@@ -52,6 +83,9 @@ pub struct ProjectResult {
     pub model_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub waiting_reason: Option<WaitingReason>,
+    /// Available for failed projects even when no render records remain.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub failure: Option<ProjectFailure>,
     pub jobs: Vec<ProjectResultJob>,
 }
 
@@ -170,6 +204,7 @@ impl ProjectsApi {
                         .as_bool()
                         .expect("validated status terminal flag"),
                     model_id,
+                    failure: ProjectFailure::from_value(snapshot.get("failure")),
                     waiting_reason: snapshot
                         .get("waitingReason")
                         .and_then(queue::normalize_waiting_reason),

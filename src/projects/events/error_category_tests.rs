@@ -1,6 +1,73 @@
 use super::*;
 use crate::SogniClient;
 
+#[tokio::test]
+async fn provider_codes_5_72_survive_only_as_nonempty_public_strings() {
+    let client = SogniClient::builder()
+        .disable_socket(true)
+        .build()
+        .await
+        .unwrap();
+    for tracked in [false, true] {
+        for job_id in [Some("RENDER"), None] {
+            for code in [
+                json!("PROVIDER_CODE"),
+                json!("future-code"),
+                json!(" "),
+                json!(""),
+                Value::Null,
+                json!(true),
+                json!(17),
+                json!({"private":true}),
+            ] {
+                let project = Project::new(
+                    "PROJECT".into(),
+                    json!({"type":"video","numberOfMedia":1}),
+                    false,
+                    Arc::downgrade(&client.projects.inner),
+                );
+                client.projects.inner.projects.write().clear();
+                if tracked {
+                    client
+                        .projects
+                        .inner
+                        .projects
+                        .write()
+                        .insert(project.id(), project.clone());
+                }
+                let mut events = client.projects.subscribe();
+                let mut data = failure("PROJECT", job_id, json!("content_policy"));
+                data["vendorErrorCode"] = code.clone();
+                handle_job_error(&client.projects.inner, &data);
+                let expected = code.as_str().filter(|s| !s.is_empty()).map(|s| json!(s));
+                let event = events.try_recv().unwrap();
+                assert_eq!(event.data.get("vendorErrorCode"), expected.as_ref());
+                assert!(event.data.get("vendorFailureReason").is_none());
+                assert!(event.data.get("vendorResponse").is_none());
+                if tracked {
+                    assert_eq!(
+                        project.snapshot().error.unwrap().get("vendorErrorCode"),
+                        expected.as_ref()
+                    );
+                    if let Some(id) = job_id {
+                        assert_eq!(
+                            project
+                                .job(id)
+                                .unwrap()
+                                .snapshot()
+                                .error
+                                .unwrap()
+                                .get("vendorErrorCode"),
+                            expected.as_ref()
+                        );
+                    }
+                }
+            }
+        }
+    }
+    client.close().await.unwrap();
+}
+
 fn failure(project_id: &str, job_id: Option<&str>, category: Value) -> Value {
     let mut data = json!({
         "jobID":project_id, "isFromWorker":false,

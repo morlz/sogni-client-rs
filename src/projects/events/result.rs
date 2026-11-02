@@ -174,6 +174,7 @@ pub(super) fn handle_job_error(inner: &Arc<ProjectsInner>, data: &Value) {
         error["vendorFailureCategory"] = json!(category);
     }
     for key in [
+        "vendorErrorCode",
         "subscriptionLimit",
         "requiredPlans",
         "feature",
@@ -270,6 +271,9 @@ fn public_job_error(data: &Value, normalized: &Value) -> Value {
     if let Some(category) = normalized.get("vendorFailureCategory") {
         event.insert("vendorFailureCategory".into(), category.clone());
     }
+    if let Some(code) = normalized.get("vendorErrorCode") {
+        event.insert("vendorErrorCode".into(), code.clone());
+    }
     if let Some(requirement) = normalized.get("consentRequired") {
         event.insert("consentRequired".into(), requirement.clone());
     }
@@ -278,6 +282,7 @@ fn public_job_error(data: &Value, normalized: &Value) -> Value {
 
 fn public_error_field(key: &str, value: &Value) -> bool {
     match key {
+        "vendorErrorCode" => value.as_str().is_some_and(|value| !value.is_empty()),
         "error" => value.is_number() || value.is_string(),
         "jobIndex" => value.as_u64().is_some(),
         "isFromWorker" | "subscriptionLimit" => value.is_boolean(),

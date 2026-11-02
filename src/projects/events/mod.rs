@@ -144,6 +144,8 @@ fn handle_job_retry(inner: &ProjectsInner, data: &Value) {
 }
 
 #[cfg(test)]
+mod failure_api_tests;
+#[cfg(test)]
 mod queue_tests;
 #[cfg(test)]
 mod result_api_tests;

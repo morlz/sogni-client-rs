@@ -58,9 +58,9 @@ mod tests;
 
 pub use api::{
     GetProjectResultOptions, ImportPersonalLoraParams, ListRecentProjectsOptions, PersonalLora,
-    PersonalLoraLibrary, PersonalLoraLimits, PersonalLoras, ProjectResult, ProjectResultJob,
-    ProjectsApi, RecentProject, RecentProjectJob, ResultMediaKind, ResultUrlUnavailable,
-    ReusableUploads, SavedUpload, SavedUploadBinding,
+    PersonalLoraLibrary, PersonalLoraLimits, PersonalLoras, ProjectFailure, ProjectResult,
+    ProjectResultJob, ProjectsApi, RecentProject, RecentProjectJob, ResultMediaKind,
+    ResultUrlUnavailable, ReusableUploads, SavedUpload, SavedUploadBinding,
 };
 pub use generation::{Pixal3dGenerationOptions, Pixal3dTemplateVariant};
 pub use job::Job;
