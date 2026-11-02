@@ -9,9 +9,9 @@ includes Sogni-AI's authentication and streaming fixes from source version
 `5.50.3-alpha.1` through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f`.
 Thank you to the fork's contributors for these fixes and regression tests.
 
-The current TypeScript contract is version `5.69.1` through
-`5970a1bd40b88f678719188969c8633bc313b665`, including Sogni Protocol
-`1.0.0-alpha.55`. The Rust fork was reviewed again on 2026-10-26 and remains at
+The current TypeScript contract is version `5.72.0` through
+`0e5e31075fdeea276a4241c924bd3423c60804ce`, including Sogni Protocol
+`1.0.0-alpha.55`. The Rust fork was reviewed again on 2026-11-02 and remains at
 the commit above; no additional fork merge was needed.
 
 The 5.66.0 release also requires Rustls 0.23.46 for the existing runtime and

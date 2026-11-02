@@ -1,11 +1,11 @@
-# sogni-client-by-morlz Rust SDK 5.69.1
+# sogni-client-by-morlz Rust SDK 5.72.0
 
-Compatibility: TypeScript 5.69.1 at 5970a1bd40b88f678719188969c8633bc313b665; hosted protocol 1.0.0-alpha.55.
+Compatibility: TypeScript 5.72.0 at 0e5e31075fdeea276a4241c924bd3423c60804ce; hosted protocol 1.0.0-alpha.55.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
-Cargo dependency: `sogni-client-by-morlz = "5.69.1"`.
+Cargo dependency: `sogni-client-by-morlz = "5.72.0"`.
 Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
 source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
@@ -33,6 +33,12 @@ request_timeout, which limits connection setup and idle reads instead of total
 stream duration.
 Malformed successful refresh responses without a valid token pair sign out only
 the matching session and return a protocol error; newer sessions are preserved.
+
+- Account restoration: `ACCOUNT_RESTORABLE_ERROR_CODE` is 196; read
+  `ApiError::details()["deletedAt"]` as Unix seconds. Only after confirmation,
+  use `account.login_with_settings(user, password, LoginOptions { remember_me,
+  app_source, restore_deleted_account: true })`, repeating the original settings.
+  Existing login methods never restore automatically.
 
 Namespaces:
 
@@ -112,6 +118,9 @@ explicit false; omission is unknown.
   `AssetRole::ReferenceVideo`. `.extend_output("extended")` selects combined
   output; `.extend_output("continuation")` selects new footage only. Omission keeps combined output.
   LightX2V Turbo cannot extend. Estimates need referenceVideo/hasVideoInput.
+- One-stage H3 Reference video inputs accept `.reference_video_compression("vpack")`.
+  It can change fine detail/motion. Omitted/`none` preserves ordinary processing;
+  two-stage, non-reference workflows and image-only requests cannot use VPack.
 - MiniMax H3 keyframes: `.keyframes(Vec<MinimaxH3Keyframe>)`, whose constructor
   takes (MediaSource, frame_index), accepts up to 8 intermediate stills for
   i2v/flf2v/ia2v/flfa2v/a2v/r2v. Caller order is preserved in separate upload
@@ -168,6 +177,9 @@ socket subscription defaults to true; pass an explicit false to opt out.
 LTX-2.3 and later LTX generation uses actual requested FPS and frame pattern
 `1 + n*8`. WAN 2.2 generates internally at 16 FPS. Use
 `calculate_video_frames()` instead of duplicating this behavior.
+
+ProjectResult.failure carries the server's public code/category/message when
+recorded, even without jobs. Live errors retain non-empty vendorErrorCode.
 
 ## Chat
 

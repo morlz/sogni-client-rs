@@ -3,8 +3,8 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.69.1** implements the TypeScript **5.69.1** public contract through
-[`5970a1b`](https://github.com/Sogni-AI/sogni-client/commit/5970a1bd40b88f678719188969c8633bc313b665),
+Version **5.72.0** implements the TypeScript **5.72.0** public contract through
+[`0e5e310`](https://github.com/Sogni-AI/sogni-client/commit/0e5e31075fdeea276a4241c924bd3423c60804ce),
 including hosted tool definitions from Sogni Protocol `1.0.0-alpha.55`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
@@ -55,7 +55,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client-by-morlz = { version = "5.69.1", default-features = false }
+sogni-client-by-morlz = { version = "5.72.0", default-features = false }
 ```
 
 For development against the repository:
@@ -119,6 +119,31 @@ Token authentication is available through
 `SogniClient::builder().app_id("my-installation").tokens(token, refresh_token)`. For an interactive
 username/password flow, create a token-auth client and call
 `client.account.login(username, password)`.
+
+A deleted account that can be restored returns `Error::Api` with
+`error_code == ACCOUNT_RESTORABLE_ERROR_CODE` (196); `ApiError::details()`
+contains `deletedAt` in Unix seconds. Ask the person to confirm restoration,
+then repeat the original session settings through `login_with_settings`.
+Existing `login` and `login_with_options` calls never restore automatically.
+
+```rust,no_run
+#[cfg(feature = "wallet")]
+async fn restore_confirmed_account(
+    client: &sogni_client::SogniClient,
+    username: &str,
+    password: &str,
+    remember_me: bool,
+    app_source: Option<String>,
+) -> sogni_client::Result<()> {
+    let settings = sogni_client::LoginOptions {
+        remember_me,
+        app_source,
+        restore_deleted_account: true,
+    };
+    client.account.login_with_settings(username, password, settings).await?;
+    Ok(())
+}
+```
 
 Logout or an account switch ends pending REST, SSE, chat, and project operations
 from the previous account. Old `Project` and `Job` handles cannot start operations
@@ -300,12 +325,24 @@ The `workflow_minimax_h3_video` example accepts `--source-video` and
 `--extend-output continuation`, and the new `minimax-h3-fasth3-r2v-turbo`
 and `minimax-h3-fasth3-r2v-turbo-2stage` selectors.
 
+One-stage MiniMax H3 Reference models also accept
+`.reference_video_compression("vpack")` with an uploaded reference video.
+It reduces reference-video memory use, with possible changes to fine detail
+and motion. Omit it or use `"none"` for ordinary processing. Two-stage models,
+image-only references, and other workflows reject VPack before uploads.
+
 ## Look up results and queue state
 
 `projects.get_result(id, None)` reads an account-owned project from durable
 status and returns `ProjectResult` with current status, jobs, and available
 completed-result URLs. It works after a process restart or socket recovery
 expiry, without creating a project or changing local tracking.
+
+For failed projects, `ProjectResult::failure` contains the server's public
+`ProjectFailure` explanation (`code`, `category`, `message`) when recorded,
+including compact status-only results with no jobs. Empty or non-string fields
+and additional service fields are omitted. Live job/project errors also retain
+the provider's non-empty `vendorErrorCode` alongside `vendorFailureCategory`.
 
 Use `get_result` and `get_status` for individual reads. Wait on a tracked
 project through `wait_for_completion` and socket events; repeated REST reads

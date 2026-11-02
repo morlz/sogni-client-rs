@@ -8,6 +8,15 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.72.0] - 2026-11-02
+
+- Port the public TypeScript 5.72.0 contract through `0e5e31075fdeea276a4241c924bd3423c60804ce`. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (main, source 5.50.3-alpha.1), with no new fork changes to merge; hosted schemas remain at Sogni Protocol 1.0.0-alpha.55.
+- Add explicit account restoration through `LoginOptions` and `login_with_settings`, plus the root `ACCOUNT_RESTORABLE_ERROR_CODE` constant. Preserve existing login calls, wallet signatures, session cancellation and authentication behavior; restoration is never automatic, and callers repeat their original session settings after confirmation.
+- Add opt-in `reference_video_compression("vpack")` for uploaded videos on one-stage MiniMax H3 Reference models. Omitted/`none` keeps existing wire requests; unsupported workflows, two-stage models and image-only references fail before uploads.
+- Return sanitized `ProjectFailure` explanations in durable project results even when no render records remain, and preserve non-empty public `vendorErrorCode` values in tracked state and job/project events without private service details.
+- Cover the existing sequential Rust socket receiver with ordered mixed text/binary frames, terminal delivery and malformed-frame recovery. Add compiled TypeScript golden cases for video compression, failed-project explanations and unchanged Seedream output formats.
+- Preserve Rust 1.88, Rust-specific recovery/transport features, crate identity and the automatic crates.io release policy.
+
 ## [5.69.1] - 2026-10-26
 
 - Port the public TypeScript 5.69.1 contract through `5970a1bd40b88f678719188969c8633bc313b665`, including 30 hosted tools from Sogni Protocol 1.0.0-alpha.55. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (main, source 5.50.3-alpha.1), with no new fork changes to merge.

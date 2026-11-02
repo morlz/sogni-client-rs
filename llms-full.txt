@@ -1,12 +1,12 @@
 # sogni-client-by-morlz Rust SDK complete agent reference
 
-Crate version: 5.69.1. Compatible with TypeScript 5.69.1 at upstream commit
-5970a1bd40b88f678719188969c8633bc313b665; hosted protocol 1.0.0-alpha.55.
+Crate version: 5.72.0. Compatible with TypeScript 5.72.0 at upstream commit
+0e5e31075fdeea276a4241c924bd3423c60804ce; hosted protocol 1.0.0-alpha.55.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client-by-morlz = "5.69.1"`; disable default features for clients
+Dependency: `sogni-client-by-morlz = "5.72.0"`; disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
@@ -58,13 +58,20 @@ stop listening; use the appropriate cancel API to stop remote execution.
 
 ## AccountApi
 
-Methods: `get_nonce`, `login`, `login_with_options`, `create_account`, `logout`,
+Methods: `get_nonce`, `login`, `login_with_options`, `login_with_settings`, `create_account`, `logout`,
 `me`, `account_balance`, `refresh_balance`, `wallet_balance`,
 `validate_username`, `switch_network`, `transaction_history`, `rewards`,
 `claim_rewards`, `withdraw`, `deposit`, `approve_token_usage`,
 `get_subscription_status`, `get_subscription_usage`, `get_trial_eligibility`,
 `set_device_id`, `get_subscription_plans`, `create_subscription_checkout`, and
 `create_subscription_portal_session`.
+
+LoginOptions groups remember_me, app_source and restore_deleted_account. Existing
+login signatures are preserved. A restorable deleted account returns ApiError
+with error_code ACCOUNT_RESTORABLE_ERROR_CODE (196) and details().deletedAt
+(Unix seconds). Ask the person to confirm, then repeat the same remember_me and
+app_source through login_with_settings with restore_deleted_account: true.
+The default is false and omits the flag; no automatic retry or restore occurs.
 
 `current_account()` returns a cheap cloneable handle. `snapshot()` is the raw
 serializable state. Convenience getters expose username, email, wallet,
@@ -279,6 +286,12 @@ recovery inconclusive; they do not count as proof of loss or cancel work.
 
 ## Durable project results and queue explanations
 
+ProjectResult.failure is an optional ProjectFailure containing only non-empty
+string code/category/message fields from owner status, including compact failed
+records with no jobs. Extra service fields are omitted. Live errors preserve
+the provider's non-empty vendorErrorCode alongside vendorFailureCategory.
+
+
 `projects.get_result(id: &str, options: Option<GetProjectResultOptions>)`
 returns ProjectResult using account-owned durable v2 status, without submitting
 work or changing local Project tracking. It also works after socket recovery
@@ -387,6 +400,12 @@ Turbo; an explicit Music 3 request rejects those ACE-only settings or duration
 over 300. --dry-run validates and shows the request without credentials or work.
 
 ## Video frame behavior
+
+One-stage MiniMax H3 Reference models accept reference_video_compression("vpack")
+with uploaded reference videos. It reduces reference memory use but can change
+fine detail and motion. Omitted/none preserves ordinary processing. Two-stage,
+image-only and non-reference requests reject VPack before uploads.
+
 
 Call `calculate_video_frames(model_id, duration, fps, min, max)`.
 
