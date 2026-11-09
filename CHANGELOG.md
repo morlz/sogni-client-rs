@@ -8,6 +8,15 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.79.0] - 2026-11-09
+
+- Synchronize the TypeScript 5.79.0 contract through `c397d41c04d5219f7a640662f621d629b82a69a6` and the 30 hosted tools from Sogni Protocol `1.0.0-alpha.59`. The reviewed Rust fork is `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` on `main` (source `5.50.3-alpha.1`).
+- Add opt-in Priority mode, the server's optional monthly capacity share in estimates, and optional Priority usage in transaction history. Retain the connection-scoped Priority capability across plan refreshes and project the member discount from socket plan updates.
+- Add 480p Seedance 2.5 drafts, 1080p finalization by draft job ID, matching quotes, and draft receipts on completed and recovered jobs. Accept MiniMax H3 final-frame exports and surface the export key on completion.
+- Add GPT Image 2.6 Sunburst and Flare, animated GIFs with ordered references, annotation-guided still edits, and shared GIF frame sizing for generation and quotes.
+- Add SAM 3 video selection using the complete uploaded source and expose public mask frame and source-hash metadata.
+- Share concurrent uploads of the same file and serialize its bindings per account. Preserve separate upload lanes and session checks.
+
 ## [5.72.0] - 2026-11-02
 
 - Port the public TypeScript 5.72.0 contract through `0e5e31075fdeea276a4241c924bd3423c60804ce`. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` (main, source 5.50.3-alpha.1), with no new fork changes to merge; hosted schemas remain at Sogni Protocol 1.0.0-alpha.55.

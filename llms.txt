@@ -1,11 +1,11 @@
-# sogni-client-by-morlz Rust SDK 5.72.0
+# sogni-client-by-morlz Rust SDK 5.79.0
 
-Compatibility: TypeScript 5.72.0 at 0e5e31075fdeea276a4241c924bd3423c60804ce; hosted protocol 1.0.0-alpha.55.
+Compatibility: TypeScript 5.79.0 at c397d41c04d5219f7a640662f621d629b82a69a6 with hosted protocol 1.0.0-alpha.59.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
-Cargo dependency: `sogni-client-by-morlz = "5.72.0"`.
+Cargo dependency: `sogni-client-by-morlz = "5.79.0"`.
 Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
 source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
@@ -90,6 +90,9 @@ explicit false; omission is unknown.
   `.sam3_prompt(Sam3ImagePrompt { ... })`; one PNG mask/cutout, no previews.
   `apply_mask` returns RGBA, `max_instances` selects 1–16 matches, labeled
   boxes support exclusions; multimask is for point prompts only.
+- SAM 3 video selection: `SAM3_VIDEO_SEGMENT_MODEL_ID`, one `ReferenceVideo`,
+  and `.sam3_video_prompt(Sam3VideoPrompt { ... })`. The mask MP4 preserves
+  dimensions and timing; job provenance can include the source-video hash.
 - BiRefNet: `birefnet_image_background_removal_fp16`, empty prompt, starting
   image; top-level `.param("applyMask", true)` returns a cutout.
 - Pixal3D: `pixal3d_int8_i23d` or `pixal3d_multiview_int8_i23d` with a starting
@@ -97,6 +100,10 @@ explicit false; omission is unknown.
   `Pixal3dRightView`, at fixed slots. `.pixal3d_options(...)` sets mesh/texture controls.
 - GPT Image 2.5 Sunburst/Flare: xhigh/max quality, transparent PNG/WebP,
   JPEG/WebP compression, 16 references and `AssetRole::GptImageMask`.
+- GPT Image 2.6 Sunburst/Flare: GIF with up to 16 ordered still references,
+  `gptImageFrameCount` (2–16), `gptImageFrameDurationMs` (20–2000), and
+  `gptImageComplexity`. Use `resolve_gpt_image_gif_size` for sheet geometry
+  and `gptImageMarkupUrl` for annotation-guided still edits.
 - Speech: `ProjectRequest::audio` with script prompt; `speaker`, `instruct`,
   `referenceText`, and `AssetRole::ReferenceAudio` for Qwen3-TTS voice cloning.
   Read model options for available controls; validation remains server-owned.
@@ -118,17 +125,20 @@ explicit false; omission is unknown.
   `AssetRole::ReferenceVideo`. `.extend_output("extended")` selects combined
   output; `.extend_output("continuation")` selects new footage only. Omission keeps combined output.
   LightX2V Turbo cannot extend. Estimates need referenceVideo/hasVideoInput.
-- One-stage H3 Reference video inputs accept `.reference_video_compression("vpack")`.
-  It can change fine detail/motion. Omitted/`none` preserves ordinary processing;
-  two-stage, non-reference workflows and image-only requests cannot use VPack.
+- H3 Reference compression is service-selected. Leave the legacy
+  `.reference_video_compression("vpack")` preference unset for new requests.
 - MiniMax H3 keyframes: `.keyframes(Vec<MinimaxH3Keyframe>)`, whose constructor
   takes (MediaSource, frame_index), accepts up to 8 intermediate stills for
   i2v/flf2v/ia2v/flfa2v/a2v/r2v. Caller order is preserved in separate upload
   slots. Indices are unique 24 FPS frames from 1 to frames-2; duration overrides
   frames and snaps (6 seconds = 141 frames). Use is_minimax_h3_keyframe_model.
   Describe `<Picture N>` chronologically after the workflow's own pictures.
-- Seedance 2.5: outputFormat mov and returnLastFrame; `job.last_frame_url()`
-  and `job.get_last_frame_url()` expose the separate image export.
+- Seedance 2.5: `.seedance_draft(true)` creates a 480p draft. Finalize
+  before expiry with `.seedance_draft_job_id(job.id())`, the same model
+  and account, an empty prompt and one result. Read `job.seedance_draft_receipt()`.
+- Seedance 2.5 accepts MOV. Seedance 2.5 and MiniMax H3 support
+  `.return_last_frame(true)`. Read or refresh the separate exported image
+  with `job.last_frame_url()` or `job.get_last_frame_url()`.
 - `seedance-2-5-uncensored` retains the 2.5 contract; `seedance-2-0-mini-uncensored`
   retains Mini's 480p/720p, 4–15 second, multimodal contract. Both require the
   shared likeness and consent agreement in a Sogni app before generation.
@@ -149,6 +159,9 @@ explicit false; omission is unknown.
   twice the canvas size. Seedance 2.5 now defaults to 1080p (no 4K).
 - Estimates accept billingMode; video/audio also accept network, defaulting to
   the current connection. daily_fair_use_pct is optional server-supplied advice.
+- `.priority_mode(true)` opts into available Fast subscription Priority.
+  Estimates accept `priorityMode` and `includeMonthlyFairUse: true`.
+  The service supplies `daily_fair_use_pct` and `monthly_fair_use_pct`.
 - Video estimates accept keyframeCount or derive keyframes.length; an explicit
   count, including zero, takes precedence. The server supplies the price.
 - `job.enhance` uses Krea 2 Turbo/8 steps, preserves the parent canvas and seed,

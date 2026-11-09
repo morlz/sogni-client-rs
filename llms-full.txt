@@ -1,12 +1,12 @@
 # sogni-client-by-morlz Rust SDK complete agent reference
 
-Crate version: 5.72.0. Compatible with TypeScript 5.72.0 at upstream commit
-0e5e31075fdeea276a4241c924bd3423c60804ce; hosted protocol 1.0.0-alpha.55.
+Crate version: 5.79.0. Compatible with TypeScript 5.79.0 at upstream commit
+c397d41c04d5219f7a640662f621d629b82a69a6 with hosted protocol 1.0.0-alpha.59.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client-by-morlz = "5.72.0"`; disable default features for clients
+Dependency: `sogni-client-by-morlz = "5.79.0"`. Disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
@@ -161,6 +161,13 @@ instance. Threshold defaults to 0.5. Multimask defaults to true for points;
 without points, true fails and false is omitted. apply_mask=true returns an
 RGBA source cutout with the mask in alpha. max_instances keeps the top 1–16
 selections; omission retains all matches above threshold. Unknown fields fail.
+
+SAM 3 video selection: use `ProjectRequest::video(SAM3_VIDEO_SEGMENT_MODEL_ID, "")`,
+one `AssetRole::ReferenceVideo`, and `.sam3_video_prompt(Sam3VideoPrompt { ... })`.
+The binary mask MP4 preserves source timing and dimensions. Supply normalized
+points, boxes, or text at frame_index (default 0), with optional object_index
+for a confidence-ranked candidate (default 0). Omit source metadata for server
+probing. Job provenance can include source_video_sha256, mask_frames, and mask_fps.
 
 BiRefNet: image model birefnet_image_background_removal_fp16, empty prompt,
 and StartingImage. It returns one PNG/no previews; top-level applyMask=true
@@ -352,7 +359,8 @@ with the same public consentRequired shape. The SDK never accepts the agreement.
 Named hosted generate_image/edit_image selection omits negativePrompt, seed and
 steps; model-less calls exclude Seedream. Image serialization omits its negative prompt.
 
-GPT IDs: gpt-image-2, gpt-image-2.5-sunburst, gpt-image-2.5-flare.
+GPT IDs: gpt-image-2, gpt-image-2.5-sunburst, gpt-image-2.5-flare,
+gpt-image-2.6-sunburst, and gpt-image-2.6-flare.
 Custom width/height: 256–3840. Up to 16 ordered context references. A PNG alpha
 mask uses AssetRole::GptImageMask or gptImageMaskUrl (URL/PNG data URI), requires
 the first reference, and cannot combine both inputs. Data-URI masks are uploaded
@@ -361,6 +369,16 @@ legacy standard/hd; 2.5 adds xhigh/max. auto quality is rejected.
 gptImageBackground accepts opaque/auto; 2.5 adds transparent for PNG/WebP.
 gptImageOutputCompression accepts integer 0–100 only with jpg/webp outputFormat.
 Set these exact wire names through .param().
+
+GPT Image 2.6 adds `gptImageComplexity` (low/medium/high) and still-edit
+`gptImageMarkupUrl` (annotation overlay for the first reference, without a mask).
+With `outputFormat: "gif"`, set optional `gptImageFrameCount` (2–16, default 9)
+and `gptImageFrameDurationMs` (20–2000, default 200). GIFs accept up to 16
+ordered still references and use an opaque background. Omit masks, markup and
+output compression for GIFs. Frame dimensions must fit a supported sheet.
+Use `get_gpt_image_gif_layouts`, `get_gpt_image_gif_frame_bounds`,
+`get_gpt_image_gif_sheet`, or `resolve_gpt_image_gif_size` for sheet geometry.
+Quote with the same size and frame controls and the `contextImages` count.
 
 Qwen3-TTS IDs: qwen3_tts_1.7b_custom_voice_bf16,
 qwen3_tts_1.7b_voice_design_bf16, qwen3_tts_1.7b_voice_clone_bf16.
@@ -401,10 +419,9 @@ over 300. --dry-run validates and shows the request without credentials or work.
 
 ## Video frame behavior
 
-One-stage MiniMax H3 Reference models accept reference_video_compression("vpack")
-with uploaded reference videos. It reduces reference memory use but can change
-fine detail and motion. Omitted/none preserves ordinary processing. Two-stage,
-image-only and non-reference requests reject VPack before uploads.
+The service chooses MiniMax H3 reference-video compression automatically.
+Leave `reference_video_compression` unset for new requests. The legacy
+`"vpack"` setting remains accepted on one-stage H3 Reference with an uploaded video.
 
 
 Call `calculate_video_frames(model_id, duration, fps, min, max)`.
@@ -414,7 +431,7 @@ Call `calculate_video_frames(model_id, duration, fps, min, max)`.
   1,048,576 pixels; larger requested canvases are scaled down at their aspect ratio.
 - LTX families: generate at requested FPS, then snap to `1 + n*8`.
 - MiniMax H3: fixed 24 FPS and `124 + n*17`, clamped to supported limits.
-- FlashVSR: rounded(duration * fps), retaining the exact source frame count.
+- FlashVSR and SAM 3 video selection: rounded(duration * fps), retaining the exact source frame count.
 - Other video families: rounded(duration * fps) + 1.
 
 Project creation performs local preflight validation for the current MiniMax
@@ -539,7 +556,7 @@ read through `HostedTools` rather than copying schemas.
 
 Current hosted definitions include generate_speech, upscale_video, image_to_3d,
 remove_background and segment_image, plus
-FastH3 audio-guide/two-stage, GPT Image 2.5, FLUX 3 Image Klein and MOSS selectors.
+FastH3 audio-guide/two-stage, GPT Image 2.5 and 2.6, FLUX 3 Image Klein and MOSS selectors.
 These definitions come from protocol alpha.55. Hosted sound_to_video accepts ordered loras and
 loraStrengths arrays (1–8 entries) for audio-guide generation. The direct local
 sound_to_video tool handler does not forward those LoRA fields; use an explicit
@@ -642,12 +659,27 @@ public/private catalogs for one call. get_lora routes personal- IDs privately.
 MiniMax H3 Ref2VA two-stage IDs: minimax-h3-ref2va-fp8_r2v_2stage (20 steps)
 and minimax-h3-ref2va-fp8_r2v_balanced_2stage (8 steps). Same references, LoRAs,
 24 FPS and guidance 1 as their one-stage counterparts; output doubles the canvas.
-Seedance 2.5 accepts 480p/720p/1080p and defaults to 1080p; 4K is unsupported.
+Seedance 2.5 accepts 480p/720p/1080p and defaults to 1080p. Use
+`.seedance_draft(true)` at 480p and read `job.seedance_draft_receipt()` after
+completion. Finalize a draft before its expiry with
+`.seedance_draft_job_id(job.id())` on the same model and account. Use an empty
+prompt and one result, and omit inherited inputs and generation settings.
+Quote using `seedanceDraft` or `seedanceDraftJobId` in `estimate_video_cost`.
+The service quotes a final from the draft's saved settings. Seedance 2.5 and
+MiniMax H3 support `.return_last_frame(true)`; refresh the separate image
+using `job.get_last_frame_url()`. MOV is a Seedance 2.5 option.
 
-Image/video/audio estimates accept billingMode=auto|tokens. Video/audio also
-accept network and default to the connection's network. CostEstimate exposes
-daily_fair_use_pct only when the server supplies it; zero remains Some(0).
-Missing advice must not be treated as zero or used to infer plan coverage.
+Image, video, and audio estimates accept `billingMode` and `priorityMode`.
+Video and audio accept `network`, defaulting to the current connection.
+`daily_fair_use_pct` is optional, including zero when the server supplies it.
+`includeMonthlyFairUse: true` requests `monthly_fair_use_pct`.
+Paid Unlimited members can request Priority placement using
+`.priority_mode(true)`, Spark, Fast and subscription billing. The service
+reports current availability as `subscription.capabilities.priorityMode`
+and uses 1.5× daily and monthly usage credits for accepted Priority jobs.
+`includePriorityAccounting: true` on `transaction_history` opts into
+`priorityUsage` summaries. `fairUse.accountingStatus: "pending"` indicates
+temporary accounting confirmation.
 
 Recovery can resend a completed socket write once after a dropped connection,
 only after owner status and the live registry confirm absence. Any server

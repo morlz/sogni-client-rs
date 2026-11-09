@@ -3,9 +3,9 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.72.0** implements the TypeScript **5.72.0** public contract through
-[`0e5e310`](https://github.com/Sogni-AI/sogni-client/commit/0e5e31075fdeea276a4241c924bd3423c60804ce),
-including hosted tool definitions from Sogni Protocol `1.0.0-alpha.55`.
+Version **5.79.0** implements the TypeScript **5.79.0** public contract through
+[`c397d41`](https://github.com/Sogni-AI/sogni-client/commit/c397d41c04d5219f7a640662f621d629b82a69a6),
+including hosted tool definitions from Sogni Protocol `1.0.0-alpha.59`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
 See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
@@ -21,13 +21,13 @@ the previous `sogni-client` package.
 - Reconnecting authenticated WebSocket transport with exponential backoff
 - Image, video, and audio project submission, progress, results, cancellation,
   queue explanations, durable result lookup, uploads, estimates, and recovery
-- SAM3 segmentation/cutouts, BiRefNet background removal, Pixal3D multi-view
-  GLB reconstruction, GPT Image 2.5 editing, and worker result provenance
+- SAM3 image cutouts and video masks, BiRefNet background removal, Pixal3D
+  multi-view GLB reconstruction, GPT Image editing and animation, and worker result provenance
 - FLUX 3 Image Klein generation/editing and MOSS text-to-image presets
 - Explicit Seedream 5.0 Pro Uncensored image generation/editing, FastH3
   Reference, and MiniMax H3 video extension
 - Speech/voice cloning, FlashVSR video upscaling, MiniMax H3 keyframes,
-  two-stage/audio-guide video with LoRAs, Seedance exports, and private uploads
+  two-stage/audio-guide video with LoRAs, Seedance drafts and exports, and private uploads
 - Socket-native streaming LLM chat, hosted chat completions, hosted tools, and
   durable chat runs with resumable SSE
 - Durable creative workflows, cost confirmation, reseeding, SSE, and template
@@ -55,7 +55,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client-by-morlz = { version = "5.72.0", default-features = false }
+sogni-client-by-morlz = { version = "5.79.0", default-features = false }
 ```
 
 For development against the repository:
@@ -325,11 +325,9 @@ The `workflow_minimax_h3_video` example accepts `--source-video` and
 `--extend-output continuation`, and the new `minimax-h3-fasth3-r2v-turbo`
 and `minimax-h3-fasth3-r2v-turbo-2stage` selectors.
 
-One-stage MiniMax H3 Reference models also accept
-`.reference_video_compression("vpack")` with an uploaded reference video.
-It reduces reference-video memory use, with possible changes to fine detail
-and motion. Omit it or use `"none"` for ordinary processing. Two-stage models,
-image-only references, and other workflows reject VPack before uploads.
+Current services choose MiniMax H3 reference-video compression automatically.
+Leave `reference_video_compression` unset for new requests. The legacy `vpack`
+preference remains accepted for one-stage H3 Reference with an uploaded video.
 
 ## Look up results and queue state
 
@@ -461,7 +459,35 @@ Hashes are normalized to lowercase SHA-256 hex digests. Callers can set
 or `Transition { ... }`. The SDK validates receipt shape and hashes; applications
 choose the recipe, and the service decides authorization and model eligibility.
 
-## GPT Image 2.5, speech, and video utilities
+### Track a selection across a video
+
+`SAM3_VIDEO_SEGMENT_MODEL_ID` selects one object in an uploaded video and
+returns a hard-mask MP4 at the original dimensions, frame count, and rate.
+White marks the selected object. The service probes the complete upload when
+source geometry is omitted. Use constant-frame-rate SDR input up to 30 seconds,
+900 frames, 2560 pixels on either edge, and 100 MB.
+
+```rust,no_run
+use sogni_client::{AssetRole, MediaSource, ProjectRequest, SAM3_VIDEO_SEGMENT_MODEL_ID, Sam3VideoPrompt};
+
+fn mask_video() -> ProjectRequest {
+    ProjectRequest::video(SAM3_VIDEO_SEGMENT_MODEL_ID, "")
+        .asset(AssetRole::ReferenceVideo, MediaSource::Path("source.mp4".into()))
+        .sam3_video_prompt(Sam3VideoPrompt {
+            text: Some("unicorn horn".into()),
+            frame_index: Some(126),
+            ..Default::default()
+        })
+}
+```
+
+The zero-based `frame_index` sets the frame where the selection is defined.
+`object_index` chooses a candidate in confidence order. Both default to zero.
+Points and boxes use normalized coordinates against the complete source frame.
+When the worker reports them, `job.provenance()` contains the source-video hash,
+mask frame count, and mask frame rate.
+
+## GPT Image, speech, and video utilities
 
 GPT Image models include `gpt-image-2`, `gpt-image-2.5-sunburst`, and
 `gpt-image-2.5-flare`. The 2.5 models add `xhigh`/`max` quality and transparent
@@ -469,7 +495,33 @@ PNG/WebP output. Set `gptImageQuality`, `gptImageBackground`, and
 `gptImageOutputCompression` through `param`; compression is an integer 0–100
 for JPEG/WebP. Quality `auto` is rejected. Editing accepts up to 16 ordered
 context images. `AssetRole::GptImageMask` uploads the PNG alpha mask for the
-first reference; `gptImageMaskUrl` accepts a URL or PNG data URI.
+first reference. `gptImageMaskUrl` accepts a URL or PNG data URI.
+
+Use `gpt-image-2.6-flare` or `gpt-image-2.6-sunburst` for animated GIFs,
+`gptImageComplexity` (`low`, `medium`, or `high`), or annotation-guided edits.
+GIFs take 2–16 frames, 20–2000 ms per frame, and up to 16 ordered still references.
+Their settings must fit a supported sheet. Use `resolve_gpt_image_gif_size`
+to infer valid dimensions or `get_gpt_image_gif_sheet` to validate explicit
+dimensions. GIF jobs use an opaque background and omit masks, markup, and
+output compression. For a still edit, `gptImageMarkupUrl` accepts a transparent
+PNG overlay for the first reference as the sole editing overlay.
+
+```rust,no_run
+use sogni_client::ProjectRequest;
+
+fn animated_gif() -> ProjectRequest {
+    ProjectRequest::image("gpt-image-2.6-flare", "A lantern sways in a seamless loop")
+        .dimensions(320, 320)
+        .param("outputFormat", "gif")
+        .param("gptImageFrameCount", 9)
+        .param("gptImageFrameDurationMs", 200)
+        .param("gptImageComplexity", "medium")
+}
+```
+
+For `estimate_cost`, pass the same dimensions, frame count, frame duration,
+complexity, and output format. Pass the number of reference images in
+`contextImages` to quote a guided animation.
 
 Speech uses `ProjectRequest::audio`, with the script in the prompt. Qwen3-TTS
 models offer preset voices (`speaker`), voice design/delivery (`instruct`), or
@@ -579,10 +631,19 @@ models, indices, duplicate frames, or oversized lists fail before any upload.
 array; an explicit count takes precedence, including zero. Pricing remains
 service-owned.
 
-Seedance 2.5 defaults to 1080p and accepts 480p/720p/1080p, without 4K.
-It accepts `.param("outputFormat", "mov")` and
-`.param("returnLastFrame", true)`. Exported final frames are available through
-`job.last_frame_url()` or refreshed with `job.get_last_frame_url().await`.
+Seedance 2.5 accepts 480p, 720p, and 1080p output and defaults to 1080p.
+It accepts `.param("outputFormat", "mov")`. Both Seedance 2.5 and MiniMax H3
+accept `.return_last_frame(true)`. Read the exported image from
+`job.last_frame_url()` or refresh it with `job.get_last_frame_url().await`.
+
+Set `.seedance_draft(true)` on a 480p Seedance 2.5 request to create a draft.
+The completed job's `seedance_draft_receipt()` reports the draft flag and expiry.
+Before expiry, finalize it on the same model and account using
+`.seedance_draft_job_id(draft_job.id())`. Set an empty prompt and request one
+result. The service reuses the draft's media, duration, aspect ratio, seed, and
+audio setting. The final reports the originating draft job ID. To quote a draft
+or final, pass `seedanceDraft` or `seedanceDraftJobId` to `estimate_video_cost`.
+For the final, the service prices from the draft's stored settings.
 
 `seedance-2-5-uncensored` keeps the Seedance 2.5 options under its own model ID.
 `seedance-2-0-mini-uncensored` keeps the Mini model's 480p/720p, 4–15 second,
@@ -680,10 +741,21 @@ Private catalogs are fetched for each call and never added to a public cache.
 `available_loras` remains public-only; `get_lora("personal-...")` reads the
 private catalog. Reads and imports reject responses from a previous account.
 
-All estimate helpers accept `billingMode` (`auto` or `tokens`). Video and audio
-estimates also accept `network`, defaulting to the current connection's network.
-`CostEstimate::daily_fair_use_pct` preserves the service's optional percentage,
-including zero. An absent value is not a zero-cost or plan-coverage guarantee.
+All estimate helpers accept `billingMode`. Video and audio estimates also
+accept `network`, defaulting to the current connection's network.
+`CostEstimate::daily_fair_use_pct` preserves the service's optional daily
+percentage, including zero. Set `includeMonthlyFairUse: true` to request the
+optional monthly percentage in `CostEstimate::monthly_fair_use_pct`.
+
+Paid Unlimited members can request earlier Fast queue placement with
+`.priority_mode(true)`, `tokenType: "spark"`, and `billingMode: "subscription"`.
+Priority uses 1.5× the usual daily and monthly usage credits where available.
+Read `capabilities.priorityMode` from the current subscription and pass
+`priorityMode` to the estimate helpers for a weighted quote. Eligibility and
+admission are server-owned. Set `includePriorityAccounting: true` when calling
+`account.transaction_history()` for the optional `priorityUsage` summary.
+When present, `fairUse.accountingStatus: "pending"` means monthly accounting is
+still awaiting confirmation.
 
 ## Stream a chat completion
 
