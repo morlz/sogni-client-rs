@@ -14,6 +14,8 @@ struct Fixture {
     mode: u16,
     prepares: Arc<AtomicUsize>,
     binds: Arc<AtomicUsize>,
+    first_bind_entered: Arc<tokio::sync::Notify>,
+    release_first_bind: Arc<tokio::sync::Notify>,
     auth: AuthManager,
 }
 
@@ -44,6 +46,8 @@ async fn fixture(mode: u16) -> (ReusableUploads, Fixture, tokio::task::JoinHandl
         mode,
         prepares: Arc::new(AtomicUsize::new(0)),
         binds: Arc::new(AtomicUsize::new(0)),
+        first_bind_entered: Arc::new(tokio::sync::Notify::new()),
+        release_first_bind: Arc::new(tokio::sync::Notify::new()),
         auth,
     };
     let app = Router::new()
@@ -107,11 +111,19 @@ async fn fixture(mode: u16) -> (ReusableUploads, Fixture, tokio::task::JoinHandl
             "/v1/assets/asset/bind",
             post(
                 |State(s): State<Fixture>, Json(body): Json<Value>| async move {
-                    s.binds.fetch_add(1, Ordering::SeqCst);
+                    let order = s.binds.fetch_add(1, Ordering::SeqCst);
                     assert_eq!(body, json!({"projectId":"PROJECT", "type":"startingImage"}));
-                    Json(json!({"data":{}}))
+                    if s.mode == 201 && order == 0 {
+                        s.first_bind_entered.notify_one();
+                        s.release_first_bind.notified().await;
+                    }
+                    (StatusCode::OK, Json(json!({"data":{}})))
                 },
             ),
+        )
+        .route(
+            "/v1/assets/other/bind",
+            post(|| async { Json(json!({"data":{}})) }),
         )
         .route(
             "/v1/assets/asset",
@@ -122,6 +134,47 @@ async fn fixture(mode: u16) -> (ReusableUploads, Fixture, tokio::task::JoinHandl
         axum::serve(listener, app).await.unwrap();
     });
     (ReusableUploads::new(rest), state, server)
+}
+
+#[tokio::test]
+async fn concurrent_saved_references_share_one_upload_and_serialize_only_the_same_file() {
+    let (assets, state, server) = fixture(201).await;
+    let first = tokio::spawn({
+        let assets = assets.clone();
+        async move { try_png(&assets).await }
+    });
+    tokio::time::timeout(Duration::from_secs(1), state.first_bind_entered.notified())
+        .await
+        .unwrap();
+    let second = try_png(&assets);
+    tokio::pin!(second);
+    let unrelated = async {
+        assets
+            .bind(
+                "other",
+                &SavedUploadBinding {
+                    project_id: "UNRELATED".into(),
+                    asset_type: "startingImage".into(),
+                    id: None,
+                },
+            )
+            .await
+            .unwrap();
+        // Give the second future a turn while the first file copy is held.
+        tokio::time::sleep(Duration::from_millis(50)).await;
+    };
+    tokio::select! {
+        result = &mut second => panic!("same-file binding ran concurrently: {result:?}"),
+        result = tokio::time::timeout(Duration::from_secs(1), unrelated) => result.unwrap(),
+    }
+    assert_eq!(state.prepares.load(Ordering::SeqCst), 1);
+    assert_eq!(state.binds.load(Ordering::SeqCst), 1);
+    state.release_first_bind.notify_one();
+    assert!(first.await.unwrap().unwrap());
+    assert!(second.await.unwrap());
+    assert_eq!(state.prepares.load(Ordering::SeqCst), 1);
+    assert_eq!(state.binds.load(Ordering::SeqCst), 2);
+    server.abort();
 }
 
 async fn try_png(assets: &ReusableUploads) -> Result<bool> {

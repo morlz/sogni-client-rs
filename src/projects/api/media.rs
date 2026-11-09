@@ -38,6 +38,9 @@ impl ProjectsApi {
             .await
     }
 
+    /// Request a signed image upload. For roles other than `preview` and
+    /// `complete`, the storage slot is keyed by `jobId` and `type`; changing
+    /// `imageId` alone can replace the previous upload.
     pub async fn upload_url(&self, query: &Value) -> Result<Url> {
         response_url(
             self.inner
@@ -60,6 +63,10 @@ impl ProjectsApi {
         )
     }
 
+    /// Request a signed media upload. For reference audio and video, only the
+    /// numbered IDs `referenceAudio1`–`referenceAudio3` or
+    /// `referenceVideo1`–`referenceVideo3` select separate slots within one job.
+    /// Other IDs share the unnumbered role's slot for that job.
     pub async fn media_upload_url(&self, query: &Value) -> Result<Url> {
         response_url(
             self.inner
@@ -83,11 +90,13 @@ impl ProjectsApi {
     }
 
     /// Request the current v2 multipart image upload form.
+    /// Uses the same storage slots as [Self::upload_url].
     pub async fn image_upload_post(&self, query: &Value) -> Result<PresignedPost> {
         self.presigned_post("/v2/image/uploadUrl", query).await
     }
 
     /// Request the current v2 multipart media upload form.
+    /// Uses the same storage slots as [Self::media_upload_url].
     pub async fn media_upload_post(&self, query: &Value) -> Result<PresignedPost> {
         self.presigned_post("/v2/media/uploadUrl", query).await
     }

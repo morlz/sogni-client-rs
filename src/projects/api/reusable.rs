@@ -13,6 +13,9 @@ use tokio::sync::{Mutex, Semaphore, watch};
 
 use crate::{ApiError, Error, MediaSource, Result, transport::RestClient, utils::path_segment};
 
+mod inflight;
+use inflight::{SavedInUse, ScopedSlots};
+
 const MAX_FILE_BYTES: usize = 100 * 1024 * 1024;
 const SUPPORTED_TYPES: &[&str] = &[
     "image/png",
@@ -61,6 +64,8 @@ struct ReusableInner {
     rest: RestClient,
     lanes: Semaphore,
     availability: Mutex<Availability>,
+    uploads: ScopedSlots<([u8; 32], String), Option<SavedUpload>>,
+    bindings: ScopedSlots<String, ()>,
 }
 
 /// Upload media once, then bind verified private assets to later projects.
@@ -86,6 +91,8 @@ impl ReusableUploads {
                 }),
                 rest,
                 lanes: Semaphore::new(2),
+                uploads: ScopedSlots::default(),
+                bindings: ScopedSlots::default(),
             }),
         }
     }
@@ -117,6 +124,9 @@ impl ReusableUploads {
         session: &watch::Receiver<u64>,
     ) -> Result<()> {
         require_id(id)?;
+        assert_session(session)?;
+        let slot = self.inner.bindings.get(*session.borrow(), id.to_owned());
+        let _binding = slot.lock().await;
         self.post_busy(
             &format!("/v1/assets/{}/bind", path_segment(id)),
             &serde_json::to_value(binding)?,
@@ -142,10 +152,11 @@ impl ReusableUploads {
             .content_type
             .as_deref()
             .ok_or_else(|| Error::InvalidInput("saved uploads require a content type".into()))?;
-        let prepared = self
-            .prepare(&media.data, content_type, &media.file_name, &session)
-            .await?;
-        self.finish(prepared, media.data, &session).await
+        let saved = self
+            .save(media.data, content_type, &media.file_name, false, &session)
+            .await?
+            .ok_or_else(unprepared)?;
+        Ok(saved.asset)
     }
 
     /// Try the reusable upload path. A refusal before preparation may use the
@@ -167,44 +178,32 @@ impl ReusableUploads {
         if !self.can_save(&session).await? {
             return Ok(false);
         }
-        let _lane = self
+        let lane = self
             .inner
             .lanes
             .acquire()
             .await
             .map_err(|_| Error::Closed)?;
-        assert_session(&session)?;
-        if self.blocked().await {
+        let saved = self.save(bytes, content_type, name, true, &session).await?;
+        drop(lane);
+        let Some(saved) = saved else {
             return Ok(false);
-        }
-        let prepared = match self.prepare(&bytes, content_type, name, &session).await {
-            Ok(prepared) => prepared,
-            Err(Error::Api(error)) if matches!(error.status, 400 | 403 | 404 | 409 | 410 | 503) => {
-                assert_session(&session)?;
-                if error.status == 409
-                    && error
-                        .message
-                        .starts_with("Your saved upload library is full.")
-                {
-                    self.inner.availability.lock().await.blocked_until =
-                        Some(Instant::now() + Duration::from_secs(15 * 60));
-                }
-                return Ok(false);
-            }
-            Err(error) => return Err(error),
         };
-        let saved = self.finish(prepared, bytes, &session).await?;
-        self.bind_in_session(&saved.id, binding, &session).await?;
+        // Keep the verified asset shared until every concurrent caller has bound
+        // it. The copy consumes a per-file slot, not a hashing/transfer lane.
+        self.bind_in_session(&saved.asset.id, binding, &session)
+            .await?;
         Ok(true)
     }
 
-    async fn prepare(
+    async fn save(
         &self,
-        bytes: &Bytes,
+        bytes: Bytes,
         content_type: &str,
         name: &str,
+        automatic: bool,
         session: &watch::Receiver<u64>,
-    ) -> Result<Value> {
+    ) -> Result<Option<SavedInUse>> {
         if bytes.is_empty() || bytes.len() > MAX_FILE_BYTES {
             return Err(ApiError::new(
                 400,
@@ -214,12 +213,69 @@ impl ReusableUploads {
             .into());
         }
         assert_session(session)?;
-        let sha256 = format!("{:x}", Sha256::digest(bytes));
+        let digest = Sha256::digest(&bytes);
+        let session_id = *session.borrow();
+        let slot = self
+            .inner
+            .uploads
+            .get(session_id, (digest.into(), content_type.into()));
+        let mut ready = slot.lock().await;
+        assert_session(session)?;
+        if let Some(asset) = ready.as_ref() {
+            return Ok(Some(SavedInUse::new(asset.clone(), slot.clone())));
+        }
+        if automatic && self.blocked().await {
+            assert_session(session)?;
+            return Ok(None);
+        }
+        let prepared = match self
+            .prepare(
+                bytes.len(),
+                format!("{digest:x}"),
+                content_type,
+                name,
+                session,
+            )
+            .await
+        {
+            Ok(prepared) => prepared,
+            Err(Error::Api(error))
+                if automatic && matches!(error.status, 400 | 403 | 404 | 409 | 410 | 503) =>
+            {
+                assert_session(session)?;
+                if error.status == 409
+                    && error
+                        .message
+                        .starts_with("Your saved upload library is full.")
+                {
+                    let mut state = self.inner.availability.lock().await;
+                    refresh_session(&mut state);
+                    assert_session(session)?;
+                    state.blocked_until = Some(Instant::now() + Duration::from_secs(15 * 60));
+                }
+                return Ok(None);
+            }
+            Err(error) => return Err(error),
+        };
+        let asset = self.finish(prepared, bytes, session).await?;
+        assert_session(session)?;
+        *ready = Some(asset.clone());
+        Ok(Some(SavedInUse::new(asset, slot.clone())))
+    }
+
+    async fn prepare(
+        &self,
+        size: usize,
+        sha256: String,
+        content_type: &str,
+        name: &str,
+        session: &watch::Receiver<u64>,
+    ) -> Result<Value> {
         let result = self
             .post_busy(
                 "/v1/assets/prepare",
                 &json!({
-                    "sha256": sha256, "bytes": bytes.len(), "contentType":content_type, "name":name,
+                    "sha256": sha256, "bytes": size, "contentType":content_type, "name":name,
                 }),
                 session,
             )
