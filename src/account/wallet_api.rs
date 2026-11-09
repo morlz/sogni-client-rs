@@ -50,13 +50,49 @@ impl AccountApi {
         Ok(network)
     }
 
+    /// Fetch history. Set `includePriorityAccounting: true` to include the
+    /// server's Priority usage labels alongside ordinary transaction fields.
     pub async fn transaction_history(&self, query: &Value) -> Result<Value> {
+        let mut query = query.clone();
+        let include_priority = query
+            .get("includePriorityAccounting")
+            .is_some_and(|value| value.as_bool() == Some(true) || value.as_str() == Some("true"));
+        if !include_priority && let Some(fields) = query.as_object_mut() {
+            fields.remove("includePriorityAccounting");
+        }
         let response = self
             .client
             .rest
-            .get("/v1/transactions/list", Some(query))
+            .get("/v1/transactions/list", Some(&query))
             .await?;
-        Ok(data(&response).clone())
+        let mut history = data(&response).clone();
+        if let Some(entries) = history
+            .get_mut("transactions")
+            .and_then(Value::as_array_mut)
+        {
+            for entry in entries.iter_mut().filter_map(Value::as_object_mut) {
+                if let Some(usage) = entry.remove("priorityUsage")
+                    && include_priority
+                    && let (
+                        Some(output_count),
+                        Some(1.5),
+                        Some(coverage @ ("complete" | "partial")),
+                    ) = (
+                        usage.get("outputCount").and_then(Value::as_u64),
+                        usage.get("rate").and_then(Value::as_f64),
+                        usage.get("coverage").and_then(Value::as_str),
+                    )
+                {
+                    entry.insert(
+                        "priorityUsage".into(),
+                        json!({
+                            "outputCount": output_count, "rate": 1.5, "coverage": coverage,
+                        }),
+                    );
+                }
+            }
+        }
+        Ok(history)
     }
 
     pub async fn rewards(&self, query: Option<&Value>) -> Result<Vec<Value>> {

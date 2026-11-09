@@ -16,8 +16,8 @@ use super::{
     },
     projection::{
         SubscriptionSource, apply_free_spark_projection, apply_subscription_projection,
-        event_network, map_socket_subscription, refresh_subscription_projection,
-        subscription_version,
+        clear_socket_priority, connected_session, event_network, map_socket_subscription,
+        refresh_subscription_projection, subscription_version,
     },
 };
 use crate::{AuthKind, Result, transport::ApiClient};
@@ -201,21 +201,25 @@ impl AccountApi {
                     "balanceUpdate" if event.data.is_object() => {
                         context.current.update(json!({"balance": event.data}));
                     }
-                    "connecting" => context.current.update(json!({
-                        "networkStatus": "connecting",
-                        "network": event_network(&event.data),
-                    })),
-                    "connected" | "changeNetwork" => context.current.update(json!({
-                        "networkStatus": "connected",
-                        "network": event_network(&event.data),
-                    })),
-                    "disconnected" => context.current.update(json!({
-                        "networkStatus": "disconnected",
-                        "network": Value::Null,
-                    })),
+                    "connecting" | "connected" | "disconnected" | "changeNetwork" => {
+                        if event.name != "changeNetwork" {
+                            clear_socket_priority(
+                                &context.current,
+                                &context.subscription_projection,
+                            );
+                        }
+                        let (status, network) = match event.name.as_str() {
+                            "disconnected" => ("disconnected", Value::Null),
+                            "connecting" => ("connecting", event_network(&event.data)),
+                            _ => ("connected", event_network(&event.data)),
+                        };
+                        context
+                            .current
+                            .update(json!({"networkStatus": status, "network": network}));
+                    }
                     "authenticated" if event.data.is_object() => {
                         handle_socket_authenticated(
-                            &client,
+                            &owner,
                             &lifecycle,
                             &context,
                             api_key_auth,
@@ -229,7 +233,7 @@ impl AccountApi {
                                 &context.current,
                                 &context.subscription_projection,
                                 mapped,
-                                SubscriptionSource::Socket,
+                                SubscriptionSource::Socket(connected_session(&owner)),
                                 subscription_version(&event.data),
                                 None,
                             );
@@ -280,7 +284,7 @@ impl AccountApi {
 }
 
 fn handle_socket_authenticated(
-    client: &Weak<ApiClient>,
+    client: &Arc<ApiClient>,
     lifecycle: &Weak<AccountListenerLifecycle>,
     context: &AccountListenerContext,
     api_key_auth: bool,
@@ -299,19 +303,17 @@ fn handle_socket_authenticated(
                 &context.current,
                 &context.subscription_projection,
                 mapped,
-                SubscriptionSource::Socket,
+                SubscriptionSource::Socket(connected_session(client)),
                 subscription_version(entitlement),
                 None,
             );
         }
         return;
     }
-    let Some(client) = client.upgrade() else {
-        return;
-    };
     let Some(lifecycle) = lifecycle.upgrade() else {
         return;
     };
+    let client = client.clone();
     let current = context.current.clone();
     let projection = context.subscription_projection.clone();
     lifecycle.spawn(async move {

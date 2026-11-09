@@ -43,6 +43,7 @@ struct AuthProjectionState {
 struct SubscriptionProjectionState {
     last_version: Option<f64>,
     socket_writes: u64,
+    priority_session: Option<u64>,
 }
 
 impl std::fmt::Debug for AccountApi {

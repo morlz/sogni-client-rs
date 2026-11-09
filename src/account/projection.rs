@@ -6,8 +6,8 @@ use crate::{Error, Result, transport::ApiClient};
 
 #[derive(Clone, Copy)]
 pub(super) enum SubscriptionSource {
-    Rest,
-    Socket,
+    Rest(Option<u64>),
+    Socket(Option<u64>),
 }
 
 fn finite_number(value: Option<&Value>) -> Option<f64> {
@@ -99,6 +99,12 @@ pub(super) fn map_socket_subscription(data: &Value) -> Option<Value> {
     if subscription.get("paymentPending").and_then(Value::as_bool) == Some(true) {
         mapped.insert("paymentPending".into(), json!(true));
     }
+    if active
+        && let Some(discount) =
+            finite_number(subscription.get("vendorDiscountBps")).filter(|discount| *discount > 0.0)
+    {
+        mapped.insert("frontierDiscountBps".into(), json!(discount));
+    }
     let capabilities = subscription
         .get("capabilities")
         .filter(|value| value.is_object())
@@ -150,7 +156,7 @@ pub(super) fn apply_free_spark_projection(current: &CurrentAccount, data: &Value
 pub(super) fn apply_subscription_projection(
     current: &CurrentAccount,
     state: &Mutex<SubscriptionProjectionState>,
-    subscription: Value,
+    mut subscription: Value,
     source: SubscriptionSource,
     version: Option<f64>,
     socket_writes_at_start: Option<u64>,
@@ -162,7 +168,7 @@ pub(super) fn apply_subscription_projection(
     {
         return false;
     }
-    if matches!(source, SubscriptionSource::Rest)
+    if matches!(source, SubscriptionSource::Rest(_))
         && version.is_none()
         && socket_writes_at_start.is_some_and(|writes| writes != state.socket_writes)
     {
@@ -171,12 +177,58 @@ pub(super) fn apply_subscription_projection(
     if let Some(version) = version {
         state.last_version = Some(version);
     }
-    if matches!(source, SubscriptionSource::Socket) {
-        state.socket_writes = state.socket_writes.saturating_add(1);
-    }
-    drop(state);
+    let connected_session = match source {
+        SubscriptionSource::Socket(session) => {
+            state.socket_writes = state.socket_writes.saturating_add(1);
+            state.priority_session = session.filter(|_| {
+                subscription.pointer("/capabilities/priorityMode") == Some(&Value::Bool(true))
+            });
+            session
+        }
+        SubscriptionSource::Rest(session) => session,
+    };
+    let available = connected_session.is_some()
+        && connected_session == state.priority_session
+        && subscription.get("active") == Some(&Value::Bool(true))
+        && subscription.get("status").and_then(Value::as_str) != Some("trialing")
+        && matches!(
+            subscription.get("tier").and_then(Value::as_str),
+            Some("unlimited" | "unlimited_pro")
+        );
+    set_priority_capability(&mut subscription, available);
     current.update(json!({"subscription": subscription}));
     true
+}
+
+fn set_priority_capability(subscription: &mut Value, available: bool) {
+    if let Some(capabilities) = subscription
+        .get_mut("capabilities")
+        .and_then(Value::as_object_mut)
+    {
+        if available {
+            capabilities.insert("priorityMode".into(), Value::Bool(true));
+        } else {
+            capabilities.remove("priorityMode");
+        }
+    } else if available {
+        subscription["capabilities"] = json!({"priorityMode": true});
+    }
+}
+
+pub(super) fn clear_socket_priority(
+    current: &CurrentAccount,
+    state: &Mutex<SubscriptionProjectionState>,
+) {
+    let mut state = state.lock();
+    state.priority_session = None;
+    if let Some(mut subscription) = current.subscription() {
+        set_priority_capability(&mut subscription, false);
+        current.update(json!({"subscription": subscription}));
+    }
+}
+
+pub(super) fn connected_session(client: &ApiClient) -> Option<u64> {
+    client.is_socket_connected().then(|| client.auth_session())
 }
 
 pub(super) async fn refresh_subscription_projection(
@@ -184,8 +236,11 @@ pub(super) async fn refresh_subscription_projection(
     current: &CurrentAccount,
     state: &Mutex<SubscriptionProjectionState>,
 ) -> Result<Value> {
+    let session = client.rest.request_session();
     let socket_writes = state.lock().socket_writes;
-    let response = client.rest.get("/v1/subscriptions/status", None).await?;
+    let response = session
+        .run(client.rest.get("/v1/subscriptions/status", None))
+        .await?;
     let subscription = data(&response)
         .get("subscription")
         .filter(|value| value.is_object())
@@ -194,19 +249,16 @@ pub(super) async fn refresh_subscription_projection(
             Error::Protocol("subscription response did not include data.subscription".into())
         })?;
     let version = finite_number(subscription.get("version"));
-    let applied = apply_subscription_projection(
+    session.check()?;
+    apply_subscription_projection(
         current,
         state,
         subscription.clone(),
-        SubscriptionSource::Rest,
+        SubscriptionSource::Rest(connected_session(client)),
         version,
         Some(socket_writes),
     );
-    if applied {
-        Ok(subscription)
-    } else {
-        Ok(current.subscription().unwrap_or(subscription))
-    }
+    Ok(current.subscription().unwrap_or(subscription))
 }
 
 pub(super) fn event_network(value: &Value) -> Value {

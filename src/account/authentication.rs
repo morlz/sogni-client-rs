@@ -348,6 +348,7 @@ pub(super) fn reset_account_projection(
     current: &CurrentAccount,
     subscription: &Mutex<SubscriptionProjectionState>,
 ) {
-    *subscription.lock() = SubscriptionProjectionState::default();
+    let mut state = subscription.lock();
+    *state = SubscriptionProjectionState::default();
     current.clear();
 }

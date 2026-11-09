@@ -1,5 +1,5 @@
 use parking_lot::Mutex;
-use serde_json::json;
+use serde_json::{Value, json};
 
 use super::projection::{
     SubscriptionSource, apply_subscription_projection, map_socket_subscription,
@@ -14,6 +14,7 @@ mod cookie_rollback;
 mod cookie_session;
 #[cfg(feature = "wallet")]
 mod login_572;
+mod priority_history;
 mod request_session;
 
 #[cfg(feature = "wallet")]
@@ -117,7 +118,7 @@ fn stale_subscription_reads_do_not_overwrite_socket_state() {
         &current,
         &state,
         json!({"active": true, "status": "active"}),
-        SubscriptionSource::Socket,
+        SubscriptionSource::Socket(None),
         Some(2.0),
         None,
     ));
@@ -125,7 +126,7 @@ fn stale_subscription_reads_do_not_overwrite_socket_state() {
         &current,
         &state,
         json!({"active": false, "status": "expired"}),
-        SubscriptionSource::Rest,
+        SubscriptionSource::Rest(None),
         Some(1.0),
         Some(0),
     ));
@@ -139,7 +140,7 @@ fn stale_subscription_reads_do_not_overwrite_socket_state() {
         &current,
         &state,
         json!({"active": true, "status": "grace_period"}),
-        SubscriptionSource::Socket,
+        SubscriptionSource::Socket(None),
         None,
         None,
     ));
@@ -147,7 +148,7 @@ fn stale_subscription_reads_do_not_overwrite_socket_state() {
         &current,
         &state,
         json!({"active": false, "status": "none"}),
-        SubscriptionSource::Rest,
+        SubscriptionSource::Rest(None),
         None,
         Some(writes),
     ));
@@ -155,4 +156,79 @@ fn stale_subscription_reads_do_not_overwrite_socket_state() {
         current.subscription().expect("subscription")["status"],
         "grace_period"
     );
+}
+
+#[test]
+fn priority_capability_requires_a_current_socket_offer_and_paid_plan() {
+    let current = CurrentAccount::default();
+    let state = Mutex::new(SubscriptionProjectionState::default());
+    let offer = json!({
+        "active":true, "status":"active", "tier":"unlimited",
+        "capabilities":{"priorityMode":true,"unlimited":true}
+    });
+    let current_offer = || {
+        current
+            .subscription()
+            .unwrap()
+            .pointer("/capabilities/priorityMode")
+            .and_then(Value::as_bool)
+    };
+    let apply = |source, subscription, version| {
+        apply_subscription_projection(&current, &state, subscription, source, Some(version), None)
+    };
+    assert!(apply(SubscriptionSource::Rest(Some(3)), offer.clone(), 2.0));
+    assert_eq!(current_offer(), None);
+    assert!(apply(
+        SubscriptionSource::Socket(Some(3)),
+        offer.clone(),
+        3.0
+    ));
+    assert_eq!(current_offer(), Some(true));
+    assert!(!apply(SubscriptionSource::Socket(Some(3)), json!({}), 2.0));
+    let mut refresh = offer.clone();
+    refresh["capabilities"] = json!({"other": true});
+    assert!(apply(
+        SubscriptionSource::Rest(Some(3)),
+        refresh.clone(),
+        3.0
+    ));
+    assert_eq!(current_offer(), Some(true));
+    assert_eq!(
+        current.subscription().unwrap()["capabilities"]["other"],
+        true
+    );
+    refresh["status"] = json!("trialing");
+    assert!(apply(SubscriptionSource::Rest(Some(3)), refresh, 3.0));
+    assert_eq!(current_offer(), None);
+    assert!(apply(SubscriptionSource::Rest(Some(4)), offer.clone(), 3.0));
+    assert_eq!(current_offer(), None);
+    assert!(apply(
+        SubscriptionSource::Socket(Some(4)),
+        offer.clone(),
+        4.0
+    ));
+    super::projection::clear_socket_priority(&current, &state);
+    assert_eq!(current_offer(), None);
+    assert!(apply(SubscriptionSource::Rest(Some(4)), offer, 4.0));
+    assert_eq!(current_offer(), None);
+}
+
+#[test]
+fn socket_plan_updates_keep_only_an_active_positive_member_discount() {
+    for (active, discount, expected) in [
+        (true, json!(1000), Some(1000.0)),
+        (true, json!(0), None),
+        (false, json!(1000), None),
+        (true, json!("invalid"), None),
+    ] {
+        let mapped = map_socket_subscription(&json!({
+            "active": active,
+            "subscription": {"status":"active","tier":"unlimited","vendorDiscountBps":discount}
+        }))
+        .unwrap();
+        assert_eq!(
+            mapped.get("frontierDiscountBps").and_then(Value::as_f64),
+            expected
+        );
+    }
 }
