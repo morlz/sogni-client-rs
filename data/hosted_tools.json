@@ -47,9 +47,11 @@
                 "faetastic-xl",
                 "zavychroma-xl",
                 "pony-faetality",
-                "dreamshaper-xl"
+                "dreamshaper-xl",
+                "gpt-image-2.6-sunburst",
+                "gpt-image-2.6-flare"
               ],
-              "description": "DO NOT SET THIS PARAMETER unless the user names a specific model, asks for a very complex image render, asks for a video storyboard/storyboard sheet/contact sheet/panel layout image, asks for anime without naming a model, requests permitted NSFW/nudity content, or explicitly asks for Z-image/Z-image Turbo/Krea 2 Turbo image-to-image. The app auto-selects based on quality settings. Set \"gpt-image-2.5-flare\" when the user asks for a ChatGPT, OpenAI, GPT, or GPT Image image/model without naming a version. Set \"gpt-image-2\" only when the user explicitly names GPT Image 2, GPT-2, or gpt-image-2; GPT Image 2 is never a default. Set \"gpt-image-2.5-sunburst\" when the user explicitly requests very strong text rendering, and by default for video storyboards and other complex single-image renders that need dense labels, crisp typography, multi-panel composition, timing notes, foley notes, professional storyboard-sheet layout, or a comprehensive character/mascot/model sheet with turnarounds, expressions, accessories, palette swatches, and brand notes. Set \"one-obsession-v22\" when the user asks for an anime or anime-style image and has not named a specific image model. Set \"z-turbo\" when the user asks for Z-image Turbo; set \"z-image\" when they ask for Z-image without Turbo. Set \"krea-2-turbo\" when the user asks for Krea 2 Turbo. Set \"flux-3-klein\" when the user asks for FLUX 3 or FLUX 3 Image Klein. If the user names another image model, honor that requested model instead. A model preference usually does not change which tool to use; the Z-image and Krea 2 Turbo image-to-image exception uses sourceImageIndex plus starting_image_strength on this tool. NSFW rule: GPT Image models and Qwen image models CANNOT do nudity. For permitted NSFW/nudity content, prefer \"dark-beast-krea2\", then \"dark-beast-z-turbo\"; \"chroma1-hd\", \"pony-v7\", \"chroma-detail\", \"chroma-v46-flash\", \"z-turbo\", \"moss-image\", and \"moss-image-8step\" are compatible fallbacks. GPT Image 2.5 adds two distinct models: use \"gpt-image-2.5-sunburst\" for an explicit Sunburst request and \"gpt-image-2.5-flare\" for an explicit Flare request. For GPT Image 2.5 without a named variant, use Flare. Preserve explicit GPT Image 2.0 as \"gpt-image-2\". Sunburst is positioned for difficult images and precise edits; Flare for faster everyday generation. Both generate and edit. Model choice is independent of rendering quality. Set \"moss-image\" when the user requests MOSS-Image or MOSS-Image SFT. Set \"moss-image-8step\" when the user requests MOSS 8-step or MOSS DMD; this preset uses 8 steps and guidance 1. Both MOSS presets are uncensored and support compatible Personal LoRAs. MOSS-Image SFT is text-to-image only; it has no uploaded-image instruction-editing input. For its JSON layouts, send one complete literal layout per call; numberOfVariations varies seeds. Use separate calls for different layouts, and do not put Dynamic Prompt choices inside layout JSON."
+              "description": "DO NOT SET THIS PARAMETER unless the user names a specific model, requests an animated GIF, asks for a very complex image render, asks for a video storyboard/storyboard sheet/contact sheet/panel layout image, asks for anime without naming a model, requests permitted NSFW/nudity content, or explicitly asks for Z-image/Z-image Turbo/Krea 2 Turbo image-to-image. The app auto-selects based on quality settings. For an animated GIF, select gpt-image-2.6-flare unless the user names another compatible 2.6 variant; use generate_image with text only. Set \"gpt-image-2.5-flare\" when the user asks for a ChatGPT, OpenAI, GPT, or GPT Image image/model without naming a version. Set \"gpt-image-2\" only when the user explicitly names GPT Image 2, GPT-2, or gpt-image-2; GPT Image 2 is never a default. Set \"gpt-image-2.5-sunburst\" when the user explicitly requests very strong text rendering, and by default for video storyboards and other complex single-image renders that need dense labels, crisp typography, multi-panel composition, timing notes, foley notes, professional storyboard-sheet layout, or a comprehensive character/mascot/model sheet with turnarounds, expressions, accessories, palette swatches, and brand notes. Set \"one-obsession-v22\" when the user asks for an anime or anime-style image and has not named a specific image model. Set \"z-turbo\" when the user asks for Z-image Turbo; set \"z-image\" when they ask for Z-image without Turbo. Set \"krea-2-turbo\" when the user asks for Krea 2 Turbo. Set \"flux-3-klein\" when the user asks for FLUX 3 or FLUX 3 Image Klein. If the user names another image model, honor that requested model instead. A model preference usually does not change which tool to use; the Z-image and Krea 2 Turbo image-to-image exception uses sourceImageIndex plus starting_image_strength on this tool. NSFW rule: GPT Image models and Qwen image models CANNOT do nudity. For permitted NSFW/nudity content, prefer \"dark-beast-krea2\", then \"dark-beast-z-turbo\"; \"chroma1-hd\", \"pony-v7\", \"chroma-detail\", \"chroma-v46-flash\", \"z-turbo\", \"moss-image\", and \"moss-image-8step\" are compatible fallbacks. GPT Image 2.5 adds two distinct models: use \"gpt-image-2.5-sunburst\" for an explicit Sunburst request and \"gpt-image-2.5-flare\" for an explicit Flare request. For GPT Image 2.5 without a named variant, use Flare. Preserve explicit GPT Image 2.0 as \"gpt-image-2\". Sunburst is positioned for difficult images and precise edits; Flare for faster everyday generation. Both generate and edit. Model choice is independent of rendering quality. Set \"moss-image\" when the user requests MOSS-Image or MOSS-Image SFT. Set \"moss-image-8step\" when the user requests MOSS 8-step or MOSS DMD; this preset uses 8 steps and guidance 1. Both MOSS presets are uncensored and support compatible Personal LoRAs. MOSS-Image SFT is text-to-image only; it has no uploaded-image instruction-editing input. For its JSON layouts, send one complete literal layout per call; numberOfVariations varies seeds. Use separate calls for different layouts, and do not put Dynamic Prompt choices inside layout JSON."
             },
             "width": {
               "type": "number",
@@ -102,9 +104,10 @@
                 "png",
                 "jpg",
                 "jpeg",
-                "webp"
+                "webp",
+                "gif"
               ],
-              "description": "Optional output file format for generated images. Set only when the user explicitly requests PNG, JPG/JPEG, or WebP. Hosts should normalize \"jpeg\" to the Sogni project format \"jpg\"."
+              "description": "Requested image file format; GIF requires GPT Image 2.6 text-to-image generation. Normalize jpeg to jpg."
             },
             "aspectRatio": {
               "type": "string",
@@ -143,6 +146,27 @@
                 "type": "number"
               },
               "description": "Strength for each LoRA in loras, in the same order. Omitting the array uses 1.0 for every LoRA, which is not each LoRA's catalog default — krea2-chest-firmness, krea2-nipple-projection and krea2-height default to 0 (no effect) — so prefer explicit values. Do NOT clamp to 0-1: most Krea 2 LoRAs are bipolar, so krea2-warm-light warms the grade at 2 and cools it at -2. Usable bands vary per LoRA — roughly -2..5 for krea2-detail-enhancer, -3..3 for krea2-warm-light, 3..9 for krea2-candid, 0.5..1 for krea2-realism-engine, 1..2 for the filter-bypass pair. Scale the magnitude to how strongly the user asked; the server clamps out-of-range values, and pushing past a LoRA's recommended band costs image quality rather than adding effect. Preserve explicit user values. Example: loras=[\"krea2-detail-enhancer\",\"krea2-amateur\"], loraStrengths=[3,-2]."
+            },
+            "gptImageComplexity": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "description": "GPT Image 2.6 planning complexity. Default high; quality is separate."
+            },
+            "gptImageFrameCount": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 16,
+              "description": "GPT Image 2.6 GIF only: frame count, default 9. Frames must fit the request pixel budget."
+            },
+            "gptImageFrameDurationMs": {
+              "type": "integer",
+              "minimum": 20,
+              "maximum": 2000,
+              "description": "GPT Image 2.6 GIF only: milliseconds per frame, rounded to 10 ms; default 200."
             }
           },
           "required": [
@@ -321,6 +345,14 @@
             "returnLastFrame": {
               "type": "boolean",
               "description": "Seedance 2.5 only. Set true to export a separate image of the final frame alongside the video. The result includes lastFrameUrl, which can be used as the first-frame image for a subsequent clip. Defaults to false; this does not extend the video automatically."
+            },
+            "referenceVideoCompression": {
+              "type": "string",
+              "enum": [
+                "none",
+                "vpack"
+              ],
+              "description": "Legacy compatibility preference for MiniMax H3 reference video. Current services select compression automatically; this field no longer selects compression. Leave it unset for new requests."
             }
           },
           "required": [
@@ -523,7 +555,9 @@
                 "qwen",
                 "krea-identity-edit",
                 "dark-beast-krea2-identity-edit",
-                "flux-3-klein"
+                "flux-3-klein",
+                "gpt-image-2.6-sunburst",
+                "gpt-image-2.6-flare"
               ],
               "description": "The app auto-selects Fast→Qwen Lightning and HQ/Pro→full Qwen only for ordinary identity-neutral edits. REQUIRED IDENTITY DEFAULT: set \"krea-identity-edit\" whenever an edit of a referenced person or character must keep likeness or character identity while changing clothing, hair or makeup, pose or position, face/head/body, background, lighting, or visual style. Infer that semantic intent in any language; never route from keyword or regex matching. Also use it for a non-Pro single-character sheet. This default applies even when the user did not name Krea; an explicitly requested model always wins. Set \"dark-beast-krea2-identity-edit\" only when the user explicitly requests that model, its uncensored/community variant, or dark_beast_krea2_identity_edit_v1_2. Set \"gpt-image-2\" only when the user explicitly names legacy GPT Image 2 (GPT Image 2, GPT-2, or gpt-image-2); it is never a default. A ChatGPT, OpenAI, GPT, or GPT Image edit request that names no version uses \"gpt-image-2.5-flare\". Set \"gpt-image-2.5-sunburst\" when precise typography, dense labels, or a professional multi-panel layout is the primary requirement; Pro character sheets use Sunburst unless the user names another model. If GPT Image 2.5 Sunburst is unavailable for detail-critical layout work, fall back to full \"qwen\", never \"qwen-lightning\". Krea identity edit models require at least one reference image, accept up to two context images, and work best at 512-2048px. Set \"flux-3-klein\" when the user asks for FLUX 3 or FLUX 3 Image Klein; it accepts 1-10 reference images and works at 256-4096px, including 4K. For it, describe the whole result as a full scene caption that folds the requested change into a description of the reference, and refer to references in order (the first image, the second image); guidance is fixed and a negative prompt has no effect, so do not send one. Let the model tier and worker choose current steps, guidance, sampler, scheduler, grounding, and reference-boost defaults; do not send a negative prompt. When Krea is selected, override the generic prompt-length guidance with a concise 1-4 sentence delta instruction; name only the requested change and details that must remain fixed. Put the base scene/image first and an optional person/detail reference second. Z-image, Z-image Turbo, and base Krea 2 Turbo are generate_image img2img models, not edit_image selectors. If the user names another edit/image model, honor it. GPT Image 2 always processes input images at high fidelity; do not set input_fidelity. GPT Image 2.5 adds two distinct models: use \"gpt-image-2.5-sunburst\" for an explicit Sunburst request and \"gpt-image-2.5-flare\" for an explicit Flare request. For GPT Image 2.5 without a named variant, use Flare. Preserve explicit GPT Image 2.0 as \"gpt-image-2\". Sunburst is positioned for difficult images and precise edits; Flare for faster everyday generation. Both generate and edit. Model choice is independent of rendering quality."
             },
@@ -611,6 +645,19 @@
                 "type": "number"
               },
               "description": "Strength for each LoRA in loras, in the same order. Omitting the array uses 1.0 for every LoRA, which is not each LoRA's catalog default — krea2-chest-firmness, krea2-nipple-projection and krea2-height default to 0 (no effect) — so prefer explicit values. Do NOT clamp to 0-1: most Krea 2 LoRAs are bipolar, so krea2-warm-light warms the grade at 2 and cools it at -2. Usable bands vary per LoRA — roughly -2..5 for krea2-detail-enhancer, -3..3 for krea2-warm-light, 3..9 for krea2-candid, 0.5..1 for krea2-realism-engine, 1..2 for the filter-bypass pair. Scale the magnitude to how strongly the user asked; the server clamps out-of-range values, and pushing past a LoRA's recommended band costs image quality rather than adding effect. Preserve explicit user values. Example: loras=[\"krea2-detail-enhancer\",\"krea2-amateur\"], loraStrengths=[3,-2]."
+            },
+            "gptImageComplexity": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ],
+              "description": "GPT Image 2.6 planning complexity. Default high; quality is separate."
+            },
+            "markup_image_url": {
+              "type": "string",
+              "description": "GPT Image 2.6 edit annotation layer for the first reference. Cannot combine with mask_image_url."
             }
           },
           "required": [
@@ -681,7 +728,7 @@
                 "fast",
                 "hq"
               ],
-              "description": "DO NOT SET THIS PARAMETER unless the user explicitly asks for \"high quality\" or \"fast\". The app auto-selects based on quality settings."
+              "description": "DO NOT SET THIS PARAMETER unless the user explicitly asks for \"high quality\" or \"fast\". The app auto-selects based on quality settings. For an animated GIF, select gpt-image-2.6-flare unless the user names another compatible 2.6 variant; use generate_image with text only."
             },
             "scale": {
               "type": "number",

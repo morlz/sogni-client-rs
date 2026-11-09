@@ -1,6 +1,6 @@
 {
-  "version": "5.69.1",
-  "commit": "5970a1bd40b88f678719188969c8633bc313b665",
+  "version": "5.79.0",
+  "commit": "c397d41c04d5219f7a640662f621d629b82a69a6",
   "models": [
     {
       "id": "gpt-image-2",
@@ -14,6 +14,16 @@
     },
     {
       "id": "gpt-image-2.5-flare",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "gpt-image-2.6-flare",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "gpt-image-2.6-sunburst",
       "media": "image",
       "workerCount": 1
     },

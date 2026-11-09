@@ -6,8 +6,8 @@ use serde_json::Value;
 use crate::{
     Error, Result,
     utils::{
-        get_video_workflow_type, is_gpt_image_model, is_happyhorse_model, is_ltx_model,
-        is_minimax_h3_model, is_seedance_model, is_seedance25_model, is_wan3_model,
+        get_video_workflow_type, is_gpt_image_26_model, is_gpt_image_model, is_happyhorse_model,
+        is_ltx_model, is_minimax_h3_model, is_seedance_model, is_seedance25_model, is_wan3_model,
     },
 };
 
@@ -154,7 +154,9 @@ pub fn filter_video_models_by_workflow(models: &[Value], workflows: &[&str]) -> 
 
 #[must_use]
 pub fn is_edit_image_model(model_id: &str) -> bool {
-    is_gpt_image_model(model_id)
+    // Match the upstream automatic edit candidate list. GPT Image 2.6 is an
+    // explicit model choice in the hosted edit schema.
+    (is_gpt_image_model(model_id) && !is_gpt_image_26_model(model_id))
         || crate::utils::is_seedream_model(model_id)
         || matches!(
             model_id,

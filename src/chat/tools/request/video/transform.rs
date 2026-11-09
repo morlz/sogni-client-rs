@@ -37,7 +37,7 @@ pub(in crate::chat::tools::request) fn transform(
         requested.as_deref(),
         Some(&workflows),
         preferred,
-        None,
+        Some(|id| !crate::utils::is_video_segmentation_model(id)),
     )?;
     let external = is_external_video_model(&model);
     let mut plan = ToolRequestPlan::new("video", &model, args, options)?;

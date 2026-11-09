@@ -32,6 +32,52 @@ fn direct_tool_requests_match_fresh_typescript_builders() {
 }
 
 #[test]
+fn gpt_image_26_tool_plans_preserve_gif_and_annotation_controls() {
+    let models = [
+        json!({"id":"gpt-image-2.6-flare","media":"image","workerCount":3}),
+        json!({"id":"gpt-image-2.6-sunburst","media":"image","workerCount":2}),
+    ];
+    let gif = plan_tool_request(
+        "generate_image",
+        &json!({
+            "prompt":"A lantern sways", "model":"gpt-image-2.6-flare", "outputFormat":"gif",
+            "gptImageComplexity":"medium", "gptImageFrameCount":7, "gptImageFrameDurationMs":180,
+        }),
+        &Value::Null,
+        &models,
+    )
+    .unwrap();
+    assert_eq!(gif.params["modelId"], "gpt-image-2.6-flare");
+    assert_eq!(gif.params["outputFormat"], "gif");
+    assert_eq!(gif.params["gptImageComplexity"], "medium");
+    assert_eq!(gif.params["gptImageFrameCount"], 7);
+    assert_eq!(gif.params["gptImageFrameDurationMs"], 180);
+    let inferred = plan_tool_request(
+        "generate_image",
+        &json!({"prompt":"A lantern sways","outputFormat":"gif","width":320}),
+        &Value::Null,
+        &models,
+    )
+    .unwrap();
+    assert_eq!(inferred.params["modelId"], "gpt-image-2.6-flare");
+    assert_eq!(inferred.params["width"], 320);
+    assert!(!inferred.params.contains_key("height"));
+    let markup = "https://example.test/markup.png";
+    let edit = plan_tool_request(
+        "edit_image",
+        &json!({
+            "prompt":"Move the lantern", "model":"gpt-image-2.6-sunburst",
+            "source_image_url":"https://example.test/source.png", "markup_image_url":markup,
+        }),
+        &Value::Null,
+        &models,
+    )
+    .unwrap();
+    assert_eq!(edit.params["modelId"], "gpt-image-2.6-sunburst");
+    assert_eq!(edit.params["gptImageMarkupUrl"], markup);
+    assert_eq!(edit.params["contextImages"], json!([true]));
+}
+#[test]
 fn h3_audio_modes_and_indexed_references_do_not_fall_back_silently() {
     let models = vec![
         json!({"id":"minimax-h3-fastvideo-int8_flfa2v_turbo","media":"video"}),

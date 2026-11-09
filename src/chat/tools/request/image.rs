@@ -1,4 +1,5 @@
 use super::*;
+use crate::utils::{is_gpt_image_26_model, is_seedream_model};
 
 pub(super) fn plan(
     tool: &str,
@@ -8,17 +9,33 @@ pub(super) fn plan(
 ) -> Result<ToolRequestPlan> {
     let requested = resolve_hosted_tool_model_selector(tool, args);
     let edit = tool == "edit_image";
-    let explicit_seedream = requested
-        .as_deref()
-        .is_some_and(crate::utils::is_seedream_model);
-    let filter: Option<fn(&str) -> bool> = if explicit_seedream {
+    let format = string(args, "output_format")
+        .or_else(|| string(args, "outputFormat"))
+        .map(|value| value.trim().to_lowercase());
+    let gif = format.as_deref() == Some("gif");
+    let gif_default = !edit && requested.is_none() && gif;
+    let filter: Option<fn(&str) -> bool> = if requested.as_deref().is_some_and(is_seedream_model) {
         None
+    } else if gif_default || requested.as_deref().is_some_and(is_gpt_image_26_model) {
+        Some(is_gpt_image_26_model)
     } else if edit {
-        Some(|id| is_edit_image_model(id) && !crate::utils::is_seedream_model(id))
+        Some(|id| is_edit_image_model(id) && !is_seedream_model(id))
     } else {
-        Some(|id| !crate::utils::is_seedream_model(id))
+        Some(|id| !is_seedream_model(id) && !is_gpt_image_26_model(id))
     };
-    let model = select(models, "image", requested.as_deref(), None, &[], filter)?;
+    let preferred: &[&str] = if gif_default {
+        &["gpt-image-2.6-flare"]
+    } else {
+        &[]
+    };
+    let model = select(
+        models,
+        "image",
+        requested.as_deref(),
+        None,
+        preferred,
+        filter,
+    )?;
     let mut plan = ToolRequestPlan::new("image", &model, args, options)?;
     if edit {
         let inputs: Vec<_> = string(args, "source_image_url")
@@ -63,7 +80,9 @@ pub(super) fn plan(
             &[("negative_prompt", "negativePrompt"), ("seed", "seed")],
         );
     }
-    if args
+    if gif {
+        plan.copy(args, &[("width", "width"), ("height", "height")]);
+    } else if args
         .get("width")
         .and_then(Value::as_f64)
         .is_some_and(|n| n != 0.0)
@@ -93,6 +112,15 @@ pub(super) fn plan(
     if let Some(value) = args.get("mask_image_url").filter(|v| !v.is_null()) {
         plan.params.insert("gptImageMaskUrl".into(), value.clone());
     }
+    plan.copy(
+        args,
+        &[
+            ("gptImageComplexity", "gptImageComplexity"),
+            ("gptImageFrameCount", "gptImageFrameCount"),
+            ("gptImageFrameDurationMs", "gptImageFrameDurationMs"),
+            ("markup_image_url", "gptImageMarkupUrl"),
+        ],
+    );
     if let Some(value) = args
         .get("gpt_image_output_compression")
         .filter(|v| !v.is_null())
@@ -104,15 +132,9 @@ pub(super) fn plan(
         plan.params
             .insert("gptImageOutputCompression".into(), value.clone());
     }
-    if let Some(value) = args
-        .get("output_format")
-        .filter(|v| !v.is_null())
-        .or_else(|| args.get("outputFormat"))
-        .and_then(Value::as_str)
-    {
-        let format = value.trim().to_lowercase();
-        let format = if format == "jpeg" { "jpg" } else { &format };
-        if ["png", "jpg", "webp"].contains(&format) {
+    if let Some(format) = format.as_deref() {
+        let format = if format == "jpeg" { "jpg" } else { format };
+        if ["png", "jpg", "webp", "gif"].contains(&format) {
             plan.params.insert("outputFormat".into(), json!(format));
         }
     }
