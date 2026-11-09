@@ -13,6 +13,7 @@ use url::Url;
 use super::SogniClient;
 
 mod generation_5_58;
+mod generation_5_79;
 mod lost_submission;
 mod project_wire;
 mod project_wire_server;

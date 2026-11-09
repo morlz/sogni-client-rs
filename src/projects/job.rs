@@ -105,6 +105,12 @@ impl Job {
         self.inner.state.read().last_frame_url.clone()
     }
 
+    /// Read the server's Seedance 2.5 draft or final receipt.
+    #[must_use]
+    pub fn seedance_draft_receipt(&self) -> SeedanceDraftReceipt {
+        self.inner.state.read().seedance.clone()
+    }
+
     /// Refresh the signed URL of a requested final-frame export.
     pub async fn get_last_frame_url(&self) -> Result<String> {
         self.inner.session.check()?;

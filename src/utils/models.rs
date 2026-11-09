@@ -189,6 +189,7 @@ pub fn is_video_model(model_id: &str) -> bool {
         || is_wan3_model(model_id)
         || is_minimax_h3_model(model_id)
         || is_video_upscale_model(model_id)
+        || is_video_segmentation_model(model_id)
 }
 
 /// Whether a model produces a downloadable 3D artifact.
@@ -233,6 +234,9 @@ fn speech_models_are_audio_and_h3_keyframes_exclude_text_generation() {
 
 #[must_use]
 pub fn get_video_workflow_type(model_id: &str) -> Option<&'static str> {
+    if is_video_segmentation_model(model_id) {
+        return Some("v2v");
+    }
     if is_video_upscale_model(model_id) {
         return Some("upscale");
     }
@@ -287,8 +291,8 @@ pub fn calculate_video_frames(
         ));
     }
     let js_round = |value: f64| (value + 0.5).floor() as i64;
-    let mut frames = if is_video_upscale_model(model_id) {
-        // Upscaling preserves every source frame; never append or snap frames.
+    let mut frames = if is_video_upscale_model(model_id) || is_video_segmentation_model(model_id) {
+        // These models preserve source timing without appending or snapping frames.
         js_round(duration * fps)
     } else if is_wan_model(model_id) {
         js_round(duration * 16.0) + 1

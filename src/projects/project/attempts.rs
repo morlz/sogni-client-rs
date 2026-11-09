@@ -98,6 +98,7 @@ fn reset_attempt(job: &Job, id: Option<&str>, index: Option<u64>) {
             state.last_frame_url = None;
             state.last_frame_key = None;
             state.output_format = None;
+            state.seedance = SeedanceDraftReceipt::default();
             state.provenance = None;
             state.seed = None;
             state.error = None;

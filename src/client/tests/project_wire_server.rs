@@ -246,6 +246,9 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
             {"id":"minimax-h3-fl2va-fp8_i2v","tier":"h3","media":"video"},
             {"id":"minimax-h3-fl2va-fp8_t2v","tier":"h3","media":"video"},
             {"id":"minimax-h3-ref2va-fp8_r2v","tier":"h3","media":"video"},
+            {"id":"gpt-image-2.6-flare","tier":"utility","media":"image"},
+            {"id":"seedance-2-5","tier":"h3","media":"video"},
+            {"id":"sam3_video_segment_fp16","tier":"selection","media":"video"},
             {"id":"fixture-enhancement-parent","tier":"comfy-fixture","media":"image"},
             {"id":"fixture-held-result-parent","tier":"comfy-fixture","media":"image"},
             {"id":"krea2_turbo_fp8_scaled","tier":"comfy-fixture","media":"image"}
@@ -260,7 +263,9 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
             "guidance":{"min":0,"max":1,"default":0},
             "sampler":{"allowed":[],"default":null},
             "scheduler":{"allowed":[],"default":null}
-        }, "h3": {"type":"video", "steps":{"min":20,"max":20,"default":20},"guidance":{"min":1,"max":1,"default":1}}, "comfy-fixture": {
+        }, "h3": {"type":"video", "steps":{"min":20,"max":20,"default":20},"guidance":{"min":1,"max":1,"default":1}},
+        "selection":{"type":"video","task":"video-segmentation","requiresReferenceVideo":true,"preservesSourceTiming":true},
+        "comfy-fixture": {
             "type":"image", "steps":{"min":4,"max":12,"default":8},
             "guidance":{"min":1,"max":1,"default":1},
             "comfySampler":{"allowed":["res_multistep","Euler"],"default":"res_multistep"},
@@ -269,19 +274,36 @@ fn response(request: &HttpCapture, address: SocketAddr) -> Value {
         "/api/v1/artist/projects/sync" => {
             json!({"activeProjects":[],"unclaimedCompletedProjects":[]})
         }
-        "/v1/image/uploadUrl" => {
+        "/v1/image/uploadUrl" | "/v1/media/uploadUrl" => {
             json!({"status":"success","data":{"uploadUrl":format!("http://{address}/fixture-upload")}})
         }
-        "/v1/image/downloadUrl" => {
+        "/v1/image/downloadUrl" | "/v1/media/downloadUrl" => {
             json!({"status":"success","data":{"downloadUrl":format!("http://{address}/fixture-result")}})
         }
         path if path.starts_with("/api/v1/size-presets/network/") => {
             json!([{"id":"portrait","width":896,"height":1152}])
         }
         path if path.starts_with("/api/v2/job/estimate/")
-            || path.starts_with("/api/v1/job-video/estimate/") =>
+            || path.starts_with("/api/v3/job/estimate/")
+            || path.starts_with("/api/v1/job-video/estimate/")
+            || path.starts_with("/api/v1/job-audio/estimate/") =>
         {
-            json!({"quote":{"project":{"costInToken":"1","costInUSD":"0.01"}}})
+            let mut result = json!({"quote":{"project":{"costInToken":"1","costInUSD":"0.01"}}});
+            if request
+                .query
+                .get("priorityMode")
+                .is_some_and(|flag| flag == "true")
+            {
+                result["dailyFairUse"] = json!({"pct":3});
+            }
+            if request
+                .query
+                .get("includeMonthlyFairUse")
+                .is_some_and(|flag| flag == "true")
+            {
+                result["monthlyFairUse"] = json!({"pct":0.15});
+            }
+            result
         }
         other => panic!("unexpected local fixture path {other}"),
     }
@@ -410,6 +432,19 @@ async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, faults: Ar
                             socket.send(Message::Text(json!({"type":name,"data":crate::utils::b64_json_encode(&data).unwrap()}).to_string().into())).await.unwrap();
                         }
                     }
+                    if let Some(result) = generation_579_result(&value) {
+                        for (name, data) in [
+                            ("jobResult", result),
+                            (
+                                "jobState",
+                                json!({"jobID":value["jobID"],"type":"jobCompleted"}),
+                            ),
+                        ] {
+                            socket.send(Message::Text(json!({
+                                "type":name,"data":crate::utils::b64_json_encode(&data).unwrap()
+                            }).to_string().into())).await.unwrap();
+                        }
+                    }
                     if matches!(
                         value["keyFrames"][0]["modelID"].as_str(),
                         Some("sam3_image_segment_bf16" | "pixal3d_int8_i23d")
@@ -438,4 +473,29 @@ async fn serve_socket(stream: TcpStream, sender: mpsc::Sender<Value>, faults: Ar
             _ => {}
         }
     }
+}
+
+fn generation_579_result(request: &Value) -> Option<Value> {
+    let frame = &request["keyFrames"][0];
+    let mut result = json!({"jobID":request["jobID"],"imgID":"JOB-1","resultUrl":"https://example.test/result.mp4"});
+    match frame["modelID"].as_str()? {
+        "sam3_video_segment_fp16" => {
+            result["sourceVideoSha256"] = json!("a".repeat(64));
+            result["sha256"] = json!("b".repeat(64));
+            result["maskFrames"] = json!(255);
+            result["maskFps"] = json!(30000.0 / 1001.0);
+            result["samVersion"] = json!("sam3.1@fixture");
+        }
+        "seedance-2-5" if frame["seedanceDraft"] == true => {
+            result["seedanceDraft"] = json!(true);
+            result["seedanceDraftExpiresAt"] = json!("2026-11-17T20:00:00.000Z");
+        }
+        "seedance-2-5" if frame["seedanceDraftJobId"].is_string() => {
+            result["seedanceDraftJobId"] = frame["seedanceDraftJobId"].clone();
+            result["lastFrameKey"] = json!("final-frame.png");
+            result["lastFrameUrl"] = json!("https://example.test/final-frame.png");
+        }
+        _ => return None,
+    }
+    Some(result)
 }

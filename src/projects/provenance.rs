@@ -34,6 +34,9 @@ pub struct JobProvenance {
     pub sha256: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source_image_sha256: Option<String>,
+    /// Hash of the full uploaded video used by SAM 3 video selection.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_video_sha256: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sam_prompt_sha256: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -42,6 +45,10 @@ pub struct JobProvenance {
     pub mask_width: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mask_height: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mask_frames: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mask_fps: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mask_box: Option<[f64; 4]>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -78,6 +85,7 @@ impl JobProvenance {
             for field in [
                 "sha256",
                 "sourceImageSha256",
+                "sourceVideoSha256",
                 "samPromptSha256",
                 "maskRleSha256",
                 "selectionHash",
@@ -88,7 +96,7 @@ impl JobProvenance {
                     result.insert(field.into(), json!(hash));
                 }
             }
-            for field in ["maskWidth", "maskHeight"] {
+            for field in ["maskWidth", "maskHeight", "maskFrames"] {
                 if let Some(size) = source.get(field).and_then(Value::as_f64).filter(|size| {
                     size.is_finite()
                         && size.fract() == 0.0
@@ -96,6 +104,13 @@ impl JobProvenance {
                 }) {
                     result.insert(field.into(), json!(size as u64));
                 }
+            }
+            if let Some(fps) = source
+                .get("maskFps")
+                .and_then(Value::as_f64)
+                .filter(|value| value.is_finite() && *value > 0.0)
+            {
+                result.insert("maskFps".into(), json!(fps));
             }
             if let Some(bounds) = source.get("maskBox").and_then(normalized_bounds) {
                 result.insert("maskBox".into(), json!(bounds));
@@ -140,7 +155,7 @@ impl JobProvenance {
                         && v.len() <= 80
                         && v.as_bytes()[0].is_ascii_alphanumeric()
                         && v.bytes()
-                            .all(|b| b.is_ascii_alphanumeric() || b"._:+-".contains(&b))
+                            .all(|b| b.is_ascii_alphanumeric() || b"._:@+-".contains(&b))
                 })
             {
                 result.insert("samVersion".into(), json!(version));

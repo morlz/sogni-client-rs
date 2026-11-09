@@ -196,6 +196,13 @@ impl ProjectRequest {
         self.param("numberOfMedia", value)
     }
 
+    /// Request Priority queue placement for a plan-funded media job.
+    /// The server decides whether it is available for the account and model.
+    #[must_use]
+    pub fn priority_mode(self, enabled: bool) -> Self {
+        self.param("priorityMode", enabled)
+    }
+
     /// Include or omit prompt/settings metadata in worker image outputs.
     #[must_use]
     pub fn embed_prompt_metadata(self, enabled: bool) -> Self {
@@ -227,6 +234,12 @@ impl ProjectRequest {
     #[must_use]
     pub fn sam3_prompt(self, value: Sam3ImagePrompt) -> Self {
         self.param("sam3Prompt", json!(value))
+    }
+
+    /// Track a selected object with an uploaded SAM3 source video.
+    #[must_use]
+    pub fn sam3_video_prompt(self, value: Sam3VideoPrompt) -> Self {
+        self.param("sam3VideoPrompt", json!(value))
     }
 
     /// Apply shared Pixal3D geometry and texture controls.
@@ -299,11 +312,30 @@ impl ProjectRequest {
         self.param("extendOutput", output.into())
     }
 
-    /// Opt into `vpack` for uploaded videos on one-stage H3 Reference models.
-    /// Fine detail and motion can change. Omitted or `none` keeps ordinary processing.
+    /// Legacy MiniMax H3 reference-video compression preference.
+    /// Current services choose compression automatically. Leave this unset for new requests.
     #[must_use]
     pub fn reference_video_compression(self, compression: impl Into<String>) -> Self {
         self.param("referenceVideoCompression", compression.into())
+    }
+
+    /// Render a 480p Seedance 2.5 draft that can be finalized later.
+    #[must_use]
+    pub fn seedance_draft(self, enabled: bool) -> Self {
+        self.param("seedanceDraft", enabled)
+    }
+
+    /// Finalize an account-owned Seedance 2.5 draft at 1080p on the same model.
+    /// The draft supplies the prompt, media, duration, aspect ratio, seed and audio.
+    #[must_use]
+    pub fn seedance_draft_job_id(self, id: impl Into<String>) -> Self {
+        self.param("seedanceDraftJobId", id.into())
+    }
+
+    /// Export a separate final-frame image from Seedance 2.5 or MiniMax H3.
+    #[must_use]
+    pub fn return_last_frame(self, enabled: bool) -> Self {
+        self.param("returnLastFrame", enabled)
     }
 }
 

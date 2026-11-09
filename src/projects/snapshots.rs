@@ -56,6 +56,9 @@ pub struct JobSnapshot {
     pub last_frame_key: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub output_format: Option<String>,
+    /// Seedance 2.5 draft or final result metadata, if reported.
+    #[serde(default, flatten)]
+    pub seedance: SeedanceDraftReceipt,
     /// Public worker receipt, when this result includes one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub provenance: Option<JobProvenance>,
@@ -93,6 +96,7 @@ impl JobSnapshot {
             last_frame_url: None,
             last_frame_key: None,
             output_format: None,
+            seedance: SeedanceDraftReceipt::default(),
             provenance: None,
             error: None,
             is_nsfw: false,
@@ -143,6 +147,9 @@ pub struct CostEstimate {
     /// Absent unless the service says the plan covers this project.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub daily_fair_use_pct: Option<f64>,
+    /// Server-estimated share of monthly Fast capacity when requested and available.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub monthly_fair_use_pct: Option<f64>,
     pub raw: Value,
 }
 

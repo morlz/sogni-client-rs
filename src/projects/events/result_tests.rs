@@ -3,6 +3,53 @@ use crate::SogniClient;
 use axum::{Json, Router, extract::Query, routing::get};
 
 #[tokio::test]
+async fn recovered_seedance_receipt_survives_later_sparse_or_malformed_records() {
+    let client = SogniClient::builder()
+        .disable_socket(true)
+        .build()
+        .await
+        .unwrap();
+    let project = Project::new(
+        "DRAFT".into(),
+        json!({"type":"video","modelId":"seedance-2-5"}),
+        true,
+        Arc::downgrade(&client.projects.inner),
+    );
+    let record = |fields: Value| {
+        let mut job = json!({"id":"JOB","status":"jobCompleted",
+            "resultUrl":"https://example.test/draft.mp4"});
+        job.as_object_mut()
+            .unwrap()
+            .extend(fields.as_object().unwrap().clone());
+        json!({"status":"completed","completedWorkerJobs":[job]})
+    };
+    let expires = "2026-11-17T20:00:00.000Z";
+    replay_recovered(
+        &project,
+        &record(json!({
+            "result":{"seedanceDraft":true,"seedanceDraftExpiresAt":"nested","private":"omit"},
+            "seedanceDraftExpiresAt":expires,
+        })),
+        true,
+    );
+    let expected = json!({"seedanceDraft":true,"seedanceDraftExpiresAt":expires});
+    let job = project.job("JOB").unwrap();
+    assert_eq!(json!(job.seedance_draft_receipt()), expected);
+    for fields in [
+        json!({}),
+        json!({"seedanceDraft":false,"seedanceDraftExpiresAt":0,"seedanceDraftJobId":""}),
+    ] {
+        replay_recovered(&project, &record(fields), true);
+        assert_eq!(json!(job.seedance_draft_receipt()), expected);
+    }
+    let snapshot = json!(job.snapshot());
+    assert_eq!(snapshot["seedanceDraft"], true);
+    assert!(snapshot.get("private").is_none());
+    assert!(snapshot.get("seedanceDraftJobId").is_none());
+    client.close().await.unwrap();
+}
+
+#[tokio::test]
 async fn live_and_recovered_receipts_are_normalized_without_exposing_unknown_fields() {
     let client = SogniClient::builder()
         .disable_socket(true)

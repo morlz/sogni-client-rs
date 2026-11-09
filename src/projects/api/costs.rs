@@ -8,6 +8,11 @@ impl ProjectsApi {
 
     pub async fn estimate_cost(&self, params: &Value) -> Result<CostEstimate> {
         let model = required_str_value(params, "model")?;
+        let gif_size = validation::gif_dimensions(
+            params
+                .as_object()
+                .expect("required model implies an object"),
+        )?;
         self.get_model_options(model, false).await?;
         let network = params
             .get("network")
@@ -39,7 +44,9 @@ impl ProjectsApi {
                 .unwrap_or(0.0)
                 .to_string(),
         ];
-        if let Some(size_preset) = params.get("sizePreset").and_then(Value::as_str) {
+        if let Some((width, height)) = gif_size {
+            segments.extend([width.to_string(), height.to_string()]);
+        } else if let Some(size_preset) = params.get("sizePreset").and_then(Value::as_str) {
             let network = if network == "relaxed" {
                 Network::Relaxed
             } else {
@@ -97,8 +104,13 @@ impl ProjectsApi {
             .join("/");
         let query = json!({
             "gptImageQuality": params.get("gptImageQuality"),
+            "gptImageComplexity": params.get("gptImageComplexity"),
+            "gptImageFrameCount": params.get("gptImageFrameCount"),
+            "gptImageFrameDurationMs": params.get("gptImageFrameDurationMs"),
             "outputFormat": params.get("outputFormat"),
             "billingMode": params.get("billingMode"),
+            "priorityMode": params.get("priorityMode").and_then(Value::as_bool),
+            "includeMonthlyFairUse": monthly_opt_in(params),
         });
         self.estimate(
             &format!("/api/v{version}/job/estimate/{path}"),
@@ -138,6 +150,12 @@ impl ProjectsApi {
         }
         let token_type = required_value(params, "tokenType")?;
         let model = required_str_value(params, "model")?;
+        let draft_mode = seedance::SeedanceDraftMode::parse(
+            params
+                .as_object()
+                .expect("required model implies an object"),
+            model,
+        )?;
         let width = required_value(params, "width")?;
         let height = required_value(params, "height")?;
         let fps = required_number(params, "fps")?;
@@ -170,11 +188,18 @@ impl ProjectsApi {
         let mut query = json!({
             "network": self.quote_network(params),
             "billingMode": params.get("billingMode"),
+            "priorityMode": params.get("priorityMode").and_then(Value::as_bool),
+            "includeMonthlyFairUse": monthly_opt_in(params),
             "hasVideoInput": params.get("hasVideoInput").and_then(Value::as_bool).filter(|v| *v).map(|_| 1),
             "referenceImageCount": params.get("referenceImageCount"),
             "referenceVideoCount": params.get("referenceVideoCount"),
             "referenceVideoDurationSeconds": params.get("referenceVideoDurationSeconds"),
         });
+        match draft_mode {
+            seedance::SeedanceDraftMode::Draft => query["seedanceDraft"] = json!(1),
+            seedance::SeedanceDraftMode::Finalize(id) => query["seedanceDraftJobId"] = json!(id),
+            seedance::SeedanceDraftMode::Standard => {}
+        }
         if let Some(count) = params
             .get("keyframeCount")
             .filter(|value| !value.is_null())
@@ -224,6 +249,8 @@ impl ProjectsApi {
         let query = json!({
             "network": self.quote_network(params),
             "billingMode": params.get("billingMode"),
+            "priorityMode": params.get("priorityMode").and_then(Value::as_bool),
+            "includeMonthlyFairUse": monthly_opt_in(params),
         });
         self.estimate(&format!("/api/v1/job-audio/estimate/{path}"), Some(&query))
             .await
@@ -241,6 +268,13 @@ impl ProjectsApi {
                     .as_str()
             })
     }
+}
+
+fn monthly_opt_in(params: &Value) -> Option<bool> {
+    params
+        .get("includeMonthlyFairUse")
+        .and_then(Value::as_bool)
+        .filter(|value| *value)
 }
 
 fn enhancement_quote(strength: &str, token_type: &str, size: Option<(u32, u32)>) -> Value {

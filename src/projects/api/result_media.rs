@@ -96,7 +96,7 @@ pub(in crate::projects) fn result_media_evidence(raw: &Value) -> Option<ResultMe
         "wav" => (ResultMediaKind::Audio, Some("audio/wav")),
         "flac" => (ResultMediaKind::Audio, Some("audio/flac")),
         "glb" => (ResultMediaKind::Model, Some("model/gltf-binary")),
-        "png" | "jpg" | "jpeg" | "webp" => (ResultMediaKind::Image, None),
+        "png" | "jpg" | "jpeg" | "webp" | "gif" => (ResultMediaKind::Image, None),
         _ => return None,
     };
     Some(ResultMediaEvidence {

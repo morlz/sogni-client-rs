@@ -170,6 +170,7 @@ pub(super) fn build_image_keyframe(
         keyframe.insert(format!("hasContextImage{index}"), json!(direct || array));
     }
     image_utilities::apply_utility_fields(params, model_id, keyframe)?;
+    validation::validate_gpt_image_options(params, model_id)?;
     let mut size = params
         .get("sizePreset")
         .and_then(Value::as_str)
@@ -177,7 +178,11 @@ pub(super) fn build_image_keyframe(
     if params.get("width").is_some() && params.get("height").is_some() && size.is_none() {
         size = Some("custom".into());
     }
-    if let Some(size) = size {
+    if let Some((width, height)) = validation::gif_dimensions(params)? {
+        keyframe.insert("sizePreset".into(), json!("custom"));
+        keyframe.insert("width".into(), json!(width));
+        keyframe.insert("height".into(), json!(height));
+    } else if let Some(size) = size {
         keyframe.insert("sizePreset".into(), json!(size));
         if size == "custom" {
             let (minimum, maximum) = custom_image_size_bounds(model_id);
@@ -229,7 +234,6 @@ pub(super) fn build_image_keyframe(
         }
         keyframe.insert("currentControlNetsJob".into(), json!([raw]));
     }
-    validation::validate_gpt_image_options(params, model_id)?;
     validation::validate_seedream_options(params, model_id)?;
     if truthy(params.get("gptImageMask")) {
         keyframe.insert("hasReferenceMask".into(), json!(true));
@@ -240,6 +244,10 @@ pub(super) fn build_image_keyframe(
         "gptImageQuality",
         "gptImageBackground",
         "gptImageOutputCompression",
+        "gptImageComplexity",
+        "gptImageFrameCount",
+        "gptImageFrameDurationMs",
+        "gptImageMarkupUrl",
     ] {
         copy_if_present(params, keyframe, field, field);
     }

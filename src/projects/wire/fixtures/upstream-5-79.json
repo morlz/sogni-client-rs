@@ -1,0 +1,1464 @@
+{
+  "version": "5.79.0",
+  "commit": "c397d41c04d5219f7a640662f621d629b82a69a6",
+  "cases": [
+    {
+      "name": "gif defaults",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "outputFormat": "gif"
+      },
+      "request": {
+        "outputFormat": "gif",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "sizePreset": "custom",
+        "width": 896,
+        "height": 896,
+        "frames": null,
+        "fps": null,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null,
+        "hasContextImage1": false,
+        "hasContextImage2": false
+      }
+    },
+    {
+      "name": "GIF geometry overrides a named preset",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-sunburst",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "outputFormat": "gif",
+        "sizePreset": "portrait",
+        "width": 320,
+        "gptImageFrameCount": 8,
+        "gptImageFrameDurationMs": 200,
+        "gptImageComplexity": "medium"
+      },
+      "request": {
+        "outputFormat": "gif",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "gpt-image-2.6-sunburst",
+        "positivePrompt": "A looping wave",
+        "sizePreset": "custom",
+        "width": 320,
+        "height": 320,
+        "frames": null,
+        "fps": null,
+        "gptImageFrameCount": 8,
+        "gptImageFrameDurationMs": 200,
+        "gptImageComplexity": "medium",
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null,
+        "hasContextImage1": false,
+        "hasContextImage2": false
+      }
+    },
+    {
+      "name": "GIF with ordered references",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "outputFormat": "gif",
+        "width": 320,
+        "height": 320,
+        "contextImages": [
+          true,
+          true
+        ]
+      },
+      "request": {
+        "outputFormat": "gif",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "sizePreset": "custom",
+        "width": 320,
+        "height": 320,
+        "frames": null,
+        "fps": null,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null,
+        "hasContextImage1": true,
+        "hasContextImage2": true
+      }
+    },
+    {
+      "name": "GIF with a named preset",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "outputFormat": "gif",
+        "sizePreset": "portrait",
+        "gptImageFrameCount": 16
+      },
+      "request": {
+        "outputFormat": "gif",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "sizePreset": "portrait",
+        "width": null,
+        "height": null,
+        "frames": null,
+        "fps": null,
+        "gptImageFrameCount": 16,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null,
+        "hasContextImage1": false,
+        "hasContextImage2": false
+      }
+    },
+    {
+      "name": "markup still edit",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "gptImageMarkupUrl": "https://example.test/overlay.png",
+        "gptImageComplexity": "low",
+        "contextImages": [
+          true
+        ],
+        "outputFormat": "webp"
+      },
+      "request": {
+        "outputFormat": "webp",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "sizePreset": null,
+        "width": null,
+        "height": null,
+        "frames": null,
+        "fps": null,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": "low",
+        "gptImageMarkupUrl": "https://example.test/overlay.png",
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null,
+        "hasContextImage1": true,
+        "hasContextImage2": false
+      }
+    },
+    {
+      "name": "draft",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5",
+        "positivePrompt": "A wave rolls in",
+        "numberOfMedia": 1,
+        "seedanceDraft": true,
+        "duration": 8,
+        "width": 864,
+        "height": 496
+      },
+      "request": {
+        "outputFormat": "mp4",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "seedance-2-5",
+        "positivePrompt": "A wave rolls in",
+        "sizePreset": null,
+        "width": 864,
+        "height": 496,
+        "frames": 193,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": true,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    },
+    {
+      "name": "draft disabled",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5",
+        "positivePrompt": "A wave rolls in",
+        "numberOfMedia": 1,
+        "seedanceDraft": false,
+        "duration": 8,
+        "width": 864,
+        "height": 496
+      },
+      "request": {
+        "outputFormat": "mp4",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "seedance-2-5",
+        "positivePrompt": "A wave rolls in",
+        "sizePreset": null,
+        "width": 864,
+        "height": 496,
+        "frames": 193,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    },
+    {
+      "name": "uncensored draft with first and last frames",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5-uncensored",
+        "positivePrompt": "A wave rolls in",
+        "numberOfMedia": 1,
+        "seedanceDraft": true,
+        "duration": 8,
+        "width": 864,
+        "height": 496,
+        "referenceImage": true,
+        "referenceImageEnd": true,
+        "seed": 4,
+        "generateAudio": false
+      },
+      "request": {
+        "outputFormat": "mp4",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "seedance-2-5-uncensored",
+        "positivePrompt": "A wave rolls in",
+        "sizePreset": null,
+        "width": 864,
+        "height": 496,
+        "frames": 193,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": true,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": false,
+        "seed": 4,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": true,
+        "hasReferenceImageEnd": true,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    },
+    {
+      "name": "finalize",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "seedanceDraftJobId": "example-draft-job"
+      },
+      "request": {
+        "outputFormat": "mp4",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "seedance-2-5",
+        "positivePrompt": "Finalize the Seedance 2.5 draft at 1080p.",
+        "sizePreset": null,
+        "width": null,
+        "height": null,
+        "frames": null,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": "example-draft-job",
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    },
+    {
+      "name": "finalize with delivery options",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5-uncensored",
+        "positivePrompt": "Ignored prompt",
+        "numberOfMedia": 1,
+        "seedanceDraftJobId": "example-draft-job",
+        "outputFormat": "mov",
+        "returnLastFrame": true,
+        "seedanceDraft": false,
+        "referenceImageUrls": []
+      },
+      "request": {
+        "outputFormat": "mov",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "seedance-2-5-uncensored",
+        "positivePrompt": "Finalize the Seedance 2.5 draft at 1080p.",
+        "sizePreset": null,
+        "width": null,
+        "height": null,
+        "frames": null,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": "example-draft-job",
+        "returnLastFrame": true,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    },
+    {
+      "name": "MiniMax H3 last frame",
+      "params": {
+        "type": "video",
+        "modelId": "minimax-h3-fl2va-fp8_t2v_balanced",
+        "positivePrompt": "A wave rolls in",
+        "numberOfMedia": 1,
+        "width": 1344,
+        "height": 768,
+        "duration": 5.166666666666667,
+        "returnLastFrame": true
+      },
+      "request": {
+        "outputFormat": "mp4",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "minimax-h3-fl2va-fp8_t2v_balanced",
+        "positivePrompt": "A wave rolls in",
+        "sizePreset": null,
+        "width": 1344,
+        "height": 768,
+        "frames": 124,
+        "fps": 24,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": true,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    },
+    {
+      "name": "SAM 3 video source probing",
+      "params": {
+        "type": "video",
+        "modelId": "sam3_video_segment_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "sam3VideoPrompt": {
+          "text": "boat",
+          "frameIndex": 126
+        }
+      },
+      "request": {
+        "outputFormat": "mp4",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "sam3_video_segment_fp16",
+        "positivePrompt": "",
+        "sizePreset": null,
+        "width": null,
+        "height": null,
+        "frames": null,
+        "fps": null,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": false,
+        "seed": 0,
+        "hasReferenceVideo": true,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": "none",
+        "sam3VideoPrompt": {
+          "points": [],
+          "boxes": [],
+          "text": "boat",
+          "threshold": 0.5,
+          "applyMask": false,
+          "maxInstances": 1,
+          "frameIndex": 126,
+          "objectIndex": 0,
+          "output": "mask",
+          "edges": "hard"
+        },
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    },
+    {
+      "name": "SAM 3 video exact source geometry",
+      "params": {
+        "type": "video",
+        "modelId": "sam3_video_segment_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "sam3VideoPrompt": {
+          "points": [
+            {
+              "x": 0.5,
+              "y": 0.25,
+              "label": "positive"
+            }
+          ],
+          "frameIndex": 299,
+          "objectIndex": 1
+        },
+        "width": 1920,
+        "height": 1080,
+        "frames": 300,
+        "fps": 29.97002997002997
+      },
+      "request": {
+        "outputFormat": "mp4",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "sam3_video_segment_fp16",
+        "positivePrompt": "",
+        "sizePreset": null,
+        "width": 1920,
+        "height": 1080,
+        "frames": 300,
+        "fps": 29.97002997002997,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": false,
+        "seed": 0,
+        "hasReferenceVideo": true,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": "none",
+        "sam3VideoPrompt": {
+          "points": [
+            {
+              "x": 0.5,
+              "y": 0.25,
+              "label": "positive"
+            }
+          ],
+          "boxes": [],
+          "threshold": 0.5,
+          "multimask": true,
+          "applyMask": false,
+          "maxInstances": 1,
+          "frameIndex": 299,
+          "objectIndex": 1,
+          "output": "mask",
+          "edges": "hard"
+        },
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    },
+    {
+      "name": "Priority enabled",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "priorityMode": true
+      },
+      "request": {
+        "outputFormat": "png",
+        "numberOfImages": 1,
+        "priorityMode": true
+      },
+      "frame": {
+        "modelID": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "sizePreset": null,
+        "width": null,
+        "height": null,
+        "frames": null,
+        "fps": null,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    },
+    {
+      "name": "Priority disabled",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "priorityMode": false
+      },
+      "request": {
+        "outputFormat": "png",
+        "numberOfImages": 1,
+        "priorityMode": false
+      },
+      "frame": {
+        "modelID": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "sizePreset": null,
+        "width": null,
+        "height": null,
+        "frames": null,
+        "fps": null,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    },
+    {
+      "name": "Priority omitted",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1
+      },
+      "request": {
+        "outputFormat": "png",
+        "numberOfImages": 1,
+        "priorityMode": null
+      },
+      "frame": {
+        "modelID": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "sizePreset": null,
+        "width": null,
+        "height": null,
+        "frames": null,
+        "fps": null,
+        "gptImageFrameCount": null,
+        "gptImageFrameDurationMs": null,
+        "gptImageComplexity": null,
+        "gptImageMarkupUrl": null,
+        "seedanceDraft": null,
+        "seedanceDraftJobId": null,
+        "returnLastFrame": null,
+        "generateAudio": null,
+        "seed": null,
+        "hasReferenceVideo": null,
+        "hasReferenceImage": null,
+        "hasReferenceImageEnd": null,
+        "interpolation": null,
+        "sam3VideoPrompt": null,
+        "referenceImageURLs": null,
+        "referenceVideoURLs": null,
+        "referenceAudioURLs": null
+      }
+    }
+  ],
+  "refusals": [
+    {
+      "name": "animated older model",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.5-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "outputFormat": "gif"
+      },
+      "message": "require GPT Image 2.6"
+    },
+    {
+      "name": "too large for a GIF sheet",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "outputFormat": "gif",
+        "width": 1024,
+        "height": 1024
+      },
+      "message": "pixel budget"
+    },
+    {
+      "name": "GIF and edit mask",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "outputFormat": "gif",
+        "contextImages": [
+          true
+        ],
+        "gptImageMask": true
+      },
+      "message": "masks or markup"
+    },
+    {
+      "name": "GIF and markup",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "outputFormat": "gif",
+        "gptImageMarkupUrl": "https://example.test/overlay.png"
+      },
+      "message": "masks or markup"
+    },
+    {
+      "name": "GIF transparent background",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "outputFormat": "gif",
+        "gptImageBackground": "transparent"
+      },
+      "message": "PNG or WebP"
+    },
+    {
+      "name": "GIF compression",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "outputFormat": "gif",
+        "gptImageOutputCompression": 50
+      },
+      "message": "requires JPEG or WebP"
+    },
+    {
+      "name": "GIF frame options for stills",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "gptImageFrameCount": 9
+      },
+      "message": "require GIF"
+    },
+    {
+      "name": "markup missing edit reference",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "gptImageMarkupUrl": "https://example.test/overlay.png"
+      },
+      "message": "first edit reference"
+    },
+    {
+      "name": "draft wrong model",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-0",
+        "positivePrompt": "A wave rolls in",
+        "numberOfMedia": 1,
+        "seedanceDraft": true,
+        "duration": 8,
+        "width": 864,
+        "height": 496
+      },
+      "message": "only by Seedance 2.5"
+    },
+    {
+      "name": "draft malformed flag",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5",
+        "positivePrompt": "A wave rolls in",
+        "numberOfMedia": 1,
+        "seedanceDraft": "true",
+        "duration": 8,
+        "width": 864,
+        "height": 496
+      },
+      "message": "seedanceDraft must be a boolean"
+    },
+    {
+      "name": "finalize blank draft ID",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "seedanceDraftJobId": " "
+      },
+      "message": "must be the Sogni job id"
+    },
+    {
+      "name": "draft and finalize conflict",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "seedanceDraftJobId": "example-draft-job",
+        "seedanceDraft": true
+      },
+      "message": "mutually exclusive"
+    },
+    {
+      "name": "finalize sends inputs",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "seedanceDraftJobId": "example-draft-job",
+        "duration": 8,
+        "seed": 1,
+        "generateAudio": false
+      },
+      "message": "remove duration, seed, generateAudio"
+    },
+    {
+      "name": "finalize sends two outputs",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5",
+        "positivePrompt": "",
+        "numberOfMedia": 2,
+        "seedanceDraftJobId": "example-draft-job"
+      },
+      "message": "numberOfMedia must be 1"
+    },
+    {
+      "name": "SAM 3 video no source",
+      "params": {
+        "type": "video",
+        "modelId": "sam3_video_segment_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": false,
+        "sam3VideoPrompt": {
+          "text": "boat",
+          "frameIndex": 126
+        }
+      },
+      "message": "requires referenceVideo"
+    },
+    {
+      "name": "SAM 3 video two outputs",
+      "params": {
+        "type": "video",
+        "modelId": "sam3_video_segment_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 2,
+        "referenceVideo": true,
+        "sam3VideoPrompt": {
+          "text": "boat",
+          "frameIndex": 126
+        }
+      },
+      "message": "numberOfMedia: 1"
+    },
+    {
+      "name": "SAM 3 video frame out of range",
+      "params": {
+        "type": "video",
+        "modelId": "sam3_video_segment_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "sam3VideoPrompt": {
+          "text": "boat",
+          "frameIndex": 126
+        },
+        "frames": 126
+      },
+      "message": "must refer to a source frame"
+    },
+    {
+      "name": "SAM 3 video soft mask",
+      "params": {
+        "type": "video",
+        "modelId": "sam3_video_segment_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "sam3VideoPrompt": {
+          "text": "boat",
+          "edges": "soft"
+        }
+      },
+      "message": "hard mask output"
+    },
+    {
+      "name": "SAM 3 video multiple objects",
+      "params": {
+        "type": "video",
+        "modelId": "sam3_video_segment_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "sam3VideoPrompt": {
+          "text": "boat",
+          "maxInstances": 2
+        }
+      },
+      "message": "tracks one object"
+    },
+    {
+      "name": "SAM 3 video trim",
+      "params": {
+        "type": "video",
+        "modelId": "sam3_video_segment_fp16",
+        "positivePrompt": "",
+        "numberOfMedia": 1,
+        "referenceVideo": true,
+        "sam3VideoPrompt": {
+          "text": "boat",
+          "frameIndex": 126
+        },
+        "trimEndFrame": true
+      },
+      "message": "complete source video"
+    },
+    {
+      "name": "SAM 3 prompt on another model",
+      "params": {
+        "type": "video",
+        "modelId": "seedance-2-5",
+        "positivePrompt": "A wave rolls in",
+        "numberOfMedia": 1,
+        "sam3VideoPrompt": {
+          "text": "boat"
+        }
+      },
+      "message": "requires the SAM 3 video selection model"
+    },
+    {
+      "name": "non-boolean Priority",
+      "params": {
+        "type": "image",
+        "modelId": "gpt-image-2.6-flare",
+        "positivePrompt": "A looping wave",
+        "numberOfMedia": 1,
+        "priorityMode": "false"
+      },
+      "message": "must be true or false"
+    }
+  ],
+  "sizes": [
+    {
+      "count": 2,
+      "ratio": 0.3333333333333333,
+      "width": 512,
+      "height": 1536,
+      "sheet": {
+        "columns": 4,
+        "rows": 2,
+        "width": 2048,
+        "height": 3072
+      }
+    },
+    {
+      "count": 2,
+      "ratio": 0.5625,
+      "width": 672,
+      "height": 1184,
+      "sheet": {
+        "columns": 4,
+        "rows": 2,
+        "width": 2688,
+        "height": 2368
+      }
+    },
+    {
+      "count": 2,
+      "ratio": 1,
+      "width": 896,
+      "height": 896,
+      "sheet": {
+        "columns": 4,
+        "rows": 2,
+        "width": 3584,
+        "height": 1792
+      }
+    },
+    {
+      "count": 2,
+      "ratio": 1.7777777777777777,
+      "width": 1184,
+      "height": 672,
+      "sheet": {
+        "columns": 2,
+        "rows": 4,
+        "width": 2368,
+        "height": 2688
+      }
+    },
+    {
+      "count": 2,
+      "ratio": 3,
+      "width": 1536,
+      "height": 512,
+      "sheet": {
+        "columns": 2,
+        "rows": 4,
+        "width": 3072,
+        "height": 2048
+      }
+    },
+    {
+      "count": 8,
+      "ratio": 0.3333333333333333,
+      "width": 512,
+      "height": 1536,
+      "sheet": {
+        "columns": 4,
+        "rows": 2,
+        "width": 2048,
+        "height": 3072
+      }
+    },
+    {
+      "count": 8,
+      "ratio": 0.5625,
+      "width": 672,
+      "height": 1184,
+      "sheet": {
+        "columns": 4,
+        "rows": 2,
+        "width": 2688,
+        "height": 2368
+      }
+    },
+    {
+      "count": 8,
+      "ratio": 1,
+      "width": 896,
+      "height": 896,
+      "sheet": {
+        "columns": 4,
+        "rows": 2,
+        "width": 3584,
+        "height": 1792
+      }
+    },
+    {
+      "count": 8,
+      "ratio": 1.7777777777777777,
+      "width": 1184,
+      "height": 672,
+      "sheet": {
+        "columns": 2,
+        "rows": 4,
+        "width": 2368,
+        "height": 2688
+      }
+    },
+    {
+      "count": 8,
+      "ratio": 3,
+      "width": 1536,
+      "height": 512,
+      "sheet": {
+        "columns": 2,
+        "rows": 4,
+        "width": 3072,
+        "height": 2048
+      }
+    },
+    {
+      "count": 9,
+      "ratio": 0.3333333333333333,
+      "width": 416,
+      "height": 1248,
+      "sheet": {
+        "columns": 3,
+        "rows": 3,
+        "width": 1248,
+        "height": 3744
+      }
+    },
+    {
+      "count": 9,
+      "ratio": 0.5625,
+      "width": 672,
+      "height": 1184,
+      "sheet": {
+        "columns": 3,
+        "rows": 3,
+        "width": 2016,
+        "height": 3552
+      }
+    },
+    {
+      "count": 9,
+      "ratio": 1,
+      "width": 896,
+      "height": 896,
+      "sheet": {
+        "columns": 3,
+        "rows": 3,
+        "width": 2688,
+        "height": 2688
+      }
+    },
+    {
+      "count": 9,
+      "ratio": 1.7777777777777777,
+      "width": 1184,
+      "height": 672,
+      "sheet": {
+        "columns": 3,
+        "rows": 3,
+        "width": 3552,
+        "height": 2016
+      }
+    },
+    {
+      "count": 9,
+      "ratio": 3,
+      "width": 1248,
+      "height": 416,
+      "sheet": {
+        "columns": 3,
+        "rows": 3,
+        "width": 3744,
+        "height": 1248
+      }
+    },
+    {
+      "count": 10,
+      "ratio": 0.3333333333333333,
+      "width": 416,
+      "height": 1248,
+      "sheet": {
+        "columns": 4,
+        "rows": 3,
+        "width": 1664,
+        "height": 3744
+      }
+    },
+    {
+      "count": 10,
+      "ratio": 0.5625,
+      "width": 608,
+      "height": 1104,
+      "sheet": {
+        "columns": 4,
+        "rows": 3,
+        "width": 2432,
+        "height": 3312
+      }
+    },
+    {
+      "count": 10,
+      "ratio": 1,
+      "width": 816,
+      "height": 816,
+      "sheet": {
+        "columns": 4,
+        "rows": 3,
+        "width": 3264,
+        "height": 2448
+      }
+    },
+    {
+      "count": 10,
+      "ratio": 1.7777777777777777,
+      "width": 1104,
+      "height": 608,
+      "sheet": {
+        "columns": 3,
+        "rows": 4,
+        "width": 3312,
+        "height": 2432
+      }
+    },
+    {
+      "count": 10,
+      "ratio": 3,
+      "width": 1248,
+      "height": 416,
+      "sheet": {
+        "columns": 3,
+        "rows": 4,
+        "width": 3744,
+        "height": 1664
+      }
+    },
+    {
+      "count": 12,
+      "ratio": 0.3333333333333333,
+      "width": 416,
+      "height": 1248,
+      "sheet": {
+        "columns": 4,
+        "rows": 3,
+        "width": 1664,
+        "height": 3744
+      }
+    },
+    {
+      "count": 12,
+      "ratio": 0.5625,
+      "width": 608,
+      "height": 1104,
+      "sheet": {
+        "columns": 4,
+        "rows": 3,
+        "width": 2432,
+        "height": 3312
+      }
+    },
+    {
+      "count": 12,
+      "ratio": 1,
+      "width": 816,
+      "height": 816,
+      "sheet": {
+        "columns": 4,
+        "rows": 3,
+        "width": 3264,
+        "height": 2448
+      }
+    },
+    {
+      "count": 12,
+      "ratio": 1.7777777777777777,
+      "width": 1104,
+      "height": 608,
+      "sheet": {
+        "columns": 3,
+        "rows": 4,
+        "width": 3312,
+        "height": 2432
+      }
+    },
+    {
+      "count": 12,
+      "ratio": 3,
+      "width": 1248,
+      "height": 416,
+      "sheet": {
+        "columns": 3,
+        "rows": 4,
+        "width": 3744,
+        "height": 1664
+      }
+    },
+    {
+      "count": 13,
+      "ratio": 0.3333333333333333,
+      "width": 320,
+      "height": 960,
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "width": 1280,
+        "height": 3840
+      }
+    },
+    {
+      "count": 13,
+      "ratio": 0.5625,
+      "width": 528,
+      "height": 960,
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "width": 2112,
+        "height": 3840
+      }
+    },
+    {
+      "count": 13,
+      "ratio": 1,
+      "width": 720,
+      "height": 720,
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "width": 2880,
+        "height": 2880
+      }
+    },
+    {
+      "count": 13,
+      "ratio": 1.7777777777777777,
+      "width": 960,
+      "height": 528,
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "width": 3840,
+        "height": 2112
+      }
+    },
+    {
+      "count": 13,
+      "ratio": 3,
+      "width": 960,
+      "height": 320,
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "width": 3840,
+        "height": 1280
+      }
+    },
+    {
+      "count": 16,
+      "ratio": 0.3333333333333333,
+      "width": 320,
+      "height": 960,
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "width": 1280,
+        "height": 3840
+      }
+    },
+    {
+      "count": 16,
+      "ratio": 0.5625,
+      "width": 528,
+      "height": 960,
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "width": 2112,
+        "height": 3840
+      }
+    },
+    {
+      "count": 16,
+      "ratio": 1,
+      "width": 720,
+      "height": 720,
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "width": 2880,
+        "height": 2880
+      }
+    },
+    {
+      "count": 16,
+      "ratio": 1.7777777777777777,
+      "width": 960,
+      "height": 528,
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "width": 3840,
+        "height": 2112
+      }
+    },
+    {
+      "count": 16,
+      "ratio": 3,
+      "width": 960,
+      "height": 320,
+      "sheet": {
+        "columns": 4,
+        "rows": 4,
+        "width": 3840,
+        "height": 1280
+      }
+    }
+  ]
+}

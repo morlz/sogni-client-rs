@@ -5,6 +5,8 @@ pub const FLASHVSR_VIDEO_UPSCALE_MODEL_ID: &str = "flashvsr_v1.1_tiny_long_bf16"
 pub const PIXAL3D_IMAGE_TO_3D_MODEL_ID: &str = "pixal3d_int8_i23d";
 pub const PIXAL3D_MULTIVIEW_IMAGE_TO_3D_MODEL_ID: &str = "pixal3d_multiview_int8_i23d";
 pub const SAM3_IMAGE_SEGMENT_MODEL_ID: &str = "sam3_image_segment_bf16";
+/// Tracks a selected object in an uploaded video and returns a binary mask MP4.
+pub const SAM3_VIDEO_SEGMENT_MODEL_ID: &str = "sam3_video_segment_fp16";
 pub const BIREFNET_BACKGROUND_REMOVAL_MODEL_ID: &str = "birefnet_image_background_removal_fp16";
 pub const SEEDREAM_5_PRO_UNCENSORED_MODEL_ID: &str = "seedream-5-0-pro-uncensored";
 pub const MINIMAX_H3_FASTH3_IA2V_MODEL_ID: &str = "minimax-h3-fastvideo-int8_ia2v_turbo";
@@ -21,6 +23,11 @@ pub const PIXAL3D_ORBIT_VIEW_SLOTS: [(&str, u8); 3] = [
 #[must_use]
 pub fn is_video_upscale_model(model_id: &str) -> bool {
     model_id == FLASHVSR_VIDEO_UPSCALE_MODEL_ID
+}
+
+#[must_use]
+pub fn is_video_segmentation_model(model_id: &str) -> bool {
+    model_id == SAM3_VIDEO_SEGMENT_MODEL_ID
 }
 
 #[must_use]
@@ -55,7 +62,11 @@ pub fn is_gpt_image_model(model_id: &str) -> bool {
     matches!(
         model_id,
         "gpt-image-2" | "gpt-image-2.5-sunburst" | "gpt-image-2.5-flare"
-    )
+    ) || is_gpt_image_26_model(model_id)
+}
+
+pub(crate) fn is_gpt_image_26_model(model_id: &str) -> bool {
+    matches!(model_id, "gpt-image-2.6-sunburst" | "gpt-image-2.6-flare")
 }
 
 /// The external Seedream image model is selected explicitly by callers.

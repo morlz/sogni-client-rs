@@ -238,6 +238,9 @@ pub(super) fn parse_cost(response: Value) -> Result<CostEstimate> {
         daily_fair_use_pct: response
             .pointer("/dailyFairUse/pct")
             .and_then(Value::as_f64),
+        monthly_fair_use_pct: response
+            .pointer("/monthlyFairUse/pct")
+            .and_then(Value::as_f64),
         raw: response,
     })
 }

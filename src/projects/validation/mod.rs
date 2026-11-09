@@ -8,6 +8,7 @@ mod seedream;
 pub(crate) use assets::max_context_images;
 pub(super) use assets::{custom_image_size_bounds, video_asset_requirements};
 use external::{seedance_reference_limits, validate_seedance_task, validate_wan3_references};
+pub(super) use gpt_image::gif_dimensions;
 pub(super) use gpt_image::validate_gpt_image_options;
 pub(super) use h3::validate_h3_params;
 use h3::validate_h3_references;
@@ -55,9 +56,9 @@ pub(super) fn validate_video_assets(params: &Map<String, Value>, model_id: &str)
         let value = value
             .as_bool()
             .ok_or_else(|| Error::InvalidInput("returnLastFrame must be a boolean.".into()))?;
-        if value && !is_seedance25_model(model_id) {
+        if value && !is_seedance25_model(model_id) && !is_minimax_h3_model(model_id) {
             return Err(Error::InvalidInput(
-                "Last-frame export is supported only by Seedance 2.5.".into(),
+                "Last-frame export is supported only by Seedance 2.5 and MiniMax H3.".into(),
             ));
         }
     }

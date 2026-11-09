@@ -32,6 +32,8 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
         }
         if session.check().is_ok() {
             event["resultUrl"] = json!(url);
+            let receipt = SeedanceDraftReceipt::from_record(data);
+            write_seedance_receipt(&mut event, &receipt);
             inner.events.emit("job", event);
         }
         return;
@@ -94,6 +96,9 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
             "seed",
             "step",
             "provenance",
+            "seedanceDraft",
+            "seedanceDraftExpiresAt",
+            "seedanceDraftJobId",
         ],
     );
     if result_url.is_none() && (!nsfw || detected) && !canceled {
@@ -112,9 +117,13 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
         if let Some(url) = &snapshot.last_frame_url {
             target["lastFrameUrl"] = json!(url);
         }
+        if let Some(key) = &snapshot.last_frame_key {
+            target["lastFrameKey"] = json!(key);
+        }
         if let Some(format) = &snapshot.output_format {
             target["outputFormat"] = json!(format);
         }
+        write_seedance_receipt(target, &snapshot.seedance);
     }
     if let Some(provenance) = provenance {
         completed["provenance"] = json!(provenance);
@@ -127,13 +136,52 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
 pub(in crate::projects) fn copy_export_metadata(state: &mut JobSnapshot, data: &Value) {
     let string = |field| {
         data.get(field)
-            .or_else(|| data.get("result")?.get(field))
             .and_then(Value::as_str)
+            .filter(|value| !value.is_empty())
+            .or_else(|| {
+                data.get("result")?
+                    .get(field)?
+                    .as_str()
+                    .filter(|value| !value.is_empty())
+            })
             .map(str::to_owned)
     };
     state.last_frame_url = string("lastFrameUrl").or_else(|| state.last_frame_url.clone());
     state.last_frame_key = string("lastFrameKey").or_else(|| state.last_frame_key.clone());
     state.output_format = string("outputFormat").or_else(|| state.output_format.clone());
+    state.seedance.update_from(data);
+}
+
+fn write_seedance_receipt(event: &mut Value, receipt: &SeedanceDraftReceipt) {
+    let Some(fields) = event.as_object_mut() else {
+        return;
+    };
+    for (field, value) in [
+        (
+            "seedanceDraft",
+            receipt.seedance_draft.map(|value| json!(value)),
+        ),
+        (
+            "seedanceDraftExpiresAt",
+            receipt
+                .seedance_draft_expires_at
+                .as_ref()
+                .map(|value| json!(value)),
+        ),
+        (
+            "seedanceDraftJobId",
+            receipt
+                .seedance_draft_job_id
+                .as_ref()
+                .map(|value| json!(value)),
+        ),
+    ] {
+        if let Some(value) = value {
+            fields.insert(field.into(), value);
+        } else {
+            fields.remove(field);
+        }
+    }
 }
 
 pub(super) fn handle_job_error(inner: &Arc<ProjectsInner>, data: &Value) {

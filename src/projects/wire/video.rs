@@ -1,5 +1,8 @@
 use super::*;
-use crate::projects::validation::media_slot_count;
+use crate::projects::{
+    seedance::{FINALIZE_PROMPT, SeedanceDraftMode},
+    validation::media_slot_count,
+};
 pub(super) fn build_video_keyframe(
     params: &Map<String, Value>,
     options: &ModelOptions,
@@ -17,6 +20,11 @@ pub(super) fn build_video_keyframe(
         ));
     }
     validate_video_assets(params, model_id)?;
+    let draft_mode = SeedanceDraftMode::parse(params, model_id)?;
+    draft_mode.validate_finalization(params)?;
+    if is_video_segmentation_model(model_id) {
+        return sam3_video::apply_selection(params, keyframe);
+    }
     if is_video_upscale_model(model_id) {
         upscale::validate_upscale_params(params)?;
     }
@@ -146,6 +154,23 @@ pub(super) fn build_video_keyframe(
         ("outpaintPosition", "outpaintPosition"),
     ] {
         copy_if_present(params, keyframe, source, target);
+    }
+    match draft_mode {
+        SeedanceDraftMode::Draft => {
+            keyframe.insert("seedanceDraft".into(), json!(true));
+        }
+        SeedanceDraftMode::Finalize(id) => {
+            keyframe.insert("seedanceDraftJobId".into(), json!(id));
+            keyframe.insert("positivePrompt".into(), json!(FINALIZE_PROMPT));
+            for field in [
+                "referenceImageURLs",
+                "referenceVideoURLs",
+                "referenceAudioURLs",
+            ] {
+                keyframe.remove(field);
+            }
+        }
+        SeedanceDraftMode::Standard => {}
     }
     if let Some(value) = params
         .get("teacacheThreshold")

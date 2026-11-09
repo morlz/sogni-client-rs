@@ -23,14 +23,16 @@ pub(in crate::projects) fn video_asset_requirements(
         ]
     } else {
         match workflow {
-            "upscale" => [
-                ("referenceImage", "forbidden"),
-                ("referenceImageEnd", "forbidden"),
-                ("referenceAudio", "forbidden"),
-                ("referenceAudioIdentity", "forbidden"),
-                ("referenceVideo", "required"),
-                ("referenceMask", "forbidden"),
-            ],
+            "upscale" | "v2v" if workflow == "upscale" || is_video_segmentation_model(model_id) => {
+                [
+                    ("referenceImage", "forbidden"),
+                    ("referenceImageEnd", "forbidden"),
+                    ("referenceAudio", "forbidden"),
+                    ("referenceAudioIdentity", "forbidden"),
+                    ("referenceVideo", "required"),
+                    ("referenceMask", "forbidden"),
+                ]
+            }
             "t2v" => [
                 ("referenceImage", "forbidden"),
                 ("referenceImageEnd", "forbidden"),

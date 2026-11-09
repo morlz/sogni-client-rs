@@ -2,6 +2,7 @@ use super::*;
 mod image;
 mod image_utilities;
 mod sam3;
+mod sam3_video;
 mod upscale;
 mod video;
 mod world;
@@ -20,6 +21,8 @@ mod tests;
 mod upstream_569_tests;
 #[cfg(test)]
 mod upstream_572_tests;
+#[cfg(test)]
+mod upstream_579_tests;
 #[cfg(test)]
 mod upstream_tests;
 #[cfg(test)]
@@ -43,6 +46,28 @@ pub(super) fn build_job_request(
         )));
     }
     let model_id = required_str(params, "modelId")?;
+    if params.contains_key("sam3VideoPrompt")
+        && (media_type != "video" || !is_video_segmentation_model(model_id))
+    {
+        return Err(Error::InvalidInput(
+            "sam3VideoPrompt requires the SAM 3 video selection model.".into(),
+        ));
+    }
+    if media_type != "video" && is_video_segmentation_model(model_id) {
+        return Err(Error::InvalidInput(
+            "SAM 3 video selection requires a video request.".into(),
+        ));
+    }
+    if media_type != "video"
+        && (params.contains_key("seedanceDraftJobId")
+            || params
+                .get("seedanceDraft")
+                .is_some_and(|value| value.as_bool() != Some(false)))
+    {
+        return Err(Error::InvalidInput(
+            "Seedance draft mode requires a video request.".into(),
+        ));
+    }
     let receipt = world::normalize_world_receipt(params)?;
     let mut template = request_template();
     let keyframe = template
@@ -150,6 +175,12 @@ pub(super) fn build_job_request(
         if let Some(value) = params.get(field).filter(|value| !value.is_null()) {
             object.insert(field.into(), value.clone());
         }
+    }
+    if let Some(value) = params.get("priorityMode") {
+        let enabled = value
+            .as_bool()
+            .ok_or_else(|| Error::InvalidInput("Priority mode must be true or false.".into()))?;
+        object.insert("priorityMode".into(), json!(enabled));
     }
     if let Some(value) = params.get("promptExpanded") {
         let value = value

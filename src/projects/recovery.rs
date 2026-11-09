@@ -150,6 +150,9 @@ pub(super) fn recovered_params(raw: &Value) -> Value {
         ("loras", "loras"),
         ("loraStrengths", "loraStrengths"),
         ("sam3Prompt", "sam3Prompt"),
+        ("sam3VideoPrompt", "sam3VideoPrompt"),
+        ("seedanceDraft", "seedanceDraft"),
+        ("seedanceDraftJobId", "seedanceDraftJobId"),
         ("worldGenerationReceipt", "worldGenerationReceipt"),
     ] {
         if let Some(value) = keyframe.get(source).filter(|value| !value.is_null()) {
@@ -163,6 +166,13 @@ pub(super) fn recovered_params(raw: &Value) -> Value {
         if let Some(value) = raw.get(field).or_else(|| request.get(field)) {
             params[field] = value.clone();
         }
+    }
+    if let Some(priority) = raw
+        .get("priorityMode")
+        .or_else(|| request.get("priorityMode"))
+        .and_then(Value::as_bool)
+    {
+        params["priorityMode"] = json!(priority);
     }
     if let Some(value) = request.get("outputFormat") {
         params["outputFormat"] = value.clone();

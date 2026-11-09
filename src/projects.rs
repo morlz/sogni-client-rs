@@ -30,14 +30,15 @@ use crate::{
         is_minimax_h3_balanced_model, is_minimax_h3_keyframe_model, is_minimax_h3_model,
         is_minimax_h3_reference_model, is_minimax_h3_turbo_model, is_model_artifact_model,
         is_pixal3d_model, is_pixal3d_multi_view_model, is_seedance_model, is_seedance25_model,
-        is_segmentation_model, is_video_model, is_video_upscale_model, is_wan3_enhanced_model,
-        is_wan3_model, new_id, path_segment, scalar_string,
+        is_segmentation_model, is_video_model, is_video_segmentation_model, is_video_upscale_model,
+        is_wan3_enhanced_model, is_wan3_model, new_id, path_segment, scalar_string,
     },
 };
 
 mod api;
 mod events;
 mod generation;
+mod gpt_image_gif;
 mod helpers;
 mod job;
 mod mapping;
@@ -48,6 +49,7 @@ mod queue;
 mod recovery;
 mod request;
 mod sam3;
+mod seedance;
 mod snapshots;
 mod submission;
 mod validation;
@@ -63,6 +65,10 @@ pub use api::{
     ResultUrlUnavailable, ReusableUploads, SavedUpload, SavedUploadBinding,
 };
 pub use generation::{Pixal3dGenerationOptions, Pixal3dTemplateVariant};
+pub use gpt_image_gif::{
+    GptImageGifFrameBounds, GptImageGifLayout, GptImageGifSheet, get_gpt_image_gif_frame_bounds,
+    get_gpt_image_gif_layouts, get_gpt_image_gif_sheet, resolve_gpt_image_gif_size,
+};
 pub use job::Job;
 pub use preparation::{JobModelPhaseStep, JobPreparation};
 pub use project::Project;
@@ -74,7 +80,10 @@ pub use recovery::{
     ResolveMissingOptions, is_project_lost_error, is_project_lost_payload,
 };
 pub use request::{AssetRole, MediaSource, MinimaxH3Keyframe, ProjectRequest};
-pub use sam3::{Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint, Sam3Selection};
+pub use sam3::{
+    Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint, Sam3Selection, Sam3VideoPrompt,
+};
+pub use seedance::SeedanceDraftReceipt;
 pub use snapshots::{
     CostEstimate, JobSnapshot, JobStatus, ModelOptions, PresignedPost, ProjectSnapshot,
     ProjectStatus,

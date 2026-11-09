@@ -40,6 +40,9 @@ pub struct ProjectResultJob {
     pub url_unavailable: Option<ResultUrlUnavailable>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seed: Option<u64>,
+    /// Seedance 2.5 draft or final result metadata, if reported.
+    #[serde(default, flatten)]
+    pub seedance: SeedanceDraftReceipt,
 }
 
 /// The server's public explanation of a failed, account-owned project.
@@ -152,6 +155,7 @@ impl ProjectsApi {
                         url: None,
                         url_unavailable: None,
                         seed: raw.get("seedUsed").and_then(Value::as_u64),
+                        seedance: SeedanceDraftReceipt::from_record(raw),
                     };
                     if status == "completed" {
                         if withheld(raw) {

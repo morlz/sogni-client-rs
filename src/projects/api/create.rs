@@ -141,6 +141,19 @@ impl ProjectsApi {
         validate_project_params(&request.params)?;
         let model_id = required_str(&request.params, "modelId")?;
         validate_asset_roles(model_id, &request.assets)?;
+        if is_video_segmentation_model(model_id)
+            && request
+                .assets
+                .iter()
+                .any(|(role, _)| *role != AssetRole::ReferenceVideo)
+        {
+            return Err(Error::InvalidInput(
+                "Video selection accepts one complete source video and selection prompts.".into(),
+            ));
+        }
+        if request.params.contains_key("seedanceDraftJobId") && !request.assets.is_empty() {
+            return Err(Error::InvalidInput("A Seedance 2.5 finalize reuses its draft's inputs and settings; remove uploaded assets.".into()));
+        }
         let options = self.get_model_options(model_id, false).await?;
         let app_source = request
             .params

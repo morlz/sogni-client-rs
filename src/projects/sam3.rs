@@ -56,6 +56,29 @@ pub struct Sam3ImagePrompt {
     pub max_instances: Option<u8>,
 }
 
+/// Track one selected object in the original video. Supply text, points, or
+/// boxes on one source frame. The result is a hard mask at the source timing.
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Sam3VideoPrompt {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub points: Vec<Sam3PromptPoint>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub boxes: Vec<Sam3PromptBox>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub threshold: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub multimask: Option<bool>,
+    /// Zero-based source frame for this selection (default 0).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub frame_index: Option<u32>,
+    /// Zero-based candidate in confidence order (default 0).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub object_index: Option<u8>,
+}
+
 /// Confidence and geometry of one concept instance or click candidate.
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct Sam3Selection {
