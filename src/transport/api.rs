@@ -1,6 +1,9 @@
 use std::{
     collections::BTreeMap,
-    sync::atomic::{AtomicBool, Ordering},
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
 };
 
 use reqwest::header::HeaderMap;
@@ -10,13 +13,14 @@ use serde_json::Value;
 use super::{HttpClients, RestClient, socket::SocketTransport};
 use crate::{
     AuthBackup, AuthKind, ClientConfig, Error, EventReceiver, Network, Result, WorkloadAttribution,
-    auth::AuthManager, event::EventBus,
+    auth::AuthManager, event::EventBus, media_encryption::MediaKeyState,
 };
 
 pub struct ApiClient {
     config: ClientConfig,
     auth: AuthManager,
     pub rest: RestClient,
+    pub(crate) media_keys: Arc<MediaKeyState>,
     socket: Option<SocketTransport>,
     events: EventBus,
     closed: AtomicBool,
@@ -36,19 +40,34 @@ impl std::fmt::Debug for ApiClient {
 impl ApiClient {
     pub(crate) fn new(config: ClientConfig, auth: AuthManager, http: HttpClients) -> Result<Self> {
         let events = EventBus::default();
+        let media_keys = Arc::new(MediaKeyState::new(
+            auth.clone(),
+            config.media_encryption,
+            config.declare_media_capability,
+        ));
         let rest = RestClient::new(
             config.rest_endpoint.clone(),
             auth.clone(),
             http.clone(),
             config.request_timeout,
-        );
+        )
+        .with_media_keys(Some(media_keys.clone()));
         let socket = (!config.disable_socket)
-            .then(|| SocketTransport::new(&config, auth.clone(), http, events.clone()))
+            .then(|| {
+                SocketTransport::new(
+                    &config,
+                    auth.clone(),
+                    http,
+                    events.clone(),
+                    Some(media_keys.clone()),
+                )
+            })
             .transpose()?;
         Ok(Self {
             config,
             auth,
             rest,
+            media_keys,
             socket,
             events,
             closed: AtomicBool::new(false),
@@ -117,6 +136,19 @@ impl ApiClient {
 
     pub(crate) fn socket_generation(&self) -> Option<u64> {
         self.socket.as_ref().map(SocketTransport::generation)
+    }
+
+    pub(crate) async fn send_payment_switch(
+        &self,
+        project_id: &str,
+        session: u64,
+    ) -> Option<(u64, u64)> {
+        let receipt = self
+            .socket
+            .as_ref()?
+            .send_payment_switch(project_id, session)
+            .await?;
+        Some((receipt.generation, receipt.event_sequence))
     }
 
     pub(crate) async fn send_socket_tracked_in_session(

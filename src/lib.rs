@@ -6,10 +6,12 @@ mod account;
 mod announcements;
 mod attribution;
 mod auth;
+mod changelog;
 mod chat;
 mod client;
 mod error;
 mod event;
+mod media_encryption;
 mod projects;
 mod replay;
 mod retry_after;
@@ -19,13 +21,21 @@ mod utils;
 mod workflows;
 mod worlds;
 
-pub use account::{AccountApi, CurrentAccount, LoginOptions};
+pub use account::{
+    AccountApi, CurrentAccount, LoginOptions, PasskeyAuthenticationOptions,
+    PasskeyRegistrationOptions, TwoFactorChallenge, TwoFactorPasskey, TwoFactorProof,
+    TwoFactorSetup, TwoFactorStatus,
+};
 pub use announcements::AnnouncementsApi;
 pub use attribution::{
     Attribution, ConnectionAttribution, ExecutionMode, InteractionKind, OperationScope,
     WorkloadAttribution, WorkloadKind,
 };
 pub use auth::{AuthBackup, AuthKind};
+pub use changelog::{
+    ChangelogApi, ChangelogAudience, ChangelogEntry, ChangelogEntryType, ChangelogLink,
+    ChangelogProduct, ListChangelogOptions, ListChangelogResult,
+};
 pub use chat::{
     BackboneModelOptions, BackboneModelSelectionReason, ChatApi, ChatAutoToolCancellation,
     ChatAutoToolOptions, ChatChunk, ChatCompletion, ChatStream, ChatToolCall,
@@ -36,12 +46,18 @@ pub use chat::{
 };
 pub use client::{ClientBuilder, ClientConfig, Network, SogniClient};
 pub use error::{
-    ACCOUNT_RESTORABLE_ERROR_CODE, ApiError, ChatError, Error, MODEL_CONSENT_REQUIRED_ERROR_CODE,
-    MODEL_NOT_YET_AVAILABLE_ERROR_CODE, ModelConsentRequirement, ProjectError,
-    RETRYABLE_CHAT_ERROR_TYPES, Result, SUBSCRIPTION_ERROR_CODES, is_model_consent_required_error,
-    is_model_consent_required_payload, is_retryable_chat_error, is_subscription_limit_error,
+    ACCOUNT_RESTORABLE_ERROR_CODE, ApiError, ChatError, Error, MEDIA_ENCRYPTION_ERROR_CODES,
+    MODEL_CONSENT_REQUIRED_ERROR_CODE, MODEL_NOT_YET_AVAILABLE_ERROR_CODE, ModelConsentRequirement,
+    ProjectError, RETRYABLE_CHAT_ERROR_TYPES, Result, SUBSCRIPTION_ERROR_CODES,
+    is_model_consent_required_error, is_model_consent_required_payload, is_retryable_chat_error,
+    is_subscription_limit_error,
 };
 pub use event::{Event, EventReceiver};
+pub use media_encryption::{
+    DecryptedMedia, DecryptedMediaReader, MediaEncryptionApi, MediaEncryptionError,
+    MediaEncryptionHeader, MediaEncryptionMode, MediaKey, decrypt_media, encrypt_media,
+    is_encrypted_media,
+};
 pub use projects::{
     ACTIVE_PROJECTS_RECOVERED_EVENT, AssetRole, COMPLETED_PROJECTS_RECOVERED_EVENT, CostEstimate,
     GetProjectResultOptions, GptImageGifFrameBounds, GptImageGifLayout, GptImageGifSheet,
@@ -58,6 +74,17 @@ pub use projects::{
     SubmissionPhase, WaitingReason, WorldGenerationReceiptRequest, get_gpt_image_gif_frame_bounds,
     get_gpt_image_gif_layouts, get_gpt_image_gif_sheet, is_project_lost_error,
     is_project_lost_payload, resolve_gpt_image_gif_size,
+};
+pub use projects::{
+    ImageLayer, ImageLayerBoundingBox, ImageLayerTextLine, ImageLayerTextRecognition,
+    ImageLayerTextRun, ImageLayerTextStyle,
+};
+pub use projects::{
+    PayAsYouGoOffer, PayAsYouGoRefusalReason, PayAsYouGoSwitchOutcome, PayAsYouGoSwitchResult,
+    PayAsYouGoUnknownReason,
+};
+pub use projects::{
+    Sam3Combine, Sam3Memory, Sam3PromptMask, Sam3VideoFramePrompt, Sam3VideoSelection,
 };
 pub use replay::{ReplayApi, ReplayGetResult, ReplayWriteResult};
 pub use stats::StatsApi;
@@ -80,6 +107,10 @@ pub use utils::{
     is_seedream_model, is_segmentation_model, is_speech_model, is_video_model,
     is_video_segmentation_model, is_video_upscale_model, is_wan_model, is_wan3_enhanced_model,
     is_wan3_model, new_id, parse_sse_chunk, requires_starting_image,
+};
+pub use utils::{
+    RELAYVSR_X2_VIDEO_UPSCALE_MODEL_ID, RELAYVSR_X4_VIDEO_UPSCALE_MODEL_ID,
+    SEEDREAM_5_5_UNCENSORED_MODEL_ID, is_minimax_h3_prism_model, is_relay_vsr_model,
 };
 pub use workflows::{
     CREATIVE_WORKFLOW_WAITING_REASONS, CreativeWorkflowTemplatesApi, CreativeWorkflowsApi,

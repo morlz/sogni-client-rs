@@ -34,6 +34,7 @@ pub struct ProjectQueueChanged {
     pub project_id: String,
     pub waiting_reason: Option<WaitingReason>,
     pub job_waiting_reasons: Vec<JobWaitingReason>,
+    pub pay_as_you_go: Option<PayAsYouGoOffer>,
 }
 
 pub(super) fn normalize_waiting_reason(raw: &Value) -> Option<WaitingReason> {

@@ -70,7 +70,14 @@ const MINIMAX_H3_MODELS: &[&str] = &[
     "minimax-h3-ref2va-fp8_r2v_balanced_2stage",
     "minimax-h3-fastvideo-omni-int8_r2v_turbo",
     "minimax-h3-fastvideo-omni-int8_r2v_turbo_2stage",
+    "minimax-h3-prism-int8_r2v",
 ];
+
+/// Whether the model is the one-stage MiniMax H3 Prism reference workflow.
+#[must_use]
+pub fn is_minimax_h3_prism_model(model_id: &str) -> bool {
+    model_id == "minimax-h3-prism-int8_r2v"
+}
 
 #[must_use]
 pub fn is_wan_model(model_id: &str) -> bool {
@@ -221,8 +228,9 @@ fn speech_models_are_audio_and_h3_keyframes_exclude_text_generation() {
             .iter()
             .filter(|model| is_minimax_h3_keyframe_model(model))
             .count(),
-        23
+        24
     );
+    assert!(is_minimax_h3_keyframe_model("minimax-h3-prism-int8_r2v"));
     assert!(!is_minimax_h3_keyframe_model(
         "minimax-h3-fastvideo-int8_t2v_turbo"
     ));

@@ -3,6 +3,7 @@ mod current;
 mod listeners;
 mod projection;
 mod subscriptions;
+mod two_factor;
 mod wallet_api;
 #[cfg(feature = "wallet")]
 mod wallet_crypto;
@@ -21,6 +22,10 @@ use crate::transport::ApiClient;
 
 pub use authentication::LoginOptions;
 pub use current::CurrentAccount;
+pub use two_factor::{
+    PasskeyAuthenticationOptions, PasskeyRegistrationOptions, TwoFactorChallenge, TwoFactorPasskey,
+    TwoFactorProof, TwoFactorSetup, TwoFactorStatus,
+};
 
 #[derive(Clone)]
 pub struct AccountApi {

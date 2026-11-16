@@ -24,6 +24,7 @@ pub(super) struct ProjectState {
     pub(super) queue_status: Option<String>,
     pub(super) waiting_reason: Option<WaitingReason>,
     pub(super) job_waiting_reasons: Vec<JobWaitingReason>,
+    pub(super) pay_as_you_go: Option<PayAsYouGoOffer>,
     pub(super) queue_revision: u64,
 }
 
@@ -83,6 +84,7 @@ impl Project {
                     queue_status: None,
                     waiting_reason: None,
                     job_waiting_reasons: Vec::new(),
+                    pay_as_you_go: None,
                     queue_revision: 0,
                 }),
                 jobs: RwLock::new(Vec::new()),
@@ -104,6 +106,18 @@ impl Project {
     #[must_use]
     pub fn status(&self) -> ProjectStatus {
         self.inner.state.read().status
+    }
+
+    /// Whether this project was submitted with encrypted media.
+    #[must_use]
+    pub fn encrypted(&self) -> bool {
+        self.inner
+            .state
+            .read()
+            .params
+            .get("mediaEncryption")
+            .and_then(Value::as_bool)
+            == Some(true)
     }
 
     pub(in crate::projects) fn auth_session(&self) -> u64 {
@@ -226,6 +240,7 @@ impl Project {
             queue_status: state.queue_status.clone(),
             waiting_reason: state.waiting_reason.clone(),
             job_waiting_reasons: state.job_waiting_reasons.clone(),
+            pay_as_you_go: state.pay_as_you_go.clone(),
             jobs,
             progress,
             result_urls,

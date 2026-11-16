@@ -15,6 +15,7 @@ async fn expired_command_is_not_written_even_before_its_caller_timeout_runs() {
             response,
             session: 7,
             deadline: tokio::time::Instant::now() - Duration::from_secs(1),
+            payment: None,
         },
         7,
         1,
@@ -79,6 +80,7 @@ async fn closing_one_account_keeps_new_account_commands() {
             response,
             session,
             deadline: tokio::time::Instant::now() + Duration::from_secs(30),
+            payment: None,
         };
         results.push((session, waiter));
         if queued {

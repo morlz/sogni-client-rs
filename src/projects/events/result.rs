@@ -32,6 +32,7 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
         }
         if session.check().is_ok() {
             event["resultUrl"] = json!(url);
+            write_layers(&mut event, &image_layers::from_result(data));
             let receipt = SeedanceDraftReceipt::from_record(data);
             write_seedance_receipt(&mut event, &receipt);
             inner.events.emit("job", event);
@@ -99,6 +100,7 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
             "seedanceDraft",
             "seedanceDraftExpiresAt",
             "seedanceDraftJobId",
+            "layers",
         ],
     );
     if result_url.is_none() && (!nsfw || detected) && !canceled {
@@ -124,6 +126,7 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
             target["outputFormat"] = json!(format);
         }
         write_seedance_receipt(target, &snapshot.seedance);
+        write_layers(target, &snapshot.layers);
     }
     if let Some(provenance) = provenance {
         completed["provenance"] = json!(provenance);
@@ -150,6 +153,17 @@ pub(in crate::projects) fn copy_export_metadata(state: &mut JobSnapshot, data: &
     state.last_frame_key = string("lastFrameKey").or_else(|| state.last_frame_key.clone());
     state.output_format = string("outputFormat").or_else(|| state.output_format.clone());
     state.seedance.update_from(data);
+    if let Some(layers) = image_layers::from_result(data) {
+        state.layers = Some(layers);
+    }
+}
+
+fn write_layers(event: &mut Value, layers: &Option<Vec<ImageLayer>>) {
+    if let Some(layers) = layers {
+        event["layers"] = json!(layers);
+    } else if let Some(object) = event.as_object_mut() {
+        object.remove("layers");
+    }
 }
 
 fn write_seedance_receipt(event: &mut Value, receipt: &SeedanceDraftReceipt) {

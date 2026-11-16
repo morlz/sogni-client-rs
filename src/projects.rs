@@ -40,8 +40,10 @@ mod events;
 mod generation;
 mod gpt_image_gif;
 mod helpers;
+mod image_layers;
 mod job;
 mod mapping;
+mod payment;
 mod preparation;
 mod project;
 mod provenance;
@@ -69,7 +71,15 @@ pub use gpt_image_gif::{
     GptImageGifFrameBounds, GptImageGifLayout, GptImageGifSheet, get_gpt_image_gif_frame_bounds,
     get_gpt_image_gif_layouts, get_gpt_image_gif_sheet, resolve_gpt_image_gif_size,
 };
+pub use image_layers::{
+    ImageLayer, ImageLayerBoundingBox, ImageLayerTextLine, ImageLayerTextRecognition,
+    ImageLayerTextRun, ImageLayerTextStyle,
+};
 pub use job::Job;
+pub use payment::{
+    PayAsYouGoOffer, PayAsYouGoRefusalReason, PayAsYouGoSwitchOutcome, PayAsYouGoSwitchResult,
+    PayAsYouGoUnknownReason,
+};
 pub use preparation::{JobModelPhaseStep, JobPreparation};
 pub use project::Project;
 pub use provenance::{JobProvenance, WorldGenerationReceiptRequest};
@@ -81,7 +91,8 @@ pub use recovery::{
 };
 pub use request::{AssetRole, MediaSource, MinimaxH3Keyframe, ProjectRequest};
 pub use sam3::{
-    Sam3ImagePrompt, Sam3PointLabel, Sam3PromptBox, Sam3PromptPoint, Sam3Selection, Sam3VideoPrompt,
+    Sam3Combine, Sam3ImagePrompt, Sam3Memory, Sam3PointLabel, Sam3PromptBox, Sam3PromptMask,
+    Sam3PromptPoint, Sam3Selection, Sam3VideoFramePrompt, Sam3VideoPrompt, Sam3VideoSelection,
 };
 pub use seedance::SeedanceDraftReceipt;
 pub use snapshots::{

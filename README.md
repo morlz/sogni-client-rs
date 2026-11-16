@@ -3,9 +3,9 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.79.0** implements the TypeScript **5.79.0** public contract through
-[`c397d41`](https://github.com/Sogni-AI/sogni-client/commit/c397d41c04d5219f7a640662f621d629b82a69a6),
-including hosted tool definitions from Sogni Protocol `1.0.0-alpha.59`.
+Version **5.84.2** implements the TypeScript **5.84.2** public contract through
+[`f0928f2`](https://github.com/Sogni-AI/sogni-client/commit/f0928f2fa34d62b20dd62b6fc8be266c16236f55),
+including hosted tool definitions from Sogni Protocol `1.0.0-alpha.63`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
 See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
@@ -17,16 +17,16 @@ the previous `sogni-client` package.
 
 ## What is included
 
-- API-key, JWT/refresh-token, cookie, and username/password authentication
+- API-key, JWT/refresh-token, cookie, and username/password authentication with two-factor sign-in
 - Reconnecting authenticated WebSocket transport with exponential backoff
 - Image, video, and audio project submission, progress, results, cancellation,
   queue explanations, durable result lookup, uploads, estimates, and recovery
 - SAM3 image cutouts and video masks, BiRefNet background removal, Pixal3D
   multi-view GLB reconstruction, GPT Image editing and animation, and worker result provenance
 - FLUX 3 Image Klein generation/editing and MOSS text-to-image presets
-- Explicit Seedream 5.0 Pro Uncensored image generation/editing, FastH3
-  Reference, and MiniMax H3 video extension
-- Speech/voice cloning, FlashVSR video upscaling, MiniMax H3 keyframes,
+- Seedream 5.0 and 5.5 image generation, editing and layer extraction,
+  FastH3 Reference, MiniMax H3 Prism and video extension
+- Speech/voice cloning, FlashVSR and RelayVSR video upscaling, MiniMax H3 keyframes,
   two-stage/audio-guide video with LoRAs, Seedance drafts and exports, and private uploads
 - Socket-native streaming LLM chat, hosted chat completions, hosted tools, and
   durable chat runs with resumable SSE
@@ -34,7 +34,8 @@ the previous `sogni-client` package.
   CRUD/fork operations
 - Hosted Sogni World builds with explicit cost approval, task review, and resumable events
 - Account balances, wallet operations, rewards, subscriptions, replay records,
-  leaderboards, and announcements
+  leaderboards, announcements, and the public product changelog
+- Optional encryption for eligible project media and seekable native downloads
 - Rustls TLS, bounded request timeouts, redacted credential diagnostics, no
   `unsafe`, and no blocking I/O on async paths
 
@@ -55,7 +56,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client-by-morlz = { version = "5.79.0", default-features = false }
+sogni-client-by-morlz = { version = "5.84.2", default-features = false }
 ```
 
 For development against the repository:
@@ -119,6 +120,15 @@ Token authentication is available through
 `SogniClient::builder().app_id("my-installation").tokens(token, refresh_token)`. For an interactive
 username/password flow, create a token-auth client and call
 `client.account.login(username, password)`.
+
+If sign-in returns `Error::TwoFactorRequired(challenge)`, keep the challenge
+in memory and call `account.verify_two_factor_login(&challenge, &proof)` on the
+same client. Use `TwoFactorProof::Code` for an authenticator or backup code, or
+fetch `get_two_factor_passkey_options(Some(&challenge))` and submit the assertion
+from your application's WebAuthn authenticator. The client establishes the
+account session only after successful verification. Authenticator and passkey
+management are available under `account`; wallet-signed operations require the
+default `wallet` feature.
 
 A deleted account that can be restored returns `Error::Api` with
 `error_code == ACCOUNT_RESTORABLE_ERROR_CODE` (196); `ApiError::details()`
@@ -296,6 +306,16 @@ Hosted image tools select Seedream only when explicitly named and omit its
 unsupported negative prompt, seed, and steps. Image requests never send it a
 negative prompt. Availability remains discoverable from the model catalog.
 
+`SEEDREAM_5_5_UNCENSORED_MODEL_ID` (`seedream-5-5-uncensored`) is also an explicit
+selection. It accepts up to 4,624,220 pixels on a custom canvas and supports
+`seedreamBackground: "transparent"` or `"auto"` with PNG or WebP. On either
+Seedream model, `seedreamLayerDecomposition: true` splits one context image
+into a base image and transparent layers. Request one result; optionally set
+`seedreamLayerSize` to `"1K"`, `"1.5K"` or `"2K"`. Seedream 5.5 also accepts
+`seedreamLayerMaxImages` (2–100 including the base) and
+`seedreamLayerTextRecognition`. Read the layers in `job.layers()` or durable
+result jobs; use `job.get_layer_url(z_index)` for a fresh signed URL.
+
 MiniMax H3 Standard, Balanced, FastH3 Turbo and FastH3 Two-Stage text-to-video
 models accept an uploaded source video to extend. LightX2V Turbo does not.
 Omit `extendOutput` for combined source and new footage, or use
@@ -320,6 +340,9 @@ Personal LoRAs as the other H3 R2V models. They use **eight steps** despite the
 `_turbo` suffix. The two-stage ID delivers twice the canvas. Quote the exact
 model and canvas with `estimate_video_cost`; include `referenceVideo` or
 `hasVideoInput: true` when quoting an extension.
+
+The explicitly selected `minimax-h3-prism-int8_r2v` model uses eight steps and
+the same ordered reference and keyframe slots. It has no two-stage variant.
 
 The `workflow_minimax_h3_video` example accepts `--source-video` and
 `--extend-output continuation`, and the new `minimax-h3-fasth3-r2v-turbo`
@@ -386,6 +409,32 @@ servers do not imply an error or promise immediate processing.
 The socket subscribes to `projectQueue` by default. Opt out with
 `.socket_event_subscription("projectQueue", false)` or an explicit false in
 `client.set_socket_event_subscriptions(...)`.
+
+For an eligible waiting plan project, `project.pay_as_you_go()` reports the
+quoted Premium Spark price as a decimal string. When the owner accepts the
+price, call `project.switch_to_premium_spark(None)` or
+`projects.switch_to_premium_spark(id, None)`. A refusal applies to that
+request. If the SDK returns `Unknown`, including after a `not_found` reply,
+the switch may already have happened. The server makes repeats safe; if the
+outcome stays unknown, check Spark history or the project's result.
+
+## Encrypt project media
+
+Set `ClientBuilder::media_encryption(MediaEncryptionMode::Auto)` to encrypt
+eligible Fast network projects after the account key is available. Use
+`projects.supports_media_encryption(model_id)` to check model support and
+`ProjectRequest::media_encryption(false)` to opt out for a single project.
+Explicit `true` requires encryption; the SDK fails if it cannot fulfill the
+request. For models that encrypt inputs, attach local files or bytes so the
+client can encrypt them before upload. Some models encrypt only outputs.
+
+`Job::get_result_data()` opens an encrypted result automatically. For other
+signed URLs, `client.media_encryption.fetch_decrypted(url, false)` returns
+bytes and their original content type. Use `open_decrypted(url)` and stream
+plaintext byte ranges when the media server supports ranges. Locking the key
+or changing accounts invalidates existing readers. To keep handing signed
+URLs directly to a player that expects plaintext, configure
+`declare_media_capability(false)` before connecting.
 
 ## Segment an image or reconstruct a 3D object
 
@@ -906,6 +955,13 @@ Unlike `disable_socket`, it preserves socket-hosted HTTP endpoints and starts
 realtime I/O only when a socket command is sent. Give concurrent durable jobs
 distinct, stable app IDs so catalogue and worker processes do not replace one
 another's realtime sessions. Reuse the same job app ID during crash recovery.
+
+## Public product changelog
+
+Use `client.changelog.list(&ListChangelogOptions::default())` to read published
+Sogni product changes without account credentials, and `changelog.products()`
+or `changelog.get(id)` to read product filters or an entry. Reuse the same
+filters with the returned `next_cursor`. Poll at most once every five minutes.
 
 ## Errors
 

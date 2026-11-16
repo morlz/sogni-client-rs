@@ -3,6 +3,7 @@ mod assets;
 mod external;
 mod gpt_image;
 mod h3;
+mod image_upload;
 mod keyframes;
 mod seedream;
 pub(crate) use assets::max_context_images;
@@ -12,8 +13,9 @@ pub(super) use gpt_image::gif_dimensions;
 pub(super) use gpt_image::validate_gpt_image_options;
 pub(super) use h3::validate_h3_params;
 use h3::validate_h3_references;
+pub(super) use image_upload::check_image_upload;
 pub(super) use keyframes::keyframe_indices;
-pub(super) use seedream::validate_seedream_options;
+pub(super) use seedream::{SEEDREAM_FIELDS, validate_seedream_options};
 
 pub(in crate::projects) const RETIRED_OUTPUT_SCALE_MESSAGE: &str = "outputScale is no longer supported. For MiniMax H3 1080p or 2K output use the two-stage model ids minimax-h3-fastvideo-int8_t2v_turbo_2stage, minimax-h3-fastvideo-int8_i2v_turbo_2stage or minimax-h3-fastvideo-int8_flf2v_turbo_2stage.";
 

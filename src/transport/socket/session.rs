@@ -215,6 +215,13 @@ async fn connect_socket(
         if let Some(app_source) = &inner.app_source {
             query.append_pair("appSource", app_source);
         }
+        if inner
+            .media_keys
+            .as_ref()
+            .is_some_and(|keys| keys.declared(session.id()))
+        {
+            query.append_pair("sogniMedia", crate::media_encryption::MEDIA_CAPABILITY);
+        }
         for (name, value) in inner.attribution.connection_query() {
             query.append_pair(&name, &value);
         }
@@ -391,6 +398,7 @@ where
             response,
             session,
             deadline,
+            payment,
         } => {
             if response.is_closed() {
                 return Ok(());
@@ -409,6 +417,16 @@ where
                 )));
                 return Ok(());
             }
+            if let Some(payment) = &payment {
+                let mut payment = payment.lock();
+                if payment.cancelled {
+                    return Ok(());
+                }
+                payment.attempt = Some(SocketSendReceipt {
+                    generation,
+                    event_sequence: events.sequence(),
+                });
+            }
             if socket.send(message.clone()).await.is_err() {
                 tracing::warn!("Sogni WebSocket send failed");
                 return Err(SocketCommand::Send {
@@ -416,6 +434,7 @@ where
                     response,
                     session,
                     deadline,
+                    payment,
                 });
             }
             let _ = response.send(Ok(SocketSendReceipt {
@@ -470,10 +489,11 @@ fn handle_socket_frame(inner: &SocketInner, bytes: &[u8], session: u64) {
         Ok((message_type, payload))
     })();
     match parsed {
-        Ok((message_type, payload)) => {
+        Ok((message_type, mut payload)) => {
             if message_type == "authenticated" && payload.is_object() {
                 inner.authenticated.store(true, Ordering::Release);
             }
+            crate::media_encryption::redact_media_keys(&mut payload);
             inner.events.emit_scoped(message_type, payload, session);
         }
         Err(_) => tracing::warn!("dropped malformed Sogni WebSocket frame"),
@@ -505,7 +525,8 @@ mod subscription_tests {
             http.cookies(),
         );
         auth.authenticate_api_key("fixture").unwrap();
-        let transport = SocketTransport::new(&config, auth, http, EventBus::default()).unwrap();
+        let transport =
+            SocketTransport::new(&config, auth, http, EventBus::default(), None).unwrap();
         assert_eq!(
             transport.inner.subscriptions.read().get("projectQueue"),
             Some(&true)

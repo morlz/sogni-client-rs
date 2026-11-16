@@ -9,10 +9,23 @@ includes Sogni-AI's authentication and streaming fixes from source version
 `5.50.3-alpha.1` through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f`.
 Thank you to the fork's contributors for these fixes and regression tests.
 
-The current TypeScript contract is version `5.79.0` through
-`c397d41c04d5219f7a640662f621d629b82a69a6`, including Sogni Protocol
-`1.0.0-alpha.59`. The Rust fork's `main` resolved to the commit above on
-2026-11-09, already in this repository's history.
+The current TypeScript contract is version `5.84.2` through
+`f0928f2fa34d62b20dd62b6fc8be266c16236f55`, including Sogni Protocol
+`1.0.0-alpha.63`. The Rust fork's `main` still resolved to the commit above on
+2026-11-16. It is already in this repository's history.
+
+Rust uses its native WebSocket and secure UUID generator. Its media API
+implements the version 1 encrypted container and authenticated HTTP ranges;
+browser service workers and tab coordination stay in the TypeScript SDK.
+Passkey endpoints accept authenticator JSON from the Rust application. The
+browser credential prompts and Node build dependencies do not apply to the crate.
+Reference GIFs follow the upstream generation wire format and hosted schemas.
+Rust keeps its explicit GPT Image 2.6 route for direct tool execution.
+
+The 5.84.2 lockfile pins `quinn-proto` 0.11.19, `quinn-udp` 0.5.16, and
+`rustix` 1.1.6 for the current RustSec checks. HTTP and WebSocket transport
+features remain the same. Media encryption uses the locked `ring` and
+`subtle` versions and keeps Rust 1.88 as the minimum.
 
 The 5.66.0 release also requires Rustls 0.23.46 for the existing runtime and
 development TLS dependencies and locks `quinn-proto` to 0.11.18. These reviewed

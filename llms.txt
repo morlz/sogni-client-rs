@@ -1,11 +1,11 @@
-# sogni-client-by-morlz Rust SDK 5.79.0
+# sogni-client-by-morlz Rust SDK 5.84.2
 
-Compatibility: TypeScript 5.79.0 at c397d41c04d5219f7a640662f621d629b82a69a6 with hosted protocol 1.0.0-alpha.59.
+Compatibility: TypeScript 5.84.2 at f0928f2fa34d62b20dd62b6fc8be266c16236f55 with hosted protocol 1.0.0-alpha.63.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
-Cargo dependency: `sogni-client-by-morlz = "5.79.0"`.
+Cargo dependency: `sogni-client-by-morlz = "5.84.2"`.
 Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
 source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
@@ -50,6 +50,21 @@ Namespaces:
 - `replay`: RunRecord write/list/get
 - `stats`: leaderboard
 - `announcements`: active/dismiss
+- `changelog`: public list/get/products, no credentials; poll at most every five minutes
+- `media_encryption`: optional account key management, byte and range decryption
+
+Interactive sign-in can return `Error::TwoFactorRequired`. Keep the challenge
+in memory and verify on the same client with `TwoFactorProof::Code` or a passkey
+assertion. No account session is established until verification succeeds.
+
+Set `MediaEncryptionMode::Auto` on the builder to encrypt eligible Fast network
+projects, or use `ProjectRequest::media_encryption` for an explicit setting.
+`Job::get_result_data` opens encrypted results. Use `fetch_decrypted` for other
+signed URLs and `open_decrypted` for a seekable video or audio file.
+
+`Project::pay_as_you_go` is an advisory Premium Spark offer. Only switch after
+the owner accepts the price. `Unknown` includes `not_found` and does not rule
+out a charge.
 
 ## Generation
 

@@ -75,11 +75,12 @@ impl ProjectsApi {
             .run(async {
                 let requested_at = Utc::now();
                 let query = json!({"appId": self.inner.client.app_id()});
-                let snapshot = self
+                let mut snapshot = self
                     .inner
                     .client
                     .socket_get("/api/v1/artist/projects/sync", Some(&query))
                     .await?;
+                crate::media_encryption::redact_media_keys(&mut snapshot);
                 let _sync_guard = self.inner.sync_lock.lock().await;
                 session.check()?;
                 self.reconcile(snapshot, reason, requested_at, &session, &revisions)
@@ -100,12 +101,13 @@ impl ProjectsApi {
     /// Return in-flight projects owned by other app instances for this account.
     pub async fn list_projects_elsewhere(&self) -> Result<Vec<Value>> {
         let session = self.inner.client.rest.request_session();
-        let response = self
+        let mut response = self
             .inner
             .client
             .socket_get("/api/v1/artist/projects/sync", None)
             .await?;
         session.check()?;
+        crate::media_encryption::redact_media_keys(&mut response);
         for raw in recovery_records(&response, "activeProjects")
             .chain(recovery_records(&response, "unclaimedCompletedProjects"))
         {

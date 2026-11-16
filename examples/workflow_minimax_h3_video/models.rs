@@ -37,7 +37,9 @@ pub fn spec(args: &Args) -> Result<Spec> {
         .unwrap_or_else(|| format!("minimax-h3-{}-balanced", model_mode.as_str()));
     // Friendly selectors are expanded to canonical FL2VA, Ref2VA, or FastVideo
     // ids; already-canonical ids pass through after their mode is checked.
-    let direct = key.contains("-fl2va-") || key.contains("-ref2va-") || key.contains("-fastvideo-");
+    let prism = sogni_client::is_minimax_h3_prism_model(&key);
+    let direct =
+        prism || key.contains("-fl2va-") || key.contains("-ref2va-") || key.contains("-fastvideo-");
     let fast_h3 = key.contains("-fasth3-") || key.contains("-fastvideo-");
     let two_stage = key.ends_with("-2stage") || key.ends_with("_2stage");
     let base = key.trim_end_matches("-2stage").trim_end_matches("_2stage");
@@ -85,7 +87,7 @@ pub fn spec(args: &Args) -> Result<Spec> {
     let reference_turbo = model_mode == Mode::R2v && turbo && !fast_reference;
     Ok(Spec {
         id,
-        steps: if fast_reference {
+        steps: if fast_reference || prism {
             8
         } else if turbo {
             4
@@ -98,7 +100,7 @@ pub fn spec(args: &Args) -> Result<Spec> {
         // compatible recipe; FastH3 and Ref2VA Turbo are fixed to Euler.
         sampler: if turbo && !fast_h3 && model_mode != Mode::R2v {
             None
-        } else if turbo || balanced {
+        } else if turbo || balanced || prism {
             Some("euler")
         } else {
             Some("res_multistep")

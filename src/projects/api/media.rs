@@ -23,7 +23,7 @@ impl ProjectsApi {
                     .map_err(|_| Error::InvalidInput("image id must be a UUID".into()))?
                     .to_string()
                     .to_uppercase();
-                let media = source.read().await?;
+                let media = source.read_for_role(&AssetRole::StartingImage).await?;
                 let query = json!({
                     "imageId": image_id, "jobId": project_id, "type": "startingImage",
                     "contentType": media.content_type,
@@ -143,6 +143,7 @@ impl ProjectsApi {
         assets: &[(AssetRole, MediaSource)],
         request: &mut Value,
         annotate_video: bool,
+        mut encryption: Option<&mut crate::media_encryption::ProjectEncryption>,
     ) -> Result<()> {
         let model_id = request
             .pointer("/keyFrames/0/modelID")
@@ -176,7 +177,10 @@ impl ProjectsApi {
                     "duplicate project asset role {wire_role}"
                 )));
             }
-            let media = source.read_for_role(role).await?;
+            let mut media = source.read_for_role(role).await?;
+            if let Some(encryption) = encryption.as_deref_mut() {
+                media.data = encryption.seal_input(media.data, media.content_type.as_deref())?;
+            }
             session.check()?;
             let (resource_type, resource_id) = if role.is_media() {
                 ["referenceAudio", "referenceVideo"]
@@ -223,6 +227,9 @@ impl ProjectsApi {
                 )
                 .await?;
             session.check()?;
+            if let Some(encryption) = encryption.as_deref() {
+                encryption.check()?;
+            }
             if !reused {
                 let upload = if role.is_media() {
                     self.media_upload_url(&query).await?
@@ -230,6 +237,9 @@ impl ProjectsApi {
                     self.upload_url(&query).await?
                 };
                 session.check()?;
+                if let Some(encryption) = encryption.as_deref() {
+                    encryption.check()?;
+                }
                 self.inner
                     .client
                     .rest
@@ -453,6 +463,7 @@ mod tests {
                     &[(role.clone(), source)],
                     &mut request,
                     true,
+                    None,
                 ),
             )
             .await

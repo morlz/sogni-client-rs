@@ -99,6 +99,7 @@ fn reset_attempt(job: &Job, id: Option<&str>, index: Option<u64>) {
             state.last_frame_key = None;
             state.output_format = None;
             state.seedance = SeedanceDraftReceipt::default();
+            state.layers = None;
             state.provenance = None;
             state.seed = None;
             state.error = None;
@@ -115,6 +116,7 @@ fn reset_attempt(job: &Job, id: Option<&str>, index: Option<u64>) {
             "previewUrl",
             "eta",
             "provenance",
+            "layers",
         ],
     );
 }

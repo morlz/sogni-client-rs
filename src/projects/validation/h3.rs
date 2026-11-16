@@ -15,6 +15,8 @@ pub(in crate::projects) fn validate_h3_params(
     }
     let (expected_steps, tier) = if crate::utils::is_minimax_h3_fasth3_reference_model(model_id) {
         (8.0, " FastH3 Reference")
+    } else if crate::utils::is_minimax_h3_prism_model(model_id) {
+        (8.0, " Prism")
     } else if is_minimax_h3_turbo_model(model_id) {
         (4.0, " Turbo")
     } else if is_minimax_h3_balanced_model(model_id) {

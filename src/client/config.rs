@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 use super::runtime::SogniClient;
-use crate::{Attribution, AuthKind, Result};
+use crate::{Attribution, AuthKind, MediaEncryptionMode, Result};
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -51,6 +51,9 @@ pub struct ClientConfig {
     pub proxy_url: Option<String>,
     /// Restrict provider media transfers to HTTPS and pinned public destinations.
     pub strict_media_destinations: bool,
+    pub media_encryption: MediaEncryptionMode,
+    /// Request ciphertext delivery when using automatic media encryption.
+    pub declare_media_capability: bool,
 }
 
 impl std::fmt::Debug for ClientConfig {
@@ -80,6 +83,8 @@ impl std::fmt::Debug for ClientConfig {
             .field("connect_timeout", &self.connect_timeout)
             .field("proxy_url", &self.proxy_url.as_ref().map(|_| "[REDACTED]"))
             .field("strict_media_destinations", &self.strict_media_destinations)
+            .field("media_encryption", &self.media_encryption)
+            .field("declare_media_capability", &self.declare_media_capability)
             .finish()
     }
 }
@@ -106,6 +111,8 @@ impl Default for ClientConfig {
             connect_timeout: Duration::from_secs(30),
             proxy_url: None,
             strict_media_destinations: false,
+            media_encryption: MediaEncryptionMode::Off,
+            declare_media_capability: true,
         }
     }
 }
@@ -116,6 +123,19 @@ pub struct ClientBuilder {
 }
 
 impl ClientBuilder {
+    #[must_use]
+    pub fn media_encryption(mut self, mode: MediaEncryptionMode) -> Self {
+        self.config.media_encryption = mode;
+        self
+    }
+
+    /// Keep plaintext delivery when giving signed URLs directly to a player.
+    #[must_use]
+    pub fn declare_media_capability(mut self, declare: bool) -> Self {
+        self.config.declare_media_capability = declare;
+        self
+    }
+
     /// Set a persisted installation ID, unique among simultaneous account connections.
     #[must_use]
     pub fn app_id(mut self, value: impl Into<String>) -> Self {

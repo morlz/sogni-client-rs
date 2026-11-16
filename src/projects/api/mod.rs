@@ -1,9 +1,11 @@
 use super::*;
 mod costs;
 mod create;
+mod encryption;
 mod loras;
 mod media;
 mod models;
+mod payment;
 mod personal_loras;
 mod recovery;
 mod result_media;
@@ -48,6 +50,7 @@ pub(super) struct ProjectsInner {
     pub(super) sync_lock: Mutex<()>,
     pub(super) assets: ReusableUploads,
     pub(super) submission: parking_lot::Mutex<submission_recovery::SubmissionRecovery>,
+    payment_switches: parking_lot::Mutex<payment::PendingSwitches>,
 }
 
 impl std::fmt::Debug for ProjectsApi {
@@ -63,6 +66,7 @@ impl ProjectsApi {
         let inner = Arc::new(ProjectsInner {
             assets: ReusableUploads::new(client.rest.clone()),
             submission: parking_lot::Mutex::new(submission_recovery::SubmissionRecovery::default()),
+            payment_switches: parking_lot::Mutex::default(),
             client,
             projects: RwLock::new(HashMap::new()),
             available_models: RwLock::new(Vec::new()),

@@ -20,7 +20,7 @@ use self::session::socket_manager;
 use super::{HttpClients, RestClient};
 use crate::{
     Attribution, ClientConfig, Error, Network, Result, auth::AuthManager, event::EventBus,
-    utils::b64_json_encode,
+    media_encryption::MediaKeyState, utils::b64_json_encode,
 };
 
 const PROTOCOL_VERSION: &str = "3.0.0";
@@ -34,6 +34,7 @@ enum SocketCommand {
         response: oneshot::Sender<Result<SocketSendReceipt>>,
         session: u64,
         deadline: tokio::time::Instant,
+        payment: Option<Arc<ParkingMutex<PaymentWrite>>>,
     },
 }
 
@@ -41,6 +42,20 @@ enum SocketCommand {
 pub(super) struct SocketSendReceipt {
     pub(super) generation: u64,
     pub(super) event_sequence: u64,
+}
+
+#[derive(Default)]
+struct PaymentWrite {
+    cancelled: bool,
+    attempt: Option<SocketSendReceipt>,
+}
+
+struct CancelQueuedPayment(Arc<ParkingMutex<PaymentWrite>>);
+
+impl Drop for CancelQueuedPayment {
+    fn drop(&mut self) {
+        self.0.lock().cancelled = true;
+    }
 }
 
 #[derive(Clone)]
@@ -69,6 +84,7 @@ struct SocketInner {
     closed: AtomicBool,
     connect_timeout: Duration,
     proxy: Option<super::proxy::SocksProxy>,
+    media_keys: Option<Arc<MediaKeyState>>,
 }
 
 impl SocketTransport {
@@ -77,6 +93,7 @@ impl SocketTransport {
         auth: AuthManager,
         http: HttpClients,
         events: EventBus,
+        media_keys: Option<Arc<MediaKeyState>>,
     ) -> Result<Self> {
         let mut socket_rest_url = config.socket_endpoint.clone();
         socket_rest_url
@@ -88,7 +105,8 @@ impl SocketTransport {
             .map_err(|()| Error::InvalidInput("invalid socket endpoint scheme".into()))?;
         socket_rest_url.set_query(None);
         socket_rest_url.set_fragment(None);
-        let rest = RestClient::new(socket_rest_url, auth.clone(), http, config.request_timeout);
+        let rest = RestClient::new(socket_rest_url, auth.clone(), http, config.request_timeout)
+            .with_media_keys(media_keys.clone());
         let (commands, command_receiver) = mpsc::channel(256);
         let (connected, _) = watch::channel(false);
         let mut subscriptions = config.socket_event_subscriptions.clone();
@@ -123,6 +141,7 @@ impl SocketTransport {
                     .as_deref()
                     .map(super::proxy::SocksProxy::parse)
                     .transpose()?,
+                media_keys,
             }),
         })
     }
@@ -219,6 +238,38 @@ impl SocketTransport {
         data: &Value,
         session: u64,
     ) -> Result<SocketSendReceipt> {
+        self.send_with_receipt(message_type, data, session, None)
+            .await
+    }
+
+    /// A receipt means the frame was written or could have reached the peer.
+    /// Without it no write started and queued work cannot send later.
+    pub(super) async fn send_payment_switch(
+        &self,
+        project_id: &str,
+        session: u64,
+    ) -> Option<SocketSendReceipt> {
+        let state = Arc::new(ParkingMutex::new(PaymentWrite::default()));
+        let cancel = CancelQueuedPayment(state.clone());
+        let _ = self
+            .send_with_receipt(
+                "switchProjectToPremiumSpark",
+                &json!({"projectId":project_id}),
+                session,
+                Some(state.clone()),
+            )
+            .await;
+        drop(cancel);
+        state.lock().attempt
+    }
+
+    async fn send_with_receipt(
+        &self,
+        message_type: &str,
+        data: &Value,
+        session: u64,
+        payment: Option<Arc<ParkingMutex<PaymentWrite>>>,
+    ) -> Result<SocketSendReceipt> {
         self.start().await?;
         if self.inner.auth.version().session != session {
             return Err(Error::InvalidInput(
@@ -241,6 +292,7 @@ impl SocketTransport {
                 response,
                 session,
                 deadline,
+                payment,
             }),
         )
         .await

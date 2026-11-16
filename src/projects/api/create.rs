@@ -34,19 +34,41 @@ impl ProjectsApi {
             .run(self.prepare_submission(project_id, &mut request))
             .await
             .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::Prepare, cause))?;
+        let mut encryption = session
+            .run(self.project_encryption(&request))
+            .await
+            .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::Prepare, cause))?;
+        let access = encryption
+            .as_ref()
+            .map(crate::media_encryption::ProjectEncryption::access);
         session
-            .run(self.process_assets(
-                &session,
-                &project_id,
-                &request.assets,
-                &mut wire,
-                matches!(
-                    request.params.get("type").and_then(Value::as_str),
-                    Some("video" | "audio")
-                ),
-            ))
+            .run(async {
+                let upload = self.process_assets(
+                    &session,
+                    &project_id,
+                    &request.assets,
+                    &mut wire,
+                    matches!(
+                        request.params.get("type").and_then(Value::as_str),
+                        Some("video" | "audio")
+                    ),
+                    encryption.as_mut(),
+                );
+                match access {
+                    Some(access) => access.run(upload).await,
+                    None => upload.await,
+                }
+            })
             .await
             .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::AssetUpload, cause))?;
+        if let Some(encryption) = encryption {
+            encryption
+                .finish(&mut wire)
+                .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::Prepare, cause))?;
+            request
+                .params
+                .insert("mediaEncryption".into(), Value::Bool(true));
+        }
         session
             .check()
             .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::Prepare, cause))?;
@@ -185,7 +207,7 @@ impl ProjectsApi {
             .rest
             .get(&format!("/v1/projects/{}", path_segment(project_id)), None)
             .await?;
-        let project = response
+        let mut project = response
             .pointer("/data/project")
             .cloned()
             .ok_or_else(|| Error::Protocol("project response missing data.project".into()))?;
@@ -199,6 +221,7 @@ impl ProjectsApi {
                 .lock()
                 .observed(&project_id.to_uppercase());
         }
+        crate::media_encryption::redact_media_keys(&mut project);
         Ok(project)
     }
 }

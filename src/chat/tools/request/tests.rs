@@ -111,6 +111,40 @@ fn h3_audio_modes_and_indexed_references_do_not_fall_back_silently() {
     }
 }
 
+#[test]
+fn reference_gif_uses_the_hosted_schema_and_keeps_the_explicit_rust_model() {
+    let schema = crate::HostedTools.get("edit_image").unwrap();
+    let props = &schema["function"]["parameters"]["properties"];
+    assert!(
+        props["outputFormat"]["enum"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("gif"))
+    );
+    assert_eq!(props["gptImageFrameCount"]["minimum"], 2);
+    assert_eq!(props["gptImageFrameCount"]["maximum"], 16);
+    let plan = plan_tool_request(
+        "edit_image",
+        &json!({
+            "prompt":"Animate the references", "model":"gpt-image-2.6-flare", "outputFormat":"gif",
+            "gptImageFrameCount":9, "gptImageFrameDurationMs":200,
+            "source_image_url":"https://example.test/source.png",
+            "reference_image_urls":["https://example.test/reference.png"],
+        }),
+        &Value::Null,
+        &[
+            json!({"id":"qwen_image_edit_2511_fp8","media":"image","workerCount":20}),
+            json!({"id":"gpt-image-2.6-flare","media":"image","workerCount":1}),
+        ],
+    )
+    .unwrap();
+    assert_eq!(plan.params["modelId"], "gpt-image-2.6-flare");
+    assert_eq!(plan.params["outputFormat"], "gif");
+    assert_eq!(plan.params["gptImageFrameCount"], 9);
+    assert_eq!(plan.params["gptImageFrameDurationMs"], 200);
+    assert_eq!(plan.params["contextImages"], json!([true, true]));
+}
+
 fn music_pool() -> Vec<Value> {
     vec![
         json!({"id":"ace_step_1.5_xl_sft","media":"audio","workerCount":40}),

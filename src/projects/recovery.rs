@@ -177,6 +177,18 @@ pub(super) fn recovered_params(raw: &Value) -> Value {
     if let Some(value) = request.get("outputFormat") {
         params["outputFormat"] = value.clone();
     }
+    if let Some(value) = raw
+        .get("mediaEncryption")
+        .or_else(|| raw.get("mediaEncrypted"))
+        .or_else(|| request.get("mediaEncryption"))
+    {
+        if let Some(enabled) = value
+            .as_bool()
+            .or_else(|| value.is_object().then_some(true))
+        {
+            params["mediaEncryption"] = Value::Bool(enabled);
+        }
+    }
     if let Some(value) = raw.get("promptExpanded").and_then(Value::as_bool) {
         params["promptExpanded"] = json!(value);
     }
@@ -298,7 +310,14 @@ pub(super) fn replay_recovered_at_revision(
                     .map(ToOwned::to_owned)
                     .collect();
             },
-            &["status", "step", "resultUrl", "provenance", "preparation"],
+            &[
+                "status",
+                "step",
+                "resultUrl",
+                "provenance",
+                "preparation",
+                "layers",
+            ],
         );
         replay_revision = project.queue_revision();
     }

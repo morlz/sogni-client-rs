@@ -8,6 +8,15 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.84.2] - 2026-11-16
+
+- Port the TypeScript 5.84.2 public contract through `f0928f2fa34d62b20dd62b6fc8be266c16236f55`, including the hosted tool schemas from Sogni Protocol `1.0.0-alpha.63` and reference GIF editing. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` on `main` (source `5.50.3-alpha.1`).
+- Support two-factor sign-in with authenticator or backup codes and native WebAuthn proofs. Add account management for authenticators, passkeys and backup codes. A challenge does not install credentials before verification succeeds.
+- Add optional media encryption with account key rotation, authenticated input uploads and result decryption, and seekable HTTP reads. Preserve the project's encrypted status in recovery without exposing request keys.
+- Expose the public product changelog and the Premium Spark offer for queued plan projects. Deduplicate a pending switch and preserve unknown outcomes after a lost reply or a `not_found` reply.
+- Add RelayVSR X2 and X4, MiniMax H3 Prism, Seedream 5.5 backgrounds and layer extraction, and SAM 3 video polygon, object and frame prompts. Reject obvious text bytes in image slots before uploading.
+- Update locked `quinn-proto` to 0.11.19, `quinn-udp` to 0.5.16, and `rustix` to 1.1.6 for [QUIC stream limit](https://github.com/advisories/GHSA-53rm-773f-4q8c), [QUIC Retry](https://rustsec.org/advisories/RUSTSEC-2026-0524.html), [UDP receive](https://rustsec.org/advisories/RUSTSEC-2026-0538.html), and [extended attribute](https://rustsec.org/advisories/RUSTSEC-2026-0486.html) advisories. Keep Rust 1.88 and the existing publishing policy.
+
 ## [5.79.0] - 2026-11-09
 
 - Synchronize the TypeScript 5.79.0 contract through `c397d41c04d5219f7a640662f621d629b82a69a6` and the 30 hosted tools from Sogni Protocol `1.0.0-alpha.59`. The reviewed Rust fork is `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` on `main` (source `5.50.3-alpha.1`).

@@ -32,6 +32,9 @@ pub struct JobProvenance {
     /// Hash of the exact completed artifact bytes.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sha256: Option<String>,
+    /// Hash of the decrypted artifact, when reported for encrypted media.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub plaintext_sha256: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source_image_sha256: Option<String>,
     /// Hash of the full uploaded video used by SAM 3 video selection.
@@ -84,6 +87,7 @@ impl JobProvenance {
         for source in [data.get("result"), Some(data)].into_iter().flatten() {
             for field in [
                 "sha256",
+                "plaintextSha256",
                 "sourceImageSha256",
                 "sourceVideoSha256",
                 "samPromptSha256",

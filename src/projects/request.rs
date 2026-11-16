@@ -73,6 +73,9 @@ impl MediaSource {
 
     pub(super) async fn read_for_role(&self, role: &AssetRole) -> Result<LoadedMedia> {
         let mut media = self.read().await?;
+        if !role.is_media() {
+            super::validation::check_image_upload(&media.data, &role.wire_name())?;
+        }
         if matches!(
             self,
             Self::Bytes {

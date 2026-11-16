@@ -102,6 +102,11 @@ pub(super) fn listen_for_project_events(inner: &Arc<ProjectsInner>) -> tokio::ta
                         project.invalidate_queue();
                     }
                 }
+                "connecting" => {
+                    for project in inner.projects.read().values() {
+                        project.clear_pay_as_you_go();
+                    }
+                }
                 "jobError" => handle_job_error(&inner, &event.data),
                 "jobRetry" => handle_job_retry(&inner, &event.data),
                 "changeNetwork" => {

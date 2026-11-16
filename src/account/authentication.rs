@@ -87,7 +87,7 @@ impl AccountApi {
     }
 
     #[cfg(feature = "wallet")]
-    async fn authenticate_response_and_hydrate(
+    pub(super) async fn authenticate_response_and_hydrate(
         &self,
         payload: &Value,
         address: &str,

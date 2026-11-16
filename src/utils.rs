@@ -31,4 +31,8 @@ pub use models::{
     is_video_segmentation_model, is_video_upscale_model, is_wan_model, is_wan3_enhanced_model,
     is_wan3_model, requires_starting_image,
 };
+pub use models::{
+    RELAYVSR_X2_VIDEO_UPSCALE_MODEL_ID, RELAYVSR_X4_VIDEO_UPSCALE_MODEL_ID,
+    SEEDREAM_5_5_UNCENSORED_MODEL_ID, is_minimax_h3_prism_model, is_relay_vsr_model,
+};
 pub use sse::{ParsedSseEvent, parse_sse_chunk};

@@ -3,7 +3,7 @@ use super::*;
 const TIMING_ERROR: &str =
     "Omit the source timing, or supply the source video’s exact frame count and frame rate.";
 
-pub(super) fn upscale_resolution(params: &Map<String, Value>) -> Result<f64> {
+pub(super) fn upscale_resolution(params: &Map<String, Value>, relay: bool) -> Result<f64> {
     let resolution = params
         .get("upscaleResolution")
         .filter(|value| !value.is_null())
@@ -20,11 +20,36 @@ pub(super) fn upscale_resolution(params: &Map<String, Value>) -> Result<f64> {
                 .map(|(width, height)| width.min(height))
         });
     resolution
-        .filter(|value| [1080.0, 1440.0].contains(value))
-        .ok_or_else(|| Error::InvalidInput("Choose 1080p or 1440p for video upscaling.".into()))
+        .filter(|value| [1080.0, 1440.0].contains(value) || relay && *value == 2160.0)
+        .ok_or_else(|| {
+            Error::InvalidInput(
+                if relay {
+                    "Choose 1080p, 1440p or 2160p for RelayVSR video upscaling."
+                } else {
+                    "Choose 1080p or 1440p for video upscaling."
+                }
+                .into(),
+            )
+        })
 }
 
-pub(super) fn validate_upscale_params(params: &Map<String, Value>) -> Result<()> {
+pub(super) fn validate_upscale_params(params: &Map<String, Value>, relay: bool) -> Result<()> {
+    let model = if relay { "RelayVSR" } else { "FlashVSR" };
+    if relay {
+        for field in ["detailPreference", "processingSpeed", "seed"] {
+            if params.get(field).is_some_and(|value| !value.is_null()) {
+                return Err(Error::InvalidInput(format!("RelayVSR has no {field}.")));
+            }
+        }
+        if ["width", "height"]
+            .into_iter()
+            .any(|field| number(params.get(field)).is_some_and(|value| value > 3840.0))
+        {
+            return Err(Error::InvalidInput(
+                "RelayVSR output can be at most 3840 pixels on its long edge.".into(),
+            ));
+        }
+    }
     for (field, allowed, message) in [
         (
             "detailPreference",
@@ -53,11 +78,11 @@ pub(super) fn validate_upscale_params(params: &Map<String, Value>) -> Result<()>
             ));
         }
     }
-    upscale_resolution(params)?;
+    upscale_resolution(params, relay)?;
     if !truthy(params.get("referenceVideo")) {
-        return Err(Error::InvalidInput(
-            "FlashVSR requires an uploaded referenceVideo.".into(),
-        ));
+        return Err(Error::InvalidInput(format!(
+            "{model} requires an uploaded referenceVideo."
+        )));
     }
     validate_source_timing(params)?;
     if ["positivePrompt", "negativePrompt"].iter().any(|field| {
@@ -66,7 +91,7 @@ pub(super) fn validate_upscale_params(params: &Map<String, Value>) -> Result<()>
             .and_then(Value::as_str)
             .is_some_and(|prompt| !prompt.trim().is_empty())
     }) {
-        return Err(Error::InvalidInput("FlashVSR is promptless.".into()));
+        return Err(Error::InvalidInput(format!("{model} is promptless.")));
     }
     if ["teacacheThreshold", "videoStart"]
         .iter()

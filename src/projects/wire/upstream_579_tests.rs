@@ -27,6 +27,17 @@ fn generation_579_matches_compiled_typescript_fields_and_refusals() {
         "c397d41c04d5219f7a640662f621d629b82a69a6"
     );
     for case in fixture["cases"].as_array().unwrap() {
+        if case["name"] == "SAM 3 video exact source geometry" {
+            // The old fixture selected a nonzero object in point mode. The
+            // 5.84 contract requires zero for a single tracked object.
+            assert!(
+                request(&case["params"])
+                    .unwrap_err()
+                    .to_string()
+                    .contains("objectIndex")
+            );
+            continue;
+        }
         let actual =
             request(&case["params"]).unwrap_or_else(|error| panic!("{}: {error}", case["name"]));
         for (target, expected) in [

@@ -108,6 +108,9 @@ impl ProjectsApi {
             "gptImageFrameCount": params.get("gptImageFrameCount"),
             "gptImageFrameDurationMs": params.get("gptImageFrameDurationMs"),
             "outputFormat": params.get("outputFormat"),
+            "seedreamLayerDecomposition": params.get("seedreamLayerDecomposition").and_then(Value::as_bool).filter(|enabled| *enabled),
+            "seedreamLayerSize": params.get("seedreamLayerSize").and_then(Value::as_str).filter(|size| !size.is_empty()),
+            "seedreamLayerMaxImages": params.get("seedreamLayerMaxImages"),
             "billingMode": params.get("billingMode"),
             "priorityMode": params.get("priorityMode").and_then(Value::as_bool),
             "includeMonthlyFairUse": monthly_opt_in(params),
@@ -199,6 +202,14 @@ impl ProjectsApi {
             seedance::SeedanceDraftMode::Draft => query["seedanceDraft"] = json!(1),
             seedance::SeedanceDraftMode::Finalize(id) => query["seedanceDraftJobId"] = json!(id),
             seedance::SeedanceDraftMode::Standard => {}
+        }
+        if let Some(prompt) = params.get("sam3VideoPrompt") {
+            if let Some(objects) = prompt.get("objects").and_then(Value::as_array) {
+                query["sam3ObjectCount"] = json!(objects.len());
+            }
+            if let Some(memory) = prompt.get("memory") {
+                query["sam3Memory"] = memory.clone();
+            }
         }
         if let Some(count) = params
             .get("keyframeCount")

@@ -5,7 +5,7 @@ use bytes::Bytes;
 use futures_util::{Stream, StreamExt};
 use reqwest::{
     Method, StatusCode,
-    header::{COOKIE, HeaderMap},
+    header::{COOKIE, HeaderMap, HeaderValue},
 };
 use serde_json::{Value, json};
 use url::Url;
@@ -14,9 +14,12 @@ use super::{ClearableCookieStore, HttpClients};
 use crate::{
     ApiError, Error, Result,
     auth::{AuthManager, RequestSession},
+    media_encryption::{MEDIA_CAPABILITY, MediaKeyState},
     utils::{ParsedSseEvent, drop_nulls, parse_sse_chunk, query_pairs},
 };
 
+mod json_response;
+mod media_download;
 mod media_upload;
 
 pub type SseEvent = ParsedSseEvent;
@@ -33,6 +36,7 @@ pub struct RestClient {
     timeout: Duration,
     strict_media: bool,
     media_proxy: Option<super::proxy::SocksProxy>,
+    media_keys: Option<Arc<MediaKeyState>>,
 }
 
 impl std::fmt::Debug for RestClient {
@@ -61,7 +65,13 @@ impl RestClient {
             timeout,
             strict_media: http.strict_media,
             media_proxy: http.media_proxy,
+            media_keys: None,
         }
+    }
+
+    pub(super) fn with_media_keys(mut self, media_keys: Option<Arc<MediaKeyState>>) -> Self {
+        self.media_keys = media_keys;
+        self
     }
 
     pub fn url(&self, path: &str) -> Result<Url> {
@@ -118,10 +128,32 @@ impl RestClient {
         url: &Url,
         headers: Option<HeaderMap>,
     ) -> Result<reqwest::Response> {
+        let (response, cookie_generation) = self
+            .send_with_cookie_generation(request, url, headers, true)
+            .await?;
+        self.cookies
+            .store_response(cookie_generation, response.headers(), response.url());
+        Ok(response)
+    }
+
+    async fn send_with_cookie_generation(
+        &self,
+        request: reqwest::RequestBuilder,
+        url: &Url,
+        headers: Option<HeaderMap>,
+        invalidate_on_401: bool,
+    ) -> Result<(reqwest::Response, u64)> {
         let session = self.request_session();
         let (version, mut request_headers) = session.run(self.auth.headers()).await?;
         if let Some(headers) = headers {
             request_headers.extend(headers);
+        }
+        if self
+            .media_keys
+            .as_ref()
+            .is_some_and(|keys| keys.declared(session.id()))
+        {
+            request_headers.insert("x-sogni-media", HeaderValue::from_static(MEDIA_CAPABILITY));
         }
         let (cookie_generation, cookie) = self.cookies.request_header(url);
         if !request_headers.contains_key(COOKIE) {
@@ -134,7 +166,8 @@ impl RestClient {
         let mut response = session
             .run(async { Ok(request.headers(request_headers).send().await?) })
             .await?;
-        let response_session = if response.status() == StatusCode::UNAUTHORIZED {
+        let response_session = if invalidate_on_401 && response.status() == StatusCode::UNAUTHORIZED
+        {
             if let Some(signed_out) = self.auth.clear_if_version(version) {
                 session.record_matching_rejection(&signed_out);
                 signed_out
@@ -145,50 +178,10 @@ impl RestClient {
             session
         };
         response_session.check()?;
-        self.cookies
-            .store_response(cookie_generation, response.headers(), response.url());
         // A matching 401 may deliberately end this session at the headers.
         // Its body retains the API status unless a later login supersedes it.
         response.extensions_mut().insert(response_session);
-        Ok(response)
-    }
-
-    pub async fn process_response(&self, response: reqwest::Response) -> Result<Value> {
-        let session = response
-            .extensions()
-            .get::<RequestSession>()
-            .cloned()
-            .unwrap_or_else(|| self.request_session());
-        let status = response.status();
-        let retry_after = response
-            .headers()
-            .get(reqwest::header::RETRY_AFTER)
-            .and_then(|value| value.to_str().ok())
-            .map(str::to_owned);
-        let text = session.run(async { Ok(response.text().await?) }).await?;
-        let parsed = if text.trim().is_empty() {
-            None
-        } else {
-            serde_json::from_str::<Value>(&text).ok()
-        };
-        if !status.is_success() {
-            let payload = parsed.filter(Value::is_object).unwrap_or_else(|| {
-                let message = non_json_error_message(status, &text);
-                json!({"status": "error", "message": message, "errorCode": status.as_u16()})
-            });
-            return Err(ApiError::new(status.as_u16(), payload)
-                .with_retry_after(retry_after.as_deref())
-                .into());
-        }
-        if text.trim().is_empty() {
-            return Ok(Value::Null);
-        }
-        parsed.ok_or_else(|| {
-            Error::Protocol(format!(
-                "failed to parse JSON response body (HTTP {})",
-                status.as_u16()
-            ))
-        })
+        Ok((response, cookie_generation))
     }
 
     pub async fn get(&self, path: &str, query: Option<&Value>) -> Result<Value> {

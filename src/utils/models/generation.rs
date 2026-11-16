@@ -2,6 +2,8 @@ use super::*;
 
 /// Standalone, promptless enhancement of a finished video.
 pub const FLASHVSR_VIDEO_UPSCALE_MODEL_ID: &str = "flashvsr_v1.1_tiny_long_bf16";
+pub const RELAYVSR_X2_VIDEO_UPSCALE_MODEL_ID: &str = "relayvsr_x2_lightx2v_int8_convrot";
+pub const RELAYVSR_X4_VIDEO_UPSCALE_MODEL_ID: &str = "relayvsr_x4_int8_convrot";
 pub const PIXAL3D_IMAGE_TO_3D_MODEL_ID: &str = "pixal3d_int8_i23d";
 pub const PIXAL3D_MULTIVIEW_IMAGE_TO_3D_MODEL_ID: &str = "pixal3d_multiview_int8_i23d";
 pub const SAM3_IMAGE_SEGMENT_MODEL_ID: &str = "sam3_image_segment_bf16";
@@ -9,6 +11,7 @@ pub const SAM3_IMAGE_SEGMENT_MODEL_ID: &str = "sam3_image_segment_bf16";
 pub const SAM3_VIDEO_SEGMENT_MODEL_ID: &str = "sam3_video_segment_fp16";
 pub const BIREFNET_BACKGROUND_REMOVAL_MODEL_ID: &str = "birefnet_image_background_removal_fp16";
 pub const SEEDREAM_5_PRO_UNCENSORED_MODEL_ID: &str = "seedream-5-0-pro-uncensored";
+pub const SEEDREAM_5_5_UNCENSORED_MODEL_ID: &str = "seedream-5-5-uncensored";
 pub const MINIMAX_H3_FASTH3_IA2V_MODEL_ID: &str = "minimax-h3-fastvideo-int8_ia2v_turbo";
 pub const MINIMAX_H3_FASTH3_FLFA2V_MODEL_ID: &str = "minimax-h3-fastvideo-int8_flfa2v_turbo";
 pub const MINIMAX_H3_FASTH3_A2V_MODEL_ID: &str = "minimax-h3-fastvideo-int8_a2v_turbo";
@@ -22,7 +25,15 @@ pub const PIXAL3D_ORBIT_VIEW_SLOTS: [(&str, u8); 3] = [
 
 #[must_use]
 pub fn is_video_upscale_model(model_id: &str) -> bool {
-    model_id == FLASHVSR_VIDEO_UPSCALE_MODEL_ID
+    model_id == FLASHVSR_VIDEO_UPSCALE_MODEL_ID || is_relay_vsr_model(model_id)
+}
+
+#[must_use]
+pub fn is_relay_vsr_model(model_id: &str) -> bool {
+    matches!(
+        model_id,
+        RELAYVSR_X2_VIDEO_UPSCALE_MODEL_ID | RELAYVSR_X4_VIDEO_UPSCALE_MODEL_ID
+    )
 }
 
 #[must_use]
@@ -72,7 +83,10 @@ pub(crate) fn is_gpt_image_26_model(model_id: &str) -> bool {
 /// The external Seedream image model is selected explicitly by callers.
 #[must_use]
 pub fn is_seedream_model(model_id: &str) -> bool {
-    model_id == SEEDREAM_5_PRO_UNCENSORED_MODEL_ID
+    matches!(
+        model_id,
+        SEEDREAM_5_PRO_UNCENSORED_MODEL_ID | SEEDREAM_5_5_UNCENSORED_MODEL_ID
+    )
 }
 
 /// Qwen3-TTS speech family. Use the runtime catalog for individual capabilities.

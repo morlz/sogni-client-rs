@@ -73,6 +73,7 @@ pub(super) fn build_image_keyframe(
         "rtx_vsr_",
         "minimax_music3",
         "flashvsr_",
+        "relayvsr_",
         "qwen3_tts_",
     ]
     .iter()
@@ -235,6 +236,9 @@ pub(super) fn build_image_keyframe(
         keyframe.insert("currentControlNetsJob".into(), json!([raw]));
     }
     validation::validate_seedream_options(params, model_id)?;
+    for field in validation::SEEDREAM_FIELDS {
+        copy_if_present(params, keyframe, field, field);
+    }
     if truthy(params.get("gptImageMask")) {
         keyframe.insert("hasReferenceMask".into(), json!(true));
         keyframe.insert("referenceMaskContentType".into(), json!("image/png"));

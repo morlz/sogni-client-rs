@@ -26,7 +26,7 @@ pub(super) fn build_video_keyframe(
         return sam3_video::apply_selection(params, keyframe);
     }
     if is_video_upscale_model(model_id) {
-        upscale::validate_upscale_params(params)?;
+        upscale::validate_upscale_params(params, crate::is_relay_vsr_model(model_id))?;
     }
     validation::reject_retired_output_scale(params)?;
     validate_h3_params(params, model_id)?;
@@ -298,7 +298,8 @@ pub(super) fn build_video_keyframe(
         keyframe.insert("comfyScheduler".into(), Value::Null);
     }
     if is_video_upscale_model(model_id) {
-        let resolution = upscale::upscale_resolution(params)?;
+        let relay = crate::is_relay_vsr_model(model_id);
+        let resolution = upscale::upscale_resolution(params, relay)?;
         keyframe.insert("upscaleResolution".into(), json!(resolution));
         keyframe.insert("steps".into(), json!(1));
         for (field, fallback) in [
@@ -306,6 +307,9 @@ pub(super) fn build_video_keyframe(
             ("detailPreference", json!("stable")),
             ("processingSpeed", json!("stable")),
         ] {
+            if relay && field != "seed" {
+                continue;
+            }
             keyframe.insert(
                 field.into(),
                 params

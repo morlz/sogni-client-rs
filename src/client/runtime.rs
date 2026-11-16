@@ -2,8 +2,9 @@ use std::{collections::BTreeMap, sync::Arc};
 
 use super::config::{ClientBuilder, ClientConfig};
 use crate::{
-    AccountApi, AnnouncementsApi, AuthBackup, AuthKind, ChatApi, CreativeWorkflowsApi,
-    CurrentAccount, Error, EventReceiver, ProjectsApi, ReplayApi, Result, StatsApi, WorldsApi,
+    AccountApi, AnnouncementsApi, AuthBackup, AuthKind, ChangelogApi, ChatApi,
+    CreativeWorkflowsApi, CurrentAccount, Error, EventReceiver, MediaEncryptionApi, ProjectsApi,
+    ReplayApi, Result, StatsApi, WorldsApi,
     auth::AuthManager,
     transport::{ApiClient, HttpClients},
 };
@@ -18,6 +19,8 @@ pub struct SogniClient {
     pub worlds: WorldsApi,
     pub replay: ReplayApi,
     pub announcements: AnnouncementsApi,
+    pub changelog: ChangelogApi,
+    pub media_encryption: MediaEncryptionApi,
     api_client: Arc<ApiClient>,
 }
 
@@ -82,6 +85,8 @@ impl SogniClient {
         let defer_socket_start = config.defer_socket_start;
         let api_client = Arc::new(ApiClient::new(config, auth, http)?);
         let projects = ProjectsApi::new(api_client.clone());
+        let media_encryption = MediaEncryptionApi::new(api_client.clone());
+        media_encryption.listen();
         let client = Self {
             account: AccountApi::new(api_client.clone(), testnet),
             stats: StatsApi::new(api_client.clone()),
@@ -90,6 +95,8 @@ impl SogniClient {
             worlds: WorldsApi::new(api_client.clone()),
             replay: ReplayApi::new(api_client.clone()),
             announcements: AnnouncementsApi::new(api_client.clone()),
+            changelog: ChangelogApi::new(api_client.clone()),
+            media_encryption,
             projects,
             api_client,
         };

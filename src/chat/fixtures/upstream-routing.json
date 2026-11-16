@@ -1,6 +1,6 @@
 {
-  "version": "5.79.0",
-  "commit": "c397d41c04d5219f7a640662f621d629b82a69a6",
+  "version": "5.84.2",
+  "commit": "f0928f2fa34d62b20dd62b6fc8be266c16236f55",
   "selectors": [
     {
       "tool": "generate_image",
@@ -407,6 +407,48 @@
         "model": "  SEEDREAM_5.0_PRO_SPICY  "
       },
       "expected": "seedream-5-0-pro-uncensored"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "seedream-5.5-uncensored"
+      },
+      "expected": "seedream-5-5-uncensored"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  SEEDREAM_5.5_UNCENSORED  "
+      },
+      "expected": "seedream-5-5-uncensored"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "seedream-5.5-spicy"
+      },
+      "expected": "seedream-5-5-uncensored"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  SEEDREAM_5.5_SPICY  "
+      },
+      "expected": "seedream-5-5-uncensored"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "seedream-5-5-spicy"
+      },
+      "expected": "seedream-5-5-uncensored"
+    },
+    {
+      "tool": "generate_image",
+      "args": {
+        "model": "  SEEDREAM_5_5_SPICY  "
+      },
+      "expected": "seedream-5-5-uncensored"
     },
     {
       "tool": "generate_image",
@@ -1331,6 +1373,48 @@
         "model": "  SEEDREAM_5.0_PRO_SPICY  "
       },
       "expected": "seedream-5-0-pro-uncensored"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "seedream-5.5-uncensored"
+      },
+      "expected": "seedream-5-5-uncensored"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  SEEDREAM_5.5_UNCENSORED  "
+      },
+      "expected": "seedream-5-5-uncensored"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "seedream-5.5-spicy"
+      },
+      "expected": "seedream-5-5-uncensored"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  SEEDREAM_5.5_SPICY  "
+      },
+      "expected": "seedream-5-5-uncensored"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "seedream-5-5-spicy"
+      },
+      "expected": "seedream-5-5-uncensored"
+    },
+    {
+      "tool": "edit_image",
+      "args": {
+        "model": "  SEEDREAM_5_5_SPICY  "
+      },
+      "expected": "seedream-5-5-uncensored"
     },
     {
       "tool": "edit_image",
@@ -3783,6 +3867,11 @@
       "workerCount": 1
     },
     {
+      "id": "seedream-5-5-uncensored",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
       "id": "flux1-schnell-fp8",
       "media": "image",
       "workerCount": 1
@@ -4336,6 +4425,14 @@
     },
     {
       "id": "seedream-5-0-pro-uncensored",
+      "expected": {
+        "width": 848,
+        "height": 480,
+        "fps": 16
+      }
+    },
+    {
+      "id": "seedream-5-5-uncensored",
       "expected": {
         "width": 848,
         "height": 480,
@@ -4977,6 +5074,10 @@
       "expected": true
     },
     {
+      "id": "seedream-5-5-uncensored",
+      "expected": true
+    },
+    {
       "id": "flux1-schnell-fp8",
       "expected": false
     },
@@ -5288,7 +5389,7 @@
   "schemas": [
     {
       "name": "generate_image",
-      "sha256": "342362c66264f12392926c38b43f9059bf952cafde487cc80cd5d191a520daf6"
+      "sha256": "66abf2aec45c3af0ea78deedd133c16f555d5531a0d2cc628e29fb413ff81d8d"
     },
     {
       "name": "generate_video",
@@ -5304,7 +5405,7 @@
     },
     {
       "name": "edit_image",
-      "sha256": "034e61e4540c5ec7123cddde25c10223c4e0dfb19a8ee10136e0a2f59c3b8375"
+      "sha256": "3e75c2f213b6679c4b41953f6c025a17c15df839ddddc1958e4ddec1a276d4c9"
     },
     {
       "name": "apply_style",
@@ -5312,7 +5413,7 @@
     },
     {
       "name": "restore_photo",
-      "sha256": "b691ff51f2836279872a981a8ea759477f975a8e8b9ec62a298a014411b431fa"
+      "sha256": "3a03f245cf16f03b3adf5ddbdb724fe6ebb6247e885a53cfa1d78808a7ec4b6d"
     },
     {
       "name": "upscale_image",
@@ -5320,7 +5421,7 @@
     },
     {
       "name": "upscale_video",
-      "sha256": "02f9efb9266069c9a5a25a30a0f018ba584051e060a1cf5ec7f62d50bb42d3f9"
+      "sha256": "873d245827a5f1b237b2b69f6c84170563847ca8300fbcfb332d50dfd11a40da"
     },
     {
       "name": "refine_result",

@@ -140,6 +140,13 @@ pub(in crate::projects) fn validate_asset_roles(
 }
 
 impl ProjectRequest {
+    /// Explicitly enable or disable encryption for this project. Leaving it
+    /// unset follows the client mode.
+    #[must_use]
+    pub fn media_encryption(self, enabled: bool) -> Self {
+        self.param("mediaEncryption", enabled)
+    }
+
     #[must_use]
     pub fn image(model_id: impl Into<String>, prompt: impl Into<String>) -> Self {
         Self::new("image", model_id, prompt)

@@ -12,7 +12,7 @@ pub(super) fn apply_selection(
             "Video selection requires one uploaded referenceVideo and numberOfMedia: 1.",
         ));
     }
-    let mut selection = params
+    let selection = params
         .get("sam3VideoPrompt")
         .and_then(Value::as_object)
         .cloned()
@@ -50,6 +50,52 @@ pub(super) fn apply_selection(
             "Video selection accepts one complete source video and selection prompts.",
         ));
     }
+    let opt_in = ["mask", "objects", "combine", "frames", "memory"]
+        .iter()
+        .any(|key| selection.contains_key(*key));
+    let (prompt, frame_index) = if opt_in {
+        // The service validates advanced selections against the actual source.
+        (Value::Object(selection), None)
+    } else {
+        let (prompt, index) = normalize_single_selection(selection)?;
+        (prompt, Some(index))
+    };
+    keyframe.extend([
+        ("hasReferenceVideo".into(), json!(true)),
+        ("sam3VideoPrompt".into(), prompt),
+        ("steps".into(), json!(1)),
+        ("seed".into(), json!(0)),
+        ("interpolation".into(), json!("none")),
+        ("generateAudio".into(), json!(false)),
+    ]);
+    for field in ["width", "height", "frames", "fps"] {
+        if let Some(value) = params.get(field) {
+            let valid = if field == "fps" {
+                value
+                    .as_f64()
+                    .is_some_and(|fps| fps.is_finite() && fps > 0.0)
+            } else {
+                positive_or_zero_integer(value).is_some_and(|size| size > 0)
+            };
+            if !valid {
+                return Err(Error::InvalidInput(format!(
+                    "Video selection {field} must match the source video."
+                )));
+            }
+            keyframe.insert(field.into(), value.clone());
+        }
+    }
+    if frame_index
+        .zip(params.get("frames").and_then(positive_or_zero_integer))
+        .is_some_and(|(index, frames)| index >= frames)
+    {
+        return Err(invalid("frameIndex must refer to a source frame."));
+    }
+    Ok(())
+}
+
+fn normalize_single_selection(mut selection: Map<String, Value>) -> Result<(Value, u64)> {
+    let invalid = |message: &str| Error::InvalidInput(message.into());
     let index = |value: Option<Value>, max: u64| {
         value.map_or(Some(0), |value| {
             positive_or_zero_integer(&value).filter(|index| *index <= max)
@@ -82,45 +128,24 @@ pub(super) fn apply_selection(
     }
     selection.remove("maxInstances");
     let mut prompt = normalize_sam3_prompt(&Value::Object(selection))?;
+    if prompt.get("text").is_none() {
+        let has_points = prompt["points"]
+            .as_array()
+            .is_some_and(|points| !points.is_empty());
+        if has_points && object_index != 0 {
+            return Err(invalid("Point selections require objectIndex 0."));
+        }
+        if !has_points && object_index >= prompt["boxes"].as_array().map_or(0, Vec::len) as u64 {
+            return Err(invalid("objectIndex must refer to a supplied box."));
+        }
+    }
     prompt["maxInstances"] = json!(1);
     prompt["frameIndex"] = json!(frame_index);
     prompt["objectIndex"] = json!(object_index);
     prompt["output"] = json!("mask");
     prompt["edges"] = json!("hard");
 
-    keyframe.extend([
-        ("hasReferenceVideo".into(), json!(true)),
-        ("sam3VideoPrompt".into(), prompt),
-        ("steps".into(), json!(1)),
-        ("seed".into(), json!(0)),
-        ("interpolation".into(), json!("none")),
-        ("generateAudio".into(), json!(false)),
-    ]);
-    for field in ["width", "height", "frames", "fps"] {
-        if let Some(value) = params.get(field) {
-            let valid = if field == "fps" {
-                value
-                    .as_f64()
-                    .is_some_and(|fps| fps.is_finite() && fps > 0.0)
-            } else {
-                positive_or_zero_integer(value).is_some_and(|size| size > 0)
-            };
-            if !valid {
-                return Err(Error::InvalidInput(format!(
-                    "Video selection {field} must match the source video."
-                )));
-            }
-            keyframe.insert(field.into(), value.clone());
-        }
-    }
-    if params
-        .get("frames")
-        .and_then(positive_or_zero_integer)
-        .is_some_and(|frames| frame_index >= frames)
-    {
-        return Err(invalid("frameIndex must refer to a source frame."));
-    }
-    Ok(())
+    Ok((prompt, frame_index))
 }
 
 fn positive_or_zero_integer(value: &Value) -> Option<u64> {

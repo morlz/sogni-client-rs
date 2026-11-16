@@ -111,6 +111,33 @@ impl Job {
         self.inner.state.read().seedance.clone()
     }
 
+    /// Ordered transparent PNG layers reported by the completed job.
+    #[must_use]
+    pub fn layers(&self) -> Option<Vec<ImageLayer>> {
+        self.inner.state.read().layers.clone()
+    }
+
+    /// Mint a fresh URL for a reported layer above the base image.
+    pub async fn get_layer_url(&self, z_index: u8) -> Result<String> {
+        self.inner.session.check()?;
+        let state = self.snapshot();
+        if state.status != JobStatus::Completed
+            || self.is_withheld()
+            || !state
+                .layers
+                .is_some_and(|layers| layers.iter().any(|layer| layer.z_index == z_index))
+        {
+            return Err(Error::InvalidInput("Layer is not available".into()));
+        }
+        let parent = self.inner.project.upgrade().ok_or(Error::Closed)?;
+        let api = ProjectsApi {
+            inner: parent.api.upgrade().ok_or(Error::Closed)?,
+        };
+        let query = json!({"jobId":state.project_id,"imageId":state.id,"type":"complete","layerIndex":z_index});
+        let url = self.inner.session.run(api.download_url(&query)).await?;
+        Ok(url.into())
+    }
+
     /// Refresh the signed URL of a requested final-frame export.
     pub async fn get_last_frame_url(&self) -> Result<String> {
         self.inner.session.check()?;
@@ -250,9 +277,10 @@ impl Job {
     pub async fn get_result_data(&self) -> Result<Bytes> {
         self.inner.session.check()?;
         let url = Url::parse(&self.get_result_url().await?)?;
+        let media = crate::MediaEncryptionApi::new(self.inner.client.clone());
         self.inner
             .session
-            .run(self.inner.client.rest.get_bytes(url))
+            .run(async { Ok(media.fetch_decrypted(url, false).await?.data) })
             .await
     }
 

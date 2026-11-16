@@ -1,12 +1,12 @@
 # sogni-client-by-morlz Rust SDK complete agent reference
 
-Crate version: 5.79.0. Compatible with TypeScript 5.79.0 at upstream commit
-c397d41c04d5219f7a640662f621d629b82a69a6 with hosted protocol 1.0.0-alpha.59.
+Crate version: 5.84.2. Compatible with TypeScript 5.84.2 at upstream commit
+f0928f2fa34d62b20dd62b6fc8be266c16236f55 with hosted protocol 1.0.0-alpha.63.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client-by-morlz = "5.79.0"`. Disable default features for clients
+Dependency: `sogni-client-by-morlz = "5.84.2"`. Disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
@@ -734,3 +734,61 @@ available model. Neither result is automatically retried.
 Never embed secrets. Credential `Debug` output is redacted. Keep one client
 alive, explicitly `close()` it during shutdown, and never interpret a local
 timeout as server cancellation.
+
+## Source contract additions in 5.84.2
+
+- `client.changelog.list(&ListChangelogOptions)` reads public entries. Supply
+  audience, product, entry type, ISO 8601 dates, action-required, limit or cursor
+  filters. Use the returned `next_cursor` with the same filters. `get(id)`
+  returns HTTP 404/code 204 for a missing entry, and `products()` lists product
+  IDs. These calls send no account credentials. Poll at most every five minutes.
+- After a password sign-in returns `Error::TwoFactorRequired`, keep the
+  challenge in memory and verify on the same client with
+  `verify_two_factor_login(&challenge, &proof)`. Proofs are
+  `TwoFactorProof::Code` or `TwoFactorProof::Passkey { assertion, challenge_id }`.
+  Use `get_two_factor_passkey_options` to obtain the ceremony options, then
+  ask your application authenticator for the assertion. `get_two_factor_status`,
+  `setup_two_factor`, `confirm_two_factor_setup`, `begin_passkey_setup`,
+  `finish_passkey_setup`, `remove_passkey`, `disable_two_factor`, and
+  `regenerate_two_factor_backup_codes` cover management.
+- Opt into `MediaEncryptionMode::Auto` for eligible Fast network projects.
+  `ProjectRequest::media_encryption(true)` requires encryption and `false` opts
+  out. Attach the input bytes for models that encrypt inputs. Auto mode uses
+  the account's advertised key; supply current and optional previous keys with
+  `client.media_encryption.set_account_keys` for manual use. The SDK declares
+  ciphertext support only while it has a key, unless
+  `declare_media_capability(false)` is configured. `get_result_data` decrypts
+  completed results. `fetch_decrypted(url, require_encrypted)` returns bytes
+  and a content type; `open_decrypted(url)` returns a reader with plaintext
+  byte ranges. Locking or changing accounts cancels reads. The stable server
+  error codes are `MEDIA_ENCRYPTION_ERROR_CODES`.
+- Queued plan projects may expose `project.pay_as_you_go()`; the same offer
+  is carried by `queueChanged`. The quote includes the price as a decimal
+  string and advisory balance coverage. Call `switch_to_premium_spark` only on
+  acceptance. The server makes repeats idempotent. `Unknown` means a switch
+  might have charged the project, including for `not_found`. Check Spark
+  history or the result if a repeat cannot resolve it.
+- `seedream-5-5-uncensored` accepts custom sizes of 921,600–4,624,220 pixels,
+  aspect ratios 1:16 through 16:1, and at most 8,595 pixels per edge. It supports
+  `seedreamBackground` (`opaque`, `transparent`, `auto`), with PNG or WebP for
+  the last two. Seedream 5.0 and 5.5 can split one ordered reference with
+  `seedreamLayerDecomposition` and optional `seedreamLayerSize`
+  (`1K`, `1.5K`, `2K`). Request one result. Only 5.5 accepts
+  `seedreamLayerMaxImages` (2–100 total) and `seedreamLayerTextRecognition`.
+  Layer results have a base at index 0, and PNG layers at z-index 1–99, with
+  bounding boxes and optional rich text. Call `job.get_layer_url(z_index)`
+  to refresh a layer's URL.
+- `relayvsr_x2_lightx2v_int8_convrot` and `relayvsr_x4_int8_convrot` upscale a
+  complete uploaded source with original timing and audio. Pick 1080p, 1440p
+  or 2160p, within the 3,840-pixel output long edge. X2 takes up to 1088×1920
+  in either orientation; X4 takes up to 768×1344. Use no prompt, seed or
+  FlashVSR-specific controls. FlashVSR still accepts 1080p and 1440p.
+  In the hosted tool, specify `model: "relayvsr"` for 2160p.
+- `minimax-h3-prism-int8_r2v` uses eight steps and the existing H3 R2V
+  reference and intermediate keyframe slots. It is chosen explicitly.
+- `Sam3VideoPrompt` supports drawn polygon masks, multiple objects and
+  frame prompts, union output and anchor memory. Quote the same prompt
+  with `estimate_video_cost`. In single-object point mode, `objectIndex`
+  must be 0. Box mode indexes the supplied boxes.
+- Image slots reject HTML pages, data URL text and base64 text before upload.
+  Attach binary media with `MediaSource::Path` or `MediaSource::Bytes`.

@@ -15,6 +15,14 @@ pub const SUBSCRIPTION_ERROR_CODES: [(&str, i64); 4] = [
     ("SUBSCRIPTION_FEATURE_REQUIRES_UPGRADE", 4081),
 ];
 
+/// Public project error codes for encrypted media. The service may refuse
+/// encryption, report no capacity, or be unable to resume the project.
+pub const MEDIA_ENCRYPTION_ERROR_CODES: [(&str, i64); 3] = [
+    ("UNSUPPORTED", 4098),
+    ("NO_WORKER_AVAILABLE", 4096),
+    ("RESUME_FAILED", 4099),
+];
+
 /// Public chat failures for which callers may submit a fresh request.
 pub const RETRYABLE_CHAT_ERROR_TYPES: &[&str] = &["server_restarting", "transport_lost"];
 
@@ -269,6 +277,10 @@ pub enum Error {
     Project(#[from] ProjectError),
     #[error(transparent)]
     Chat(Box<ChatError>),
+    #[error(transparent)]
+    TwoFactorRequired(#[from] Box<crate::TwoFactorChallenge>),
+    #[error(transparent)]
+    MediaEncryption(#[from] crate::MediaEncryptionError),
     #[error("invalid input: {0}")]
     InvalidInput(String),
     #[error("protocol error: {0}")]

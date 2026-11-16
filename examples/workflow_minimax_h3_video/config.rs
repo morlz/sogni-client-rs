@@ -179,6 +179,14 @@ pub fn validate_shape(args: &Args) -> Result<()> {
         bail!("H3 R2V limits are 9 images, 3 videos, 3 audios, and 12 files total");
     }
     let model = spec(args)?;
+    if sogni_client::is_minimax_h3_prism_model(&model.id) {
+        if !args.disable_safe_content_filter {
+            bail!("MiniMax H3 Prism R2V requires explicit --disable-safe-content-filter");
+        }
+        if args.prompt_file.is_none() {
+            bail!("Supply a custom prompt with --prompt-file for MiniMax H3 Prism R2V");
+        }
+    }
     if args.source_video.is_some()
         && (mode != Mode::T2v || !sogni_client::is_minimax_h3_extend_model(&model.id))
     {

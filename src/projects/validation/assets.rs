@@ -131,6 +131,8 @@ pub(in crate::projects) fn custom_image_size_bounds(model_id: &str) -> (f64, f64
         "krea2_identity_edit_v1_2" | "dark_beast_krea2_identity_edit_v1_2"
     ) {
         (512.0, 2_048.0)
+    } else if model_id == crate::SEEDREAM_5_5_UNCENSORED_MODEL_ID {
+        (240.0, 8_595.0)
     } else if crate::utils::is_seedream_model(model_id) {
         (240.0, 8_192.0)
     } else if is_gpt_image_model(model_id) {

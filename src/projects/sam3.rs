@@ -77,6 +77,68 @@ pub struct Sam3VideoPrompt {
     /// Zero-based candidate in confidence order (default 0).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub object_index: Option<u8>,
+    /// Draw a region on the selected frame.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mask: Option<Sam3PromptMask>,
+    /// Track multiple selections together and return their union.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub objects: Option<Vec<Sam3VideoSelection>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub combine: Option<Sam3Combine>,
+    /// Selections on different source frames for the same object.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub frames: Option<Vec<Sam3VideoFramePrompt>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub memory: Option<Sam3Memory>,
+}
+
+/// A drawn region on the input frame. Coordinates are normalized, and
+/// nested rings represent holes. The service validates it against the source.
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct Sam3PromptMask {
+    pub polygons: Vec<Vec<[f64; 2]>>,
+}
+
+/// One selection in a multiple-object or multiple-frame SAM 3 video request.
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Sam3VideoSelection {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub points: Vec<Sam3PromptPoint>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub boxes: Vec<Sam3PromptBox>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub threshold: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub multimask: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mask: Option<Sam3PromptMask>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub object_index: Option<u8>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Sam3VideoFramePrompt {
+    pub frame_index: u32,
+    #[serde(flatten)]
+    pub selection: Sam3VideoSelection,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum Sam3Combine {
+    Union,
+}
+
+/// How the tracker carries a selection between chunks.
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum Sam3Memory {
+    Chunk,
+    Anchor,
 }
 
 /// Confidence and geometry of one concept instance or click candidate.

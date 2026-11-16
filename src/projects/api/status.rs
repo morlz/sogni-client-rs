@@ -23,7 +23,9 @@ impl ProjectsApi {
         })?;
         validate(project_id, project)?;
         self.inner.submission.lock().observed(&canonical_id);
-        Ok(project.clone())
+        let mut project = project.clone();
+        crate::media_encryption::redact_media_keys(&mut project);
+        Ok(project)
     }
 }
 

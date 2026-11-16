@@ -92,9 +92,18 @@ impl AccountApi {
             body["restoreDeletedAccount"] = json!(true);
         }
         let response = session
-            .run(self.client.rest.post("/v1/account/login", &body))
+            .run(
+                self.client
+                    .rest
+                    .post_sign_in("/v1/account/login", &body, true),
+            )
             .await?;
         let payload = data(&response).clone();
+        if payload.get("requires2FA").and_then(Value::as_bool) == Some(true) {
+            return Err(Error::TwoFactorRequired(Box::new(
+                crate::TwoFactorChallenge::new(&self.client, session, address, username, &payload)?,
+            )));
+        }
         self.authenticate_response_and_hydrate(&payload, &address, &session)
             .await?;
         self.client.start().await?;

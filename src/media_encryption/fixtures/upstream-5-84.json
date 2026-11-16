@@ -1,0 +1,91 @@
+{
+  "format": "SOGNIE2E",
+  "version": 1,
+  "plaintextPattern": "byte[i] = (i * 31 + (i >>> 8) * 7 + 3) & 0xff",
+  "walletPrivateKey": "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20",
+  "projectKey": "a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebf",
+  "recipientNonce": "c0c1c2c3c4c5c6c7c8c9cacb",
+  "recipient": "01236893c73fa16eb2c0c1c2c3c4c5c6c7c8c9cacb835354a9a906bd499989a28fb57e257bd093be6f2be0408f0197f8388ff2e91bb11bba7f5302768eec3c621702acbede",
+  "salt": "d0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeef",
+  "noncePrefix": "f0f1f2f3f4f5f6",
+  "files": [
+    {
+      "name": "empty",
+      "plaintextLength": 0,
+      "contentType": "image/png",
+      "segmentSizeLog2": 20,
+      "hasRecipient": true,
+      "ciphertextLength": 146,
+      "ciphertextSha256": "a93276762bb1602a6d0957e147ccefa678df64e1a3c991f1fb370723b802d013",
+      "ciphertext": "534f474e494532450114d0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f609696d6167652f706e67004501236893c73fa16eb2c0c1c2c3c4c5c6c7c8c9cacb835354a9a906bd499989a28fb57e257bd093be6f2be0408f0197f8388ff2e91bb11bba7f5302768eec3c621702acbedeabe683095450c2e1d5cdcd1d07dd1bf8"
+    },
+    {
+      "name": "small-with-recipient",
+      "plaintextLength": 37,
+      "contentType": "image/jpeg",
+      "segmentSizeLog2": 20,
+      "hasRecipient": true,
+      "ciphertextLength": 184,
+      "ciphertextSha256": "e7aa11c87967e2a65be26c5b43da52d8968c66fea07ea57a8a7baf9c3452d68f",
+      "ciphertext": "534f474e494532450114d0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f60a696d6167652f6a706567004501236893c73fa16eb2c0c1c2c3c4c5c6c7c8c9cacb835354a9a906bd499989a28fb57e257bd093be6f2be0408f0197f8388ff2e91bb11bba7f5302768eec3c621702acbedecc3e87331cff07bae0a078ad68060ed5983c00262a7c3ab7ac925b9f05bce9fee88795c01258a53856ffce69fef895db516dc58623"
+    },
+    {
+      "name": "no-content-type-no-recipient",
+      "plaintextLength": 5,
+      "contentType": "",
+      "segmentSizeLog2": 20,
+      "hasRecipient": false,
+      "ciphertextLength": 73,
+      "ciphertextSha256": "cc29682dca071cc9b620ab95b46573a66e71d0ed5c1858061e65363328ef023b",
+      "ciphertext": "534f474e494532450114d0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f60000005a1c9c602075bda861acf1d8bbd49c94aea3ae0745"
+    },
+    {
+      "name": "three-segments",
+      "plaintextLength": 150000,
+      "contentType": "video/mp4",
+      "segmentSizeLog2": 16,
+      "hasRecipient": true,
+      "ciphertextLength": 150178,
+      "ciphertextSha256": "c4516b04deab1c863643a06c2518a4ee1a3a9ed4902bb45094a7d04b129506f5"
+    },
+    {
+      "name": "exact-two-segments",
+      "plaintextLength": 131072,
+      "contentType": "audio/mpeg",
+      "segmentSizeLog2": 16,
+      "hasRecipient": true,
+      "ciphertextLength": 131235,
+      "ciphertextSha256": "0246258d87d8cf823457ba51cdd44b34b52e49babc5b29d45d797278e03efb34"
+    }
+  ],
+  "inputWrapNonce": "b0b1b2b3b4b5b6b7b8b9babb",
+  "inputs": [
+    {
+      "name": "input-image",
+      "plaintextLength": 2500,
+      "contentType": "image/png",
+      "plaintextSha256": "4a71e02bdbf6c0a1e8112b423b6160ca3bdbc963052c45264320ded5af2d0218",
+      "inputKey": "4392e74c028d80e4654b2c0da832de7a29196968eabfb1ff1bdcb5d89c51dd61",
+      "salt": "b5155f70b491d527555b28bf1c28d2c65a964cc78ae9572e51f5f9a2e364c784",
+      "noncePrefix": "032dc4fdfee08e",
+      "recipientNonce": "35d01313412c95fc32426a46",
+      "wrappedInputKey": "b0b1b2b3b4b5b6b7b8b9babbb07074144364f49faede719fd3ac1d1e5336dbb9a354496af70668e6617e66828a58ad2e1157481425dd0bce18b3d673",
+      "ciphertextLength": 2646,
+      "ciphertextSha256": "cd089d763c38ba0af57e73a96f3d31e6f216c110dda4da92a2770a86975725e6"
+    },
+    {
+      "name": "input-two-segments",
+      "plaintextLength": 1048593,
+      "contentType": "video/mp4",
+      "plaintextSha256": "a0a256133cf4d9863169de2ba186cad944c77cfb99eefae6f33f7d2b1d9a92f3",
+      "inputKey": "f1211fe769c72e639df063ece9f63d57afd81c63cd438fa6c648c07a7fff78ee",
+      "salt": "7c56ecf556682b16417e6afb273b6fdc0aaa3f22ca6ed8a0af5fa8e74a04fe00",
+      "noncePrefix": "d6aebeee5d1555",
+      "recipientNonce": "a273e3a515bfbfe81427c709",
+      "wrappedInputKey": "b0b1b2b3b4b5b6b7b8b9babb02c38cbf282e5a1856653e7e9268fe33d5f7aeb284a877332a921d4482d0c30d1b49afafe7190f95ff303fe2a3fc7dbd",
+      "ciphertextLength": 1048755,
+      "ciphertextSha256": "4d27b507cfd66fcff6642367e94fbe80602db7ce77bcc7dc35569f8fcada5fa5"
+    }
+  ],
+  "upstreamCommit": "f0928f2fa34d62b20dd62b6fc8be266c16236f55"
+}

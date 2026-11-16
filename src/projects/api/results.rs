@@ -43,6 +43,8 @@ pub struct ProjectResultJob {
     /// Seedance 2.5 draft or final result metadata, if reported.
     #[serde(default, flatten)]
     pub seedance: SeedanceDraftReceipt,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub layers: Option<Vec<ImageLayer>>,
 }
 
 /// The server's public explanation of a failed, account-owned project.
@@ -156,6 +158,7 @@ impl ProjectsApi {
                         url_unavailable: None,
                         seed: raw.get("seedUsed").and_then(Value::as_u64),
                         seedance: SeedanceDraftReceipt::from_record(raw),
+                        layers: image_layers::from_result(raw),
                     };
                     if status == "completed" {
                         if withheld(raw) {

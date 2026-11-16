@@ -59,6 +59,9 @@ pub struct JobSnapshot {
     /// Seedance 2.5 draft or final result metadata, if reported.
     #[serde(default, flatten)]
     pub seedance: SeedanceDraftReceipt,
+    /// Ordered transparent PNG layers above the Seedream base image.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub layers: Option<Vec<ImageLayer>>,
     /// Public worker receipt, when this result includes one.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub provenance: Option<JobProvenance>,
@@ -97,6 +100,7 @@ impl JobSnapshot {
             last_frame_key: None,
             output_format: None,
             seedance: SeedanceDraftReceipt::default(),
+            layers: None,
             provenance: None,
             error: None,
             is_nsfw: false,
@@ -130,6 +134,8 @@ pub struct ProjectSnapshot {
     pub waiting_reason: Option<WaitingReason>,
     #[serde(default)]
     pub job_waiting_reasons: Vec<JobWaitingReason>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pay_as_you_go: Option<PayAsYouGoOffer>,
     pub jobs: Vec<JobSnapshot>,
     pub progress: u8,
     pub result_urls: Vec<String>,

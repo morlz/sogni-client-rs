@@ -1,6 +1,6 @@
 {
-  "version": "5.79.0",
-  "commit": "c397d41c04d5219f7a640662f621d629b82a69a6",
+  "version": "5.84.2",
+  "commit": "f0928f2fa34d62b20dd62b6fc8be266c16236f55",
   "models": [
     {
       "id": "gpt-image-2",
@@ -29,6 +29,11 @@
     },
     {
       "id": "seedream-5-0-pro-uncensored",
+      "media": "image",
+      "workerCount": 1
+    },
+    {
+      "id": "seedream-5-5-uncensored",
       "media": "image",
       "workerCount": 1
     },

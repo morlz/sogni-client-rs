@@ -10,6 +10,35 @@ fn row(index: u64) -> Value {
 fn queue() -> Value {
     json!({"waitingReason":reason(),"jobWaitingReasons":[row(0),row(1)]})
 }
+
+#[tokio::test]
+async fn a_started_result_clears_the_offer_and_stale_recovery_cannot_restore_it() {
+    let client = SogniClient::builder()
+        .disable_socket(true)
+        .build()
+        .await
+        .unwrap();
+    let project = tracked(&client);
+    let mut events = client.projects.subscribe();
+    let mut queued = queue();
+    queued["payAsYouGo"] =
+        json!({"available":true,"costInSpark":"1.125","coveredByPremiumSpark":true});
+    project.receive_queue(&queued);
+    assert_eq!(
+        events.try_recv().unwrap().data["payAsYouGo"],
+        queued["payAsYouGo"]
+    );
+    let old_revision = project.queue_revision();
+    state::handle_job_state(
+        &client.projects.inner,
+        &json!({"jobID":"PROJECT","imgID":"RUNNING","jobIndex":1,"type":"jobStarted"}),
+    );
+    assert!(project.pay_as_you_go().is_none());
+    assert!(!project.apply_queue_snapshot(&queued, old_revision));
+    assert!(project.pay_as_you_go().is_none());
+    assert_eq!(project.job_waiting_reasons().len(), 1);
+    client.close().await.unwrap();
+}
 fn tracked(client: &SogniClient) -> Project {
     let project = Project::new(
         "PROJECT".into(),
