@@ -42,9 +42,29 @@ impl MediaSource {
     }
 
     pub(super) async fn read(&self) -> Result<LoadedMedia> {
+        self.read_with_resources(None).await
+    }
+
+    pub(super) async fn read_with_resources(
+        &self,
+        resources: Option<AssetResources>,
+    ) -> Result<LoadedMedia> {
         match self {
             Self::Path(path) => {
-                let data = Bytes::from(tokio::fs::read(path).await?);
+                let data = if let Some(resources) = resources {
+                    // A dropped future cannot stop the filesystem read. Move the
+                    // guard into the blocking task, then into the returned bytes.
+                    let read_path = path.clone();
+                    tokio::task::spawn_blocking(move || {
+                        let data = Bytes::from(std::fs::read(read_path)?);
+
+                        Ok::<_, std::io::Error>(retain_media(data, Some(resources)))
+                    })
+                    .await
+                    .map_err(|_| Error::Protocol("media file read failed".into()))??
+                } else {
+                    Bytes::from(tokio::fs::read(path).await?)
+                };
                 let content_type = detect_content_type(Some(path), &data);
                 let file_name = path
                     .file_name()
@@ -62,7 +82,7 @@ impl MediaSource {
                 file_name,
                 content_type,
             } => Ok(LoadedMedia {
-                data: data.clone(),
+                data: retain_media(data.clone(), resources),
                 file_name: file_name.clone().unwrap_or_else(|| "upload.bin".into()),
                 content_type: content_type
                     .clone()
@@ -71,8 +91,12 @@ impl MediaSource {
         }
     }
 
-    pub(super) async fn read_for_role(&self, role: &AssetRole) -> Result<LoadedMedia> {
-        let mut media = self.read().await?;
+    pub(super) async fn read_for_role(
+        &self,
+        role: &AssetRole,
+        resources: Option<AssetResources>,
+    ) -> Result<LoadedMedia> {
+        let mut media = self.read_with_resources(resources).await?;
         if !role.is_media() {
             super::validation::check_image_upload(&media.data, &role.wire_name())?;
         }
@@ -192,6 +216,40 @@ pub struct ProjectRequest {
     pub(super) params: Map<String, Value>,
     pub(super) assets: Vec<(AssetRole, MediaSource)>,
     pub(super) attribution: Option<WorkloadAttribution>,
+    pub(super) asset_resources: Option<AssetResources>,
+}
+
+/// Host-side admission state shared by the request, reads and HTTP buffers.
+#[derive(Clone)]
+pub(super) struct AssetResources {
+    _guard: Arc<dyn Send + Sync>,
+}
+
+impl std::fmt::Debug for AssetResources {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("AssetResources([redacted])")
+    }
+}
+
+struct RetainedMedia {
+    data: Bytes,
+    _resources: AssetResources,
+}
+
+impl AsRef<[u8]> for RetainedMedia {
+    fn as_ref(&self) -> &[u8] {
+        &self.data
+    }
+}
+
+pub(super) fn retain_media(data: Bytes, resources: Option<AssetResources>) -> Bytes {
+    match resources {
+        Some(resources) => Bytes::from_owner(RetainedMedia {
+            data,
+            _resources: resources,
+        }),
+        None => data,
+    }
 }
 
 pub(super) struct LoadedMedia {
@@ -199,3 +257,7 @@ pub(super) struct LoadedMedia {
     pub(super) file_name: String,
     pub(super) content_type: Option<String>,
 }
+
+#[cfg(test)]
+#[path = "request/resource_tests.rs"]
+mod resource_tests;

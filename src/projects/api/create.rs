@@ -1,4 +1,11 @@
 use super::*;
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum SubmissionMode {
+    SdkManaged,
+    CallerManaged,
+}
+
 impl ProjectsApi {
     /// Create and submit an image, video, or audio generation project.
     pub async fn create(&self, request: ProjectRequest) -> Result<Project> {
@@ -25,7 +32,30 @@ impl ProjectsApi {
     pub async fn create_with_id_detailed(
         &self,
         project_id: &str,
+        request: ProjectRequest,
+    ) -> std::result::Result<Project, ProjectSubmissionError> {
+        self.submit_with_id(project_id, request, SubmissionMode::SdkManaged)
+            .await
+    }
+
+    /// Upload inputs to project-scoped slots and send one generation request.
+    ///
+    /// The caller owns retry and reconciliation policy. This submission skips
+    /// saved uploads and is ineligible for SDK resubmission during recovery.
+    pub async fn create_once_with_id_detailed(
+        &self,
+        project_id: &str,
+        request: ProjectRequest,
+    ) -> std::result::Result<Project, ProjectSubmissionError> {
+        self.submit_with_id(project_id, request, SubmissionMode::CallerManaged)
+            .await
+    }
+
+    async fn submit_with_id(
+        &self,
+        project_id: &str,
         mut request: ProjectRequest,
+        mode: SubmissionMode,
     ) -> std::result::Result<Project, ProjectSubmissionError> {
         self.clear_previous_sessions();
         let session = self.inner.client.rest.request_session();
@@ -46,12 +76,9 @@ impl ProjectsApi {
                 let upload = self.process_assets(
                     &session,
                     &project_id,
-                    &request.assets,
+                    &request,
                     &mut wire,
-                    matches!(
-                        request.params.get("type").and_then(Value::as_str),
-                        Some("video" | "audio")
-                    ),
+                    mode == SubmissionMode::SdkManaged,
                     encryption.as_mut(),
                 );
                 match access {
@@ -61,6 +88,7 @@ impl ProjectsApi {
             })
             .await
             .map_err(|cause| ProjectSubmissionError::new(SubmissionPhase::AssetUpload, cause))?;
+        drop(request.asset_resources.take());
         if let Some(encryption) = encryption {
             encryption
                 .finish(&mut wire)
@@ -91,11 +119,13 @@ impl ProjectsApi {
             }
             projects.insert(project_id.clone(), project.clone());
         }
-        self.inner
-            .submission
-            .lock()
-            .unadmitted
-            .insert(project_id.clone(), wire.clone());
+        if mode == SubmissionMode::SdkManaged {
+            self.inner
+                .submission
+                .lock()
+                .unadmitted
+                .insert(project_id.clone(), wire.clone());
+        }
         match session
             .run(self.inner.client.send_socket_tracked_in_session(
                 "jobRequest",

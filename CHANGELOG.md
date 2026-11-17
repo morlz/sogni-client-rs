@@ -8,6 +8,11 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.84.3] - 2026-11-17
+
+- Add caller-managed project submission for integrations that reconcile their own reserved project IDs. It uses project-scoped uploads and leaves generation retries to the caller.
+- Let callers retain resource guards through blocking asset reads and HTTP buffer clones, including cancellation.
+
 ## [5.84.2] - 2026-11-16
 
 - Port the TypeScript 5.84.2 public contract through `f0928f2fa34d62b20dd62b6fc8be266c16236f55`, including the hosted tool schemas from Sogni Protocol `1.0.0-alpha.63` and reference GIF editing. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` on `main` (source `5.50.3-alpha.1`).

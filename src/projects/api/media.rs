@@ -1,4 +1,5 @@
 use super::*;
+use crate::projects::request::retain_media;
 
 #[cfg(test)]
 #[path = "media/live_probe.rs"]
@@ -23,7 +24,9 @@ impl ProjectsApi {
                     .map_err(|_| Error::InvalidInput("image id must be a UUID".into()))?
                     .to_string()
                     .to_uppercase();
-                let media = source.read_for_role(&AssetRole::StartingImage).await?;
+                let media = source
+                    .read_for_role(&AssetRole::StartingImage, None)
+                    .await?;
                 let query = json!({
                     "imageId": image_id, "jobId": project_id, "type": "startingImage",
                     "contentType": media.content_type,
@@ -140,9 +143,9 @@ impl ProjectsApi {
         &self,
         session: &crate::auth::RequestSession,
         project_id: &str,
-        assets: &[(AssetRole, MediaSource)],
+        submission: &ProjectRequest,
         request: &mut Value,
-        annotate_video: bool,
+        try_saved_uploads: bool,
         mut encryption: Option<&mut crate::media_encryption::ProjectEncryption>,
     ) -> Result<()> {
         let model_id = request
@@ -150,8 +153,12 @@ impl ProjectsApi {
             .and_then(Value::as_str)
             .unwrap_or_default()
             .to_owned();
+        let annotate_video = matches!(
+            submission.params.get("type").and_then(Value::as_str),
+            Some("video" | "audio")
+        );
         let mut seen = std::collections::HashSet::new();
-        for (role, source) in assets {
+        for (role, source) in &submission.assets {
             session.check()?;
             match role {
                 AssetRole::ContextImage(slot) if !(1..=16).contains(slot) => {
@@ -177,9 +184,11 @@ impl ProjectsApi {
                     "duplicate project asset role {wire_role}"
                 )));
             }
-            let mut media = source.read_for_role(role).await?;
+            let resources = submission.asset_resources.clone();
+            let mut media = source.read_for_role(role, resources.clone()).await?;
             if let Some(encryption) = encryption.as_deref_mut() {
-                media.data = encryption.seal_input(media.data, media.content_type.as_deref())?;
+                let sealed = encryption.seal_input(media.data, media.content_type.as_deref())?;
+                media.data = retain_media(sealed, resources);
             }
             session.check()?;
             let (resource_type, resource_id) = if role.is_media() {
@@ -212,20 +221,21 @@ impl ProjectsApi {
                     "contentType": media.content_type,
                 })
             };
-            let reused = self
-                .inner
-                .assets
-                .try_bind(
-                    media.data.clone(),
-                    media.content_type.as_deref(),
-                    &media.file_name,
-                    &SavedUploadBinding {
-                        project_id: project_id.to_owned(),
-                        asset_type: resource_type.to_owned(),
-                        id: resource_id.map(str::to_owned),
-                    },
-                )
-                .await?;
+            let reused = try_saved_uploads
+                && self
+                    .inner
+                    .assets
+                    .try_bind(
+                        media.data.clone(),
+                        media.content_type.as_deref(),
+                        &media.file_name,
+                        &SavedUploadBinding {
+                            project_id: project_id.to_owned(),
+                            asset_type: resource_type.to_owned(),
+                            id: resource_id.map(str::to_owned),
+                        },
+                    )
+                    .await?;
             session.check()?;
             if let Some(encryption) = encryption.as_deref() {
                 encryption.check()?;
@@ -454,13 +464,14 @@ mod tests {
                 "ltx23-22b-fp8_i2v"
             };
             let mut request = json!({"keyFrames":[{"modelID":model}]});
+            let submission = ProjectRequest::video(model, "fixture").asset(role.clone(), source);
             let session = client.projects.inner.client.rest.request_session();
             tokio::time::timeout(
                 WATCHDOG,
                 client.projects.process_assets(
                     &session,
                     "MIME-FIXTURE",
-                    &[(role.clone(), source)],
+                    &submission,
                     &mut request,
                     true,
                     None,

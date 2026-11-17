@@ -1,6 +1,6 @@
 [package]
 name = "sogni-client-by-morlz"
-version = "5.84.2"
+version = "5.84.3"
 edition = "2024"
 rust-version = "1.88"
 description = "Production-ready async Rust SDK for the Sogni Supernet"

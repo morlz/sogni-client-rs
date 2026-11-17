@@ -264,6 +264,12 @@ without exposing private URLs in default error formatting. `Prepare` and
 have transmitted it. This says nothing about previous calls using the same ID.
 Inspect typed cause/status/timeout fields instead of logging raw error text.
 
+Use `projects.create_once_with_id_detailed(id, request)` when your backend owns
+retry and reconciliation. It uses project-scoped uploads and makes the request
+ineligible for SDK resubmission. To keep a memory or I/O permit alive while an
+asset read or HTTP upload still holds its bytes, attach the permit with
+`request.retain_asset_resources(permit)` for that submission.
+
 Recovery uses owner-scoped v2 project status: pending/queued/processing remain
 active, and compact failed/canceled records terminate even when jobs are absent.
 `get_status` exposes that response directly, while `get` retains its legacy v1

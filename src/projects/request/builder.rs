@@ -177,6 +177,7 @@ impl ProjectRequest {
             params,
             assets: Vec::new(),
             attribution: None,
+            asset_resources: None,
         }
     }
 
@@ -189,6 +190,7 @@ impl ProjectRequest {
             params,
             assets: Vec::new(),
             attribution: None,
+            asset_resources: None,
         })
     }
 
@@ -304,6 +306,19 @@ impl ProjectRequest {
     #[must_use]
     pub fn attribution(mut self, value: WorkloadAttribution) -> Self {
         self.attribution = Some(value);
+        self
+    }
+
+    /// Hold caller-owned resources until asset reads and HTTP buffer clones settle.
+    ///
+    /// Attach the guard to a single submission. Cloned requests share the guard,
+    /// which stays local and is never serialized.
+    #[must_use]
+    pub fn retain_asset_resources(mut self, resources: impl Send + Sync + 'static) -> Self {
+        self.asset_resources = Some(AssetResources {
+            _guard: Arc::new(resources),
+        });
+
         self
     }
 

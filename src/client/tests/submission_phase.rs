@@ -172,3 +172,56 @@ async fn explicit_unadmitted_restart_refusal_resubmits_the_identical_request_onc
     assert_eq!(refusals, 1);
     client.close().await.unwrap();
 }
+
+#[tokio::test]
+async fn caller_managed_submission_uploads_directly_and_leaves_restart_refusal_to_the_caller() {
+    let mut fixture = Fixture::with_restart_count(1).await;
+    let client = SogniClient::builder()
+        .app_id("caller-managed-fixture")
+        .api_key(KEY)
+        .rest_endpoint(Url::parse(&format!("http://{}/", fixture.address)).unwrap())
+        .socket_endpoint(Url::parse(&format!("ws://{}/", fixture.address)).unwrap())
+        .defer_socket_start(true)
+        .request_timeout(Duration::from_secs(2))
+        .connect_timeout(Duration::from_secs(5))
+        .build()
+        .await
+        .unwrap();
+    let project = client
+        .projects
+        .create_once_with_id_detailed(
+            "00000000-0000-4000-8000-000000000004",
+            ProjectRequest::image("pixal3d_int8_i23d", "").asset(
+                AssetRole::StartingImage,
+                MediaSource::named_bytes(b"fixture".as_slice(), "source.png", "image/png"),
+            ),
+        )
+        .await
+        .unwrap();
+
+    let wire = tokio::time::timeout(Duration::from_secs(5), fixture.wire.recv())
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(wire["jobID"], project.id());
+    let error = project
+        .wait_for_completion(Some(Duration::from_secs(5)))
+        .await
+        .unwrap_err();
+    assert!(!matches!(error, Error::Timeout(_)), "{error}");
+    assert!(fixture.wire.try_recv().is_err());
+    {
+        let requests = fixture.http.lock();
+        assert!(
+            requests
+                .iter()
+                .any(|request| request.path == "/fixture-upload")
+        );
+        assert!(
+            !requests
+                .iter()
+                .any(|request| request.path.starts_with("/v1/assets"))
+        );
+    }
+    client.close().await.unwrap();
+}
