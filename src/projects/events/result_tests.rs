@@ -28,16 +28,16 @@ async fn recovered_seedance_receipt_survives_later_sparse_or_malformed_records()
         &project,
         &record(json!({
             "result":{"seedanceDraft":true,"seedanceDraftExpiresAt":"nested","private":"omit"},
-            "seedanceDraftExpiresAt":expires,
+            "seedanceDraftExpiresAt":expires,"seedanceDraftFinalResolution":"4k",
         })),
         true,
     );
-    let expected = json!({"seedanceDraft":true,"seedanceDraftExpiresAt":expires});
+    let expected = json!({"seedanceDraft":true,"seedanceDraftExpiresAt":expires,"seedanceDraftFinalResolution":"4k"});
     let job = project.job("JOB").unwrap();
     assert_eq!(json!(job.seedance_draft_receipt()), expected);
     for fields in [
         json!({}),
-        json!({"seedanceDraft":false,"seedanceDraftExpiresAt":0,"seedanceDraftJobId":""}),
+        json!({"seedanceDraft":false,"seedanceDraftExpiresAt":0,"seedanceDraftJobId":"","seedanceDraftFinalResolution":"720p"}),
     ] {
         replay_recovered(&project, &record(fields), true);
         assert_eq!(json!(job.seedance_draft_receipt()), expected);

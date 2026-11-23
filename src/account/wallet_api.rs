@@ -123,27 +123,33 @@ impl AccountApi {
 
     #[cfg(feature = "wallet")]
     pub async fn withdraw(&self, password: &str, amount: &str, provider: &str) -> Result<()> {
-        let wallet = self.current_wallet(password)?;
-        let address = format!("{:#x}", wallet.address());
-        let payload = json!({
-            "walletAddress": address,
-            "amount": amount_to_wei(amount)?,
-            "provider": provider,
-        });
-        let response = self
-            .client
-            .rest
-            .post("/v1/account/token/withdraw/permit", &payload)
-            .await?;
-        let permit = data(&response);
-        let signature = sign_dynamic(&wallet, permit).await?;
-        let mut body = payload;
-        body["signature"] = json!(signature);
-        self.client
-            .rest
-            .post("/v2/account/token/withdraw", &body)
-            .await?;
-        Ok(())
+        let session = self.client.rest.request_session();
+        session
+            .run(async {
+                let wallet = self.current_wallet(password)?;
+                let address = format!("{:#x}", wallet.address());
+                let payload = json!({
+                    "walletAddress": address,
+                    "amount": amount_to_wei(amount)?,
+                    "provider": provider,
+                });
+                let response = self
+                    .client
+                    .rest
+                    .post("/v1/account/token/withdraw/permit", &payload)
+                    .await?;
+                let permit = data(&response);
+                super::permits::withdraw(permit, &payload, self.testnet)?;
+                let signature = sign_dynamic(&wallet, permit).await?;
+                let mut body = payload;
+                body["signature"] = json!(signature);
+                self.client
+                    .rest
+                    .post("/v2/account/token/withdraw", &body)
+                    .await?;
+                Ok(())
+            })
+            .await
     }
 
     #[cfg(feature = "wallet")]
@@ -190,14 +196,17 @@ impl AccountApi {
         spender: &str,
         provider: &str,
     ) -> Result<()> {
-        if !matches!(spender, "account" | "staker") {
-            return Err(Error::InvalidInput(
-                "spender must be 'account' or 'staker'".into(),
-            ));
-        }
-        let wallet = self.current_wallet(password)?;
-        let address = format!("{:#x}", wallet.address());
-        let response = self
+        let session = self.client.rest.request_session();
+        session
+            .run(async {
+                if !matches!(spender, "account" | "staker") {
+                    return Err(Error::InvalidInput(
+                        "spender must be 'account' or 'staker'".into(),
+                    ));
+                }
+                let wallet = self.current_wallet(password)?;
+                let address = format!("{:#x}", wallet.address());
+                let response = self
             .client
             .rest
             .post(
@@ -205,26 +214,35 @@ impl AccountApi {
                 &json!({"walletAddress": address, "spender": spender, "provider": provider}),
             )
             .await?;
-        let permit = data(&response);
-        let signature = sign_dynamic(&wallet, permit).await?;
-        let deadline = permit
-            .get("message")
-            .and_then(|message| message.get("deadline"))
-            .cloned()
-            .ok_or_else(|| Error::Protocol("approval permit has no message.deadline".into()))?;
-        self.client
-            .rest
-            .post(
-                "/v1/contract/token/approve",
-                &json!({
-                    "walletAddress": address,
-                    "spender": spender,
-                    "provider": provider,
-                    "deadline": deadline,
-                    "approveSignature": signature,
-                }),
-            )
-            .await?;
-        Ok(())
+                let permit = data(&response);
+                let now = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs();
+                super::permits::approve(permit, &address, provider, self.testnet, now)?;
+                let signature = sign_dynamic(&wallet, permit).await?;
+                let deadline = permit
+                    .get("message")
+                    .and_then(|message| message.get("deadline"))
+                    .cloned()
+                    .ok_or_else(|| {
+                        Error::Protocol("approval permit has no message.deadline".into())
+                    })?;
+                self.client
+                    .rest
+                    .post(
+                        "/v1/contract/token/approve",
+                        &json!({
+                            "walletAddress": address,
+                            "spender": spender,
+                            "provider": provider,
+                            "deadline": deadline,
+                            "approveSignature": signature,
+                        }),
+                    )
+                    .await?;
+                Ok(())
+            })
+            .await
     }
 }

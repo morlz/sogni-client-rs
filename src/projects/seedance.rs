@@ -1,12 +1,13 @@
 use super::*;
 
 pub(super) const FINALIZE_PROMPT: &str = "Finalize the Seedance 2.5 draft at 1080p.";
+pub(super) const FINALIZE_4K_PROMPT: &str = "Finalize the Seedance 2.5 draft at 4K.";
 
 #[derive(Clone, Copy)]
 pub(super) enum SeedanceDraftMode<'a> {
     Standard,
     Draft,
-    Finalize(&'a str),
+    Finalize(&'a str, Option<&'a str>),
 }
 
 impl<'a> SeedanceDraftMode<'a> {
@@ -34,6 +35,24 @@ impl<'a> SeedanceDraftMode<'a> {
                     })
             })
             .transpose()?;
+        let resolution = params
+            .get("seedanceDraftFinalResolution")
+            .map(|value| {
+                value
+                    .as_str()
+                    .filter(|value| matches!(*value, "1080p" | "4k"))
+                    .ok_or_else(|| {
+                        Error::InvalidInput(
+                            "seedanceDraftFinalResolution must be 1080p or 4k.".into(),
+                        )
+                    })
+            })
+            .transpose()?;
+        if resolution.is_some() && draft_id.is_none() {
+            return Err(Error::InvalidInput(
+                "seedanceDraftFinalResolution requires seedanceDraftJobId.".into(),
+            ));
+        }
         if (draft || draft_id.is_some()) && !is_seedance25_model(model) {
             return Err(Error::InvalidInput(
                 "Seedance draft mode is supported only by Seedance 2.5.".into(),
@@ -45,13 +64,13 @@ impl<'a> SeedanceDraftMode<'a> {
                     .into(),
             )),
             (true, None) => Ok(Self::Draft),
-            (false, Some(id)) => Ok(Self::Finalize(id)),
+            (false, Some(id)) => Ok(Self::Finalize(id, resolution)),
             (false, None) => Ok(Self::Standard),
         }
     }
 
     pub(super) fn validate_finalization(self, params: &Map<String, Value>) -> Result<()> {
-        if !matches!(self, Self::Finalize(_)) {
+        if !matches!(self, Self::Finalize(..)) {
             return Ok(());
         }
         let mut inherited = Vec::new();
@@ -121,6 +140,9 @@ pub struct SeedanceDraftReceipt {
     /// Source draft job ID reported by a completed final.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seedance_draft_job_id: Option<String>,
+    /// Explicit final output resolution reported by the service; absent values stay absent.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub seedance_draft_final_resolution: Option<String>,
 }
 
 impl SeedanceDraftReceipt {
@@ -132,6 +154,13 @@ impl SeedanceDraftReceipt {
 
     pub(super) fn update_from(&mut self, record: &Value) {
         for source in [record.get("result"), Some(record)].into_iter().flatten() {
+            if let Some(value) = source
+                .get("seedanceDraftFinalResolution")
+                .and_then(Value::as_str)
+                .filter(|value| matches!(*value, "1080p" | "4k"))
+            {
+                self.seedance_draft_final_resolution = Some(value.to_owned());
+            }
             if source.get("seedanceDraft").and_then(Value::as_bool) == Some(true) {
                 self.seedance_draft = Some(true);
             }

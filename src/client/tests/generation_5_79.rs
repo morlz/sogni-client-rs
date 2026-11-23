@@ -142,18 +142,34 @@ async fn seedance_draft_and_final_share_result_metadata_with_durable_lookup() {
         .create(
             ProjectRequest::video("seedance-2-5", "")
                 .seedance_draft_job_id(job.id())
+                .seedance_draft_final_resolution("4k")
                 .return_last_frame(true),
         )
         .await
         .unwrap();
     let final_wire = wire(&mut fixture).await;
     assert_eq!(final_wire["keyFrames"][0]["seedanceDraftJobId"], job.id());
+    assert_eq!(
+        final_wire["keyFrames"][0]["seedanceDraftFinalResolution"],
+        "4k"
+    );
+    assert_eq!(
+        final_wire["keyFrames"][0]["positivePrompt"],
+        "Finalize the Seedance 2.5 draft at 4K."
+    );
     assert!(final_wire["keyFrames"][0].get("frames").is_none());
     final_project
         .wait_for_completion(Some(Duration::from_secs(3)))
         .await
         .unwrap();
     let final_job = final_project.jobs().pop().unwrap();
+    assert_eq!(
+        final_job
+            .seedance_draft_receipt()
+            .seedance_draft_final_resolution
+            .as_deref(),
+        Some("4k")
+    );
     assert_eq!(
         final_job.seedance_draft_receipt().seedance_draft_job_id,
         Some(job.id())
@@ -176,7 +192,7 @@ async fn seedance_draft_and_final_share_result_metadata_with_durable_lookup() {
         "id": final_project.id(), "status":"completed","finished":true,
         "model":{"id":"seedance-2-5","type":"video"}, "completedWorkerJobs":[{
             "imgID": final_job.id(), "status":"jobCompleted", "resultUrl":"https://example.test/result.mp4",
-            "result":{"seedanceDraftJobId":job.id(),"privateReceiptField":"omit"},
+            "result":{"seedanceDraftJobId":job.id(),"seedanceDraftFinalResolution":"4k","privateReceiptField":"omit"},
         }],
     }));
     let result = client
@@ -189,6 +205,7 @@ async fn seedance_draft_and_final_share_result_metadata_with_durable_lookup() {
         Some(job.id())
     );
     let public = json!(&result.jobs[0]);
+    assert_eq!(public["seedanceDraftFinalResolution"], "4k");
     assert!(public.get("seedanceDraft").is_none());
     assert!(public.get("privateReceiptField").is_none());
     client.close().await.unwrap();
@@ -226,6 +243,14 @@ async fn generation_quotes_forward_priority_monthly_gif_and_draft_options() {
     video["seedanceDraft"] = json!(false);
     video["seedanceDraftJobId"] = json!("draft&id");
     client.projects.estimate_video_cost(&video).await.unwrap();
+    video["seedanceDraftFinalResolution"] = json!("4k");
+    client.projects.estimate_video_cost(&video).await.unwrap();
+    video["seedanceDraftFinalResolution"] = json!("720p");
+    assert!(client.projects.estimate_video_cost(&video).await.is_err());
+    video
+        .as_object_mut()
+        .unwrap()
+        .remove("seedanceDraftFinalResolution");
     video["seedanceDraft"] = json!(true);
     assert!(client.projects.estimate_video_cost(&video).await.is_err());
     assert_eq!(client.projects.estimate_audio_cost(&json!({
@@ -247,10 +272,12 @@ async fn generation_quotes_forward_priority_monthly_gif_and_draft_options() {
         .iter()
         .filter(|request| request.path.contains("/job-video/estimate/"))
         .collect();
-    assert_eq!(videos.len(), 2);
+    assert_eq!(videos.len(), 3);
     assert_eq!(videos[0].path, videos[1].path);
     assert_eq!(videos[0].query["seedanceDraft"], "1");
     assert!(!videos[1].query.contains_key("seedanceDraft"));
     assert_eq!(videos[1].query["seedanceDraftJobId"], "draft&id");
+    assert!(!videos[1].query.contains_key("seedanceDraftFinalResolution"));
+    assert_eq!(videos[2].query["seedanceDraftFinalResolution"], "4k");
     client.close().await.unwrap();
 }

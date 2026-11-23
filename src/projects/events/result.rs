@@ -100,6 +100,7 @@ pub(super) async fn handle_job_result(inner: &Arc<ProjectsInner>, data: &Value) 
             "seedanceDraft",
             "seedanceDraftExpiresAt",
             "seedanceDraftJobId",
+            "seedanceDraftFinalResolution",
             "layers",
         ],
     );
@@ -171,6 +172,13 @@ fn write_seedance_receipt(event: &mut Value, receipt: &SeedanceDraftReceipt) {
         return;
     };
     for (field, value) in [
+        (
+            "seedanceDraftFinalResolution",
+            receipt
+                .seedance_draft_final_resolution
+                .as_ref()
+                .map(|value| json!(value)),
+        ),
         (
             "seedanceDraft",
             receipt.seedance_draft.map(|value| json!(value)),

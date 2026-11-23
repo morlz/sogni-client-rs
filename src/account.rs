@@ -1,6 +1,8 @@
 mod authentication;
 mod current;
 mod listeners;
+#[cfg(feature = "wallet")]
+mod permits;
 mod projection;
 mod subscriptions;
 mod two_factor;

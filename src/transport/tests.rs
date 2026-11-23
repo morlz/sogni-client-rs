@@ -2,6 +2,7 @@ use std::time::Duration;
 
 mod media_timeout;
 mod receive_order;
+mod redirects;
 mod request_session;
 mod socket_abort;
 mod socket_readiness;

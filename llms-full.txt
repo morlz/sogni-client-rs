@@ -1,12 +1,12 @@
 # sogni-client-by-morlz Rust SDK complete agent reference
 
-Crate version: 5.84.2. Compatible with TypeScript 5.84.2 at upstream commit
-f0928f2fa34d62b20dd62b6fc8be266c16236f55 with hosted protocol 1.0.0-alpha.63.
+Crate version: 5.86.2. Compatible with TypeScript 5.86.2 at upstream commit
+e830ed42e6b6973e659aa98c226b05f864e6ea97 with hosted protocol 1.0.0-alpha.64.
 Repository: https://github.com/morlz/sogni-client-rs. Crate path: `sogni_client`.
 Async runtime: Tokio. Minimum Rust version: 1.88. All public network methods return
 `sogni_client::Result<T>`.
 
-Dependency: `sogni-client-by-morlz = "5.84.2"`. Disable default features for clients
+Dependency: `sogni-client-by-morlz = "5.86.2"`. Disable default features for clients
 that do not need wallet signing. Development Git dependency: repository above,
 branch dev. Release tags use v<crate-version>.
 Rust-fork provenance: https://github.com/Sogni-AI/sogni-client-rs, branch main,
@@ -659,7 +659,7 @@ public/private catalogs for one call. get_lora routes personal- IDs privately.
 MiniMax H3 Ref2VA two-stage IDs: minimax-h3-ref2va-fp8_r2v_2stage (20 steps)
 and minimax-h3-ref2va-fp8_r2v_balanced_2stage (8 steps). Same references, LoRAs,
 24 FPS and guidance 1 as their one-stage counterparts; output doubles the canvas.
-Seedance 2.5 accepts 480p/720p/1080p and defaults to 1080p. Use
+Seedance 2.5 accepts 480p/720p/1080p/4K and defaults to 1080p. Use
 `.seedance_draft(true)` at 480p and read `job.seedance_draft_receipt()` after
 completion. Finalize a draft before its expiry with
 `.seedance_draft_job_id(job.id())` on the same model and account. Use an empty
@@ -792,3 +792,27 @@ timeout as server cancellation.
   must be 0. Box mode indexes the supplied boxes.
 - Image slots reject HTML pages, data URL text and base64 text before upload.
   Attach binary media with `MediaSource::Path` or `MediaSource::Bytes`.
+
+## Source contract additions in 5.86.2
+
+Seedance 2.5 supports explicitly requested 4K, including draft finalization.
+Use .seedance_draft_job_id(id).seedance_draft_final_resolution("4k"). Omission
+retains the 1080p default and does not send a resolution field. Quotes accept
+seedanceDraftFinalResolution (1080p or 4k) only with seedanceDraftJobId.
+Live, recovered, and durable result receipts preserve valid server-reported
+seedanceDraftFinalResolution. Seedance canvases such as 992x432 reach the
+service, which validates their output class and aspect ratio.
+
+minimax-h3-prism-int8_r2v_2stage is an explicitly selected two-stage Prism
+workflow. It retains the eight-step recipe, references, keyframes and caller's
+content-filter setting. It delivers twice the canvas dimensions.
+
+LTX pose video control needs referenceImage for appearance and referenceVideo
+for motion. The CLI requires both, without requiring an image for canny/depth.
+
+Withdrawal and approval requests validate the returned public signing contract
+before signing. Unexpected permits return API status 400 with the stable message
+"Unexpected signing request; nothing was signed". Approved deadlines retain their
+original JSON representation. An account change cancels the whole operation.
+Authenticated REST, refresh and SSE retain Rust's stricter no-redirect policy;
+media downloads use their existing credential-free client.

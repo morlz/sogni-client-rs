@@ -1,6 +1,6 @@
 {
-  "version": "5.84.2",
-  "commit": "f0928f2fa34d62b20dd62b6fc8be266c16236f55",
+  "version": "5.86.2",
+  "commit": "e830ed42e6b6973e659aa98c226b05f864e6ea97",
   "selectors": [
     {
       "tool": "generate_image",
@@ -5393,7 +5393,7 @@
     },
     {
       "name": "generate_video",
-      "sha256": "f27c74bc5df918f3639af68fdc58f583f2fbb52170a19136c677aaf1c8478a3c"
+      "sha256": "2e0ceeac5d277e47ed9adafb8b63f052cb2accb7e38c5eff79df91d39f222bcb"
     },
     {
       "name": "generate_music",
@@ -5437,7 +5437,7 @@
     },
     {
       "name": "video_to_video",
-      "sha256": "a7dac87700a6388399735bf032a109dcd1a835a2c1f4fb4050df8d16113e2906"
+      "sha256": "ef6c37f83164f52e7d050dcbe93421c3df70b6acbd3642ecf4eeae3211f4391a"
     },
     {
       "name": "stitch_video",
@@ -5453,7 +5453,7 @@
     },
     {
       "name": "sound_to_video",
-      "sha256": "cb27661e2cb4cc26db458e9a39c2d12bdfa1c27a7b5913a40e99258ca2cedb69"
+      "sha256": "63438bfdf0588cf7ee46dc9f41082bc8ba50350bf4bc2cfe5cb1a5ac5d9bb14d"
     },
     {
       "name": "extend_video",

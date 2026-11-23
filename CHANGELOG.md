@@ -8,6 +8,15 @@ wire contract is compatible.
 
 ## Unreleased
 
+## [5.86.2] - 2026-11-23
+
+- Synchronize the TypeScript 5.86.2 public contract through `e830ed42e6b6973e659aa98c226b05f864e6ea97` and Sogni Protocol `1.0.0-alpha.64`. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` on `main` (source `5.50.3-alpha.1`), already incorporated in history.
+- Add explicit Seedance 2.5 4K finalization, matching estimate queries, and optional resolution receipts on live, recovered and durable results. Omission retains the 1080p default. Accept narrow Seedance canvases below 480 pixels and support 4K in the reference/edit example.
+- Recognize the explicitly selected `minimax-h3-prism-int8_r2v_2stage` workflow with its eight-step recipe and existing references, keyframes and caller filter settings. Require an appearance image for LTX pose control in the video-to-video example.
+- Validate public withdrawal and approval permit contracts before signing, preserve decimal integer and provider behavior, and retain original approval deadlines. Keep the complete signing operation bound to its authentication session. Verify parity with 211 independently generated TypeScript permit scenarios and synthetic HTTP tests.
+- Retain Rust's no-redirect policy for authenticated REST, refresh and SSE requests, with regression coverage for credential-bearing POST and body-preserving redirects. Update the hosted schemas and independent compiled routing/generation fixtures.
+- Require `url` 2.5.9 for [RUSTSEC-2026-0592](https://rustsec.org/advisories/RUSTSEC-2026-0592.html). Document the informational `chrono` maintenance exception in `SECURITY.md` while preserving its public snapshot types. Keep Rust 1.88 and the existing automatic release policy.
+
 ## [5.84.2] - 2026-11-16
 
 - Port the TypeScript 5.84.2 public contract through `f0928f2fa34d62b20dd62b6fc8be266c16236f55`, including the hosted tool schemas from Sogni Protocol `1.0.0-alpha.63` and reference GIF editing. The independently reviewed Rust fork remains at `38b893c377c905816ae7a2365c0bc10a0dbc9a3f` on `main` (source `5.50.3-alpha.1`).

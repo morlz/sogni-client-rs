@@ -9,10 +9,10 @@ includes Sogni-AI's authentication and streaming fixes from source version
 `5.50.3-alpha.1` through `38b893c377c905816ae7a2365c0bc10a0dbc9a3f`.
 Thank you to the fork's contributors for these fixes and regression tests.
 
-The current TypeScript contract is version `5.84.2` through
-`f0928f2fa34d62b20dd62b6fc8be266c16236f55`, including Sogni Protocol
-`1.0.0-alpha.63`. The Rust fork's `main` still resolved to the commit above on
-2026-11-16. It is already in this repository's history.
+The current TypeScript contract is version `5.86.2` through
+`e830ed42e6b6973e659aa98c226b05f864e6ea97`, including Sogni Protocol
+`1.0.0-alpha.64`. The Rust fork's `main` still resolved to the commit above on
+2026-11-23. It is already in this repository's history.
 
 Rust uses its native WebSocket and secure UUID generator. Its media API
 implements the version 1 encrypted container and authenticated HTTP ranges;
@@ -37,6 +37,20 @@ of the ethers dependency chain containing affected crypto-bigint versions.
 Public wallet APIs, password derivation, addresses and signature bytes remain
 compatible, verified against independent TypeScript SDK vectors. These changes
 preserve Rust 1.88 and the existing wallet feature.
+
+The 5.86.2 contract includes Seedance 2.5 explicit 4K finals and quote/result
+metadata, narrow Seedance canvases, the optional two-stage Prism workflow, and
+public permit validation before signing. Rust keeps its stricter refusal of
+all authenticated REST, refresh, and SSE redirects; credential-free media
+redirects retain their existing behavior. The compiled TypeScript fixtures
+pin generation requests, permit acceptance/refusal, routing, and all 30 tool
+schemas. Browser fetch behavior and Node dependency/build changes stay upstream.
+No new Rust-fork commit required a merge on this synchronization.
+
+The crate requires `url` 2.5.9 for RUSTSEC-2026-0592 and locks `form_urlencoded`
+1.2.3. `chrono` remains part of the public snapshot types; its informational
+maintenance notice is explicitly documented in SECURITY.md and the audit
+configuration. No vulnerability advisory is suppressed. Rust 1.88 is unchanged.
 
 ## Weekly process
 

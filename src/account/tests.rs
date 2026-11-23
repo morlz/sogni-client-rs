@@ -14,6 +14,8 @@ mod cookie_rollback;
 mod cookie_session;
 #[cfg(feature = "wallet")]
 mod login_572;
+#[cfg(feature = "wallet")]
+mod permits;
 mod priority_history;
 mod request_session;
 

@@ -27,7 +27,7 @@ pub(in crate::projects) fn validate_h3_params(
     if let Some(steps) = params.get("steps").filter(|value| !value.is_null()) {
         if steps.as_f64() != Some(expected_steps) {
             return Err(Error::InvalidInput(format!(
-                "MiniMax H3{tier} steps are fixed at {}",
+                "MiniMax H3{tier} steps are fixed at {}.",
                 expected_steps as u8
             )));
         }

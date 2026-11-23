@@ -332,11 +332,17 @@ impl ProjectRequest {
         self.param("seedanceDraft", enabled)
     }
 
-    /// Finalize an account-owned Seedance 2.5 draft at 1080p on the same model.
+    /// Finalize an account-owned Seedance 2.5 draft on the same model (1080p by default).
     /// The draft supplies the prompt, media, duration, aspect ratio, seed and audio.
     #[must_use]
     pub fn seedance_draft_job_id(self, id: impl Into<String>) -> Self {
         self.param("seedanceDraftJobId", id.into())
+    }
+
+    /// Explicit final resolution: `1080p` or `4k`. Requires a draft job ID.
+    #[must_use]
+    pub fn seedance_draft_final_resolution(self, resolution: impl Into<String>) -> Self {
+        self.param("seedanceDraftFinalResolution", resolution.into())
     }
 
     /// Export a separate final-frame image from Seedance 2.5 or MiniMax H3.

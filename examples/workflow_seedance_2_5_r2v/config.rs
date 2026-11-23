@@ -106,7 +106,7 @@ pub fn model_config(model: &str) -> Result<ModelConfig> {
         "seedance-2-5" => ModelConfig {
             selector: Some("seedance2-5"),
             max_duration: 30.0,
-            resolutions: &["480p", "720p"],
+            resolutions: &["480p", "720p", "1080p", "4k"],
             limits: [30, 10, 10, 50],
             supports_task_type: true,
             audio_only: true,

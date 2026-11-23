@@ -3,9 +3,9 @@
 An asynchronous Rust SDK for the Sogni Supernet and Sogni Intelligence APIs.
 It follows the public wire contract of the TypeScript and Python clients,
 while exposing Rust-native typed errors, streams, snapshots, and builders.
-Version **5.84.2** implements the TypeScript **5.84.2** public contract through
-[`f0928f2`](https://github.com/Sogni-AI/sogni-client/commit/f0928f2fa34d62b20dd62b6fc8be266c16236f55),
-including hosted tool definitions from Sogni Protocol `1.0.0-alpha.63`.
+Version **5.86.2** implements the TypeScript **5.86.2** public contract through
+[`e830ed4`](https://github.com/Sogni-AI/sogni-client/commit/e830ed42e6b6973e659aa98c226b05f864e6ea97),
+including hosted tool definitions from Sogni Protocol `1.0.0-alpha.64`.
 It also includes authentication and streaming fixes from the
 [Sogni-AI Rust fork](https://github.com/Sogni-AI/sogni-client-rs/commit/38b893c377c905816ae7a2365c0bc10a0dbc9a3f).
 See [UPSTREAM.md](UPSTREAM.md) for attribution and synchronization policy.
@@ -56,7 +56,7 @@ pre-issued tokens:
 
 ```toml
 [dependencies]
-sogni-client-by-morlz = { version = "5.84.2", default-features = false }
+sogni-client-by-morlz = { version = "5.86.2", default-features = false }
 ```
 
 For development against the repository:
@@ -342,7 +342,9 @@ model and canvas with `estimate_video_cost`; include `referenceVideo` or
 `hasVideoInput: true` when quoting an extension.
 
 The explicitly selected `minimax-h3-prism-int8_r2v` model uses eight steps and
-the same ordered reference and keyframe slots. It has no two-stage variant.
+the same ordered reference and keyframe slots. Select
+`minimax-h3-prism-int8_r2v_2stage` explicitly for output at twice the canvas
+size, using the same eight-step recipe and reference inputs.
 
 The `workflow_minimax_h3_video` example accepts `--source-video` and
 `--extend-output continuation`, and the new `minimax-h3-fasth3-r2v-turbo`
@@ -680,7 +682,7 @@ models, indices, duplicate frames, or oversized lists fail before any upload.
 array; an explicit count takes precedence, including zero. Pricing remains
 service-owned.
 
-Seedance 2.5 accepts 480p, 720p, and 1080p output and defaults to 1080p.
+Seedance 2.5 accepts 480p, 720p, 1080p, and explicit 4K output and defaults to 1080p.
 It accepts `.param("outputFormat", "mov")`. Both Seedance 2.5 and MiniMax H3
 accept `.return_last_frame(true)`. Read the exported image from
 `job.last_frame_url()` or refresh it with `job.get_last_frame_url().await`.
@@ -688,7 +690,11 @@ accept `.return_last_frame(true)`. Read the exported image from
 Set `.seedance_draft(true)` on a 480p Seedance 2.5 request to create a draft.
 The completed job's `seedance_draft_receipt()` reports the draft flag and expiry.
 Before expiry, finalize it on the same model and account using
-`.seedance_draft_job_id(draft_job.id())`. Set an empty prompt and request one
+`.seedance_draft_job_id(draft_job.id())`. The final defaults to 1080p; add
+`.seedance_draft_final_resolution("4k")` for a 4K final (or `"1080p"` explicitly).
+Pass the same `seedanceDraftFinalResolution` to `estimate_video_cost`. The
+completed job receipt reports this resolution only when supplied by the service.
+Set an empty prompt and request one
 result. The service reuses the draft's media, duration, aspect ratio, seed, and
 audio setting. The final reports the originating draft job ID. To quote a draft
 or final, pass `seedanceDraft` or `seedanceDraftJobId` to `estimate_video_cost`.
@@ -1045,3 +1051,7 @@ other supported clients and service-level concepts.
 ## License
 
 ISC
+
+LTX video-to-video pose control requires both an appearance image and a motion
+video. The `workflow_video_to_video` example enforces `--image` for pose; canny,
+depth, and detailer remain video-only.

@@ -1,6 +1,6 @@
 use super::*;
 use crate::projects::{
-    seedance::{FINALIZE_PROMPT, SeedanceDraftMode},
+    seedance::{FINALIZE_4K_PROMPT, FINALIZE_PROMPT, SeedanceDraftMode},
     validation::media_slot_count,
 };
 pub(super) fn build_video_keyframe(
@@ -159,9 +159,19 @@ pub(super) fn build_video_keyframe(
         SeedanceDraftMode::Draft => {
             keyframe.insert("seedanceDraft".into(), json!(true));
         }
-        SeedanceDraftMode::Finalize(id) => {
+        SeedanceDraftMode::Finalize(id, resolution) => {
             keyframe.insert("seedanceDraftJobId".into(), json!(id));
-            keyframe.insert("positivePrompt".into(), json!(FINALIZE_PROMPT));
+            if let Some(resolution) = resolution {
+                keyframe.insert("seedanceDraftFinalResolution".into(), json!(resolution));
+            }
+            keyframe.insert(
+                "positivePrompt".into(),
+                json!(if resolution == Some("4k") {
+                    FINALIZE_4K_PROMPT
+                } else {
+                    FINALIZE_PROMPT
+                }),
+            );
             for field in [
                 "referenceImageURLs",
                 "referenceVideoURLs",
@@ -255,7 +265,9 @@ pub(super) fn build_video_keyframe(
         keyframe.insert("trimEndFrame".into(), json!(true));
     }
     if let (Some(width), Some(height)) = (params.get("width"), params.get("height")) {
-        let minimum = if is_minimax_h3_model(model_id) {
+        let minimum = if is_seedance_model(model_id) {
+            1.0
+        } else if is_minimax_h3_model(model_id) {
             32.0
         } else {
             480.0

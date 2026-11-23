@@ -26,6 +26,8 @@ mod upstream_579_tests;
 #[cfg(test)]
 mod upstream_584_tests;
 #[cfg(test)]
+mod upstream_586_tests;
+#[cfg(test)]
 mod upstream_tests;
 #[cfg(test)]
 mod utility_tests;

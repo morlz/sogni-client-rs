@@ -94,7 +94,7 @@ fn object(value: Value) -> Map<String, Value> {
     value.as_object().cloned().expect("JSON object")
 }
 fn resolution_number(value: &str) -> u32 {
-    value.trim_end_matches('p').parse().unwrap_or(720)
+    dimensions(value).expect("validated resolution").1
 }
 fn add_indices(target: &mut Map<String, Value>, name: &str, count: usize) {
     if count > 0 {
@@ -186,6 +186,34 @@ mod tests {
     }
 
     #[test]
+    fn seedance_25_4k_reaches_direct_and_hosted_requests_without_falling_back_to_720p() {
+        for task in ["reference", "edit"] {
+            let flag = if task == "edit" { "--video" } else { "--image" };
+            let value = args(&[
+                "--task-type",
+                task,
+                flag,
+                "https://cdn.example.com/input",
+                "--duration",
+                "5",
+                "--resolution",
+                "4k",
+            ]);
+            validate(&value).unwrap();
+            let media = if task == "edit" {
+                urls(0, 1, 0)
+            } else {
+                urls(1, 0, 0)
+            };
+            assert_eq!(build_direct_params(&value, &media)["height"], 2160);
+            assert_eq!(
+                build_creative_agent_request(&value, &media)["input"]["steps"][0]["arguments"]["targetResolution"],
+                2160
+            );
+        }
+    }
+
+    #[test]
     fn omitted_prompt_builds_task_specific_direct_and_agent_requests() {
         for (task, extra, media, expected) in [
             (
@@ -245,15 +273,7 @@ mod tests {
             ]))
             .is_err()
         );
-        assert!(
-            validate(&args(&[
-                "--audio",
-                "https://x/a.mp3",
-                "--resolution",
-                "1080p"
-            ]))
-            .is_err()
-        );
+        assert!(validate(&args(&["--audio", "https://x/a.mp3", "--resolution", "8k"])).is_err());
     }
 
     #[test]

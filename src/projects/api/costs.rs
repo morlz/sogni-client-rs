@@ -200,7 +200,12 @@ impl ProjectsApi {
         });
         match draft_mode {
             seedance::SeedanceDraftMode::Draft => query["seedanceDraft"] = json!(1),
-            seedance::SeedanceDraftMode::Finalize(id) => query["seedanceDraftJobId"] = json!(id),
+            seedance::SeedanceDraftMode::Finalize(id, resolution) => {
+                query["seedanceDraftJobId"] = json!(id);
+                if let Some(resolution) = resolution {
+                    query["seedanceDraftFinalResolution"] = json!(resolution);
+                }
+            }
             seedance::SeedanceDraftMode::Standard => {}
         }
         if let Some(prompt) = params.get("sam3VideoPrompt") {

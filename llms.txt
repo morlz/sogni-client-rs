@@ -1,11 +1,11 @@
-# sogni-client-by-morlz Rust SDK 5.84.2
+# sogni-client-by-morlz Rust SDK 5.86.2
 
-Compatibility: TypeScript 5.84.2 at f0928f2fa34d62b20dd62b6fc8be266c16236f55 with hosted protocol 1.0.0-alpha.63.
+Compatibility: TypeScript 5.86.2 at e830ed42e6b6973e659aa98c226b05f864e6ea97 with hosted protocol 1.0.0-alpha.64.
 Repository: https://github.com/morlz/sogni-client-rs
 
 Async Rust client for Sogni Supernet generation and Sogni Intelligence.
 Crate import: `sogni_client`. Runtime: Tokio. MSRV: Rust 1.88.
-Cargo dependency: `sogni-client-by-morlz = "5.84.2"`.
+Cargo dependency: `sogni-client-by-morlz = "5.86.2"`.
 Includes Rust-fork fixes through Sogni-AI/sogni-client-rs commit 38b893c3;
 source version 5.50.3-alpha.1. See UPSTREAM.md for independent sync baselines.
 
@@ -171,7 +171,7 @@ explicit false; omission is unknown.
   supported import models from list().models; private responses are not cached.
 - `available_loras_with_personal` merges catalogs only for that call.
 - Ref2VA `_r2v_2stage` and `_r2v_balanced_2stage` use 20/8 steps and deliver
-  twice the canvas size. Seedance 2.5 now defaults to 1080p (no 4K).
+  twice the canvas size. Seedance 2.5 defaults to 1080p and supports explicit 4K.
 - Estimates accept billingMode; video/audio also accept network, defaulting to
   the current connection. daily_fair_use_pct is optional server-supplied advice.
 - `.priority_mode(true)` opts into available Fast subscription Priority.
@@ -284,3 +284,11 @@ ApiError/ProjectError.consent_required() returns ModelConsentRequirement when
 supplied. MODEL_CONSENT_REQUIRED_ERROR_CODE=4103 requires agreement acceptance
 in a Sogni app; MODEL_NOT_YET_AVAILABLE_ERROR_CODE=4104 requires choosing an
 available model. Neither refusal is automatically retried.
+
+- Seedance 2.5 supports explicit 4K. Finalize with .seedance_draft_job_id(id)
+  and optionally .seedance_draft_final_resolution("4k"); omit resolution for
+  the 1080p default. Quotes accept seedanceDraftFinalResolution with the ID.
+- Prism two-stage: minimax-h3-prism-int8_r2v_2stage, eight steps, same references.
+- LTX pose control requires both a reference image and motion video.
+- Wallet permits are checked before signing; authenticated REST/refresh/SSE
+  retain Rust's no-redirect policy. See SECURITY.md for dependency audit scope.

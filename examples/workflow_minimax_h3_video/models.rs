@@ -117,6 +117,19 @@ mod tests {
     use clap::Parser;
 
     #[test]
+    fn prism_two_stage_keeps_its_eight_step_recipe_and_explicit_selection() {
+        let model = "minimax-h3-prism-int8_r2v_2stage";
+        let args = Args::try_parse_from(["x", "--model", model]).unwrap();
+        let actual = spec(&args).unwrap();
+        assert_eq!(actual.id, model);
+        assert_eq!(actual.steps, 8);
+        assert_eq!(actual.sampler, Some("euler"));
+        assert_eq!(resolved_mode(&args).unwrap(), Mode::R2v);
+        // Selection does not implicitly disable the caller's content filter.
+        assert!(!args.disable_safe_content_filter);
+    }
+
+    #[test]
     fn mode_is_optional_and_defaults_to_t2v_without_a_model() {
         let args = Args::try_parse_from(["x"]).expect("default arguments");
         assert_eq!(args.mode, None);

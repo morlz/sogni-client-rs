@@ -44,6 +44,9 @@ fn build(
     if config.needs_image && args.image.is_none() {
         bail!("WAN Animate requires --image and --video");
     }
+    if config.control && args.control == Control::Pose && args.image.is_none() {
+        bail!("LTX pose control requires --image for appearance and --video for motion");
+    }
     if config.control
         && !config.allows_extended
         && matches!(args.control, Control::Outpaint | Control::Inpaint)
@@ -234,6 +237,52 @@ pub async fn run() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn pose_requires_an_appearance_image_while_canny_remains_video_only() {
+        for model in ["ltx23-v2v-distilled", "ltx25-v2v-distilled"] {
+            let args = Args::try_parse_from([
+                "x",
+                "--model",
+                model,
+                "--video",
+                "motion.mp4",
+                "--control-type",
+                "pose",
+            ])
+            .unwrap();
+            assert!(
+                build(&args, None)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("--image")
+            );
+            let with_image = Args::try_parse_from([
+                "x",
+                "--model",
+                model,
+                "--video",
+                "motion.mp4",
+                "--control-type",
+                "pose",
+                "--image",
+                "subject.jpg",
+            ])
+            .unwrap();
+            assert!(build(&with_image, None).is_ok());
+            let canny = Args::try_parse_from([
+                "x",
+                "--model",
+                model,
+                "--video",
+                "motion.mp4",
+                "--control-type",
+                "canny",
+            ])
+            .unwrap();
+            assert!(build(&canny, None).is_ok());
+        }
+    }
     #[test]
     fn control_specific_requirements_are_enforced() {
         let base = ["x", "--video", "v.mp4", "--control-type", "inpaint"];
