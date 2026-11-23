@@ -70,7 +70,8 @@ tokio-socks = "=0.5.3"
 tokio-tungstenite = { version = "0.27.0", default-features = false, features = ["connect", "rustls-tls-native-roots"] }
 tokio-util = { version = "0.7.16", features = ["rt"] }
 tracing = "0.1.41"
-url = { version = "2.5.7", features = ["serde"] }
+# Require the non-recursive origin parser for untrusted media URLs.
+url = { version = "2.5.9", features = ["serde"] }
 uuid = { version = "1.18.1", features = ["serde", "v4"] }
 zeroize = "1.8.1"
 

@@ -1,0 +1,6 @@
+[advisories]
+# Informational maintenance notice, not a reported vulnerability. Chrono's
+# DateTime<Utc> is part of the public snapshot API; replacing it requires a
+# separately planned breaking API change. Keep auditing all other advisories.
+# Reviewed 2026-11-23: https://rustsec.org/advisories/RUSTSEC-2026-0543.html
+ignore = ["RUSTSEC-2026-0543"]
