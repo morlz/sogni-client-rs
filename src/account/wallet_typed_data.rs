@@ -183,9 +183,11 @@ fn encode_word(kind: &str, value: &Value, types: &Types, depth: usize) -> Result
         .as_str()
         .map_or_else(|| value.to_string(), str::to_owned);
     let token = match &param {
-        ParamType::Uint(bits) | ParamType::Int(bits) => {
-            integer_token(&input, *bits, matches!(param, ParamType::Int(_)))?
-        }
+        ParamType::Uint(bits) | ParamType::Int(bits) => integer_token(
+            &integer_input(value),
+            *bits,
+            matches!(param, ParamType::Int(_)),
+        )?,
         ParamType::Bool => Token::Bool(value.as_bool().ok_or("EIP-712 bool value is required")?),
         ParamType::Bytes | ParamType::FixedBytes(_) if value.is_array() => {
             let bytes = value
@@ -256,6 +258,31 @@ fn primitive_type(name: &str) -> Result<ParamType, String> {
         }
     }
     Err("undefined EIP-712 field type".into())
+}
+
+fn integer_input(value: &Value) -> String {
+    if let Some(value) = value.as_str() {
+        return value.to_owned();
+    }
+    if let Some(value) = value.as_u64() {
+        return value.to_string();
+    }
+    if let Some(value) = value.as_i64() {
+        return value.to_string();
+    }
+    // JavaScript numbers do not distinguish 8453 from 8453.0 or 0 from -0.
+    // Normalize safe integer-valued numbers for ABI encoding, without changing
+    // the original permit value subsequently submitted to the API.
+    if let Some(number) = value.as_f64().filter(|number| {
+        number.is_finite() && number.fract() == 0.0 && number.abs() <= 9_007_199_254_740_991.0
+    }) {
+        return if number == 0.0 {
+            "0".into()
+        } else {
+            format!("{number:.0}")
+        };
+    }
+    value.to_string()
 }
 
 fn integer_token(input: &str, bits: usize, signed: bool) -> Result<Token, String> {

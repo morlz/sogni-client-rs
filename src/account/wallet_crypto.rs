@@ -16,6 +16,9 @@ use typed_data::TypedData;
 #[cfg(test)]
 #[path = "wallet_crypto_fixtures.rs"]
 mod contract_tests;
+#[cfg(test)]
+#[path = "wallet_permit_integer_tests.rs"]
+mod permit_integer_tests;
 
 const VERIFYING_CONTRACT: &str = "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC";
 

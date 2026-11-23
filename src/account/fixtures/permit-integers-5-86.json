@@ -1,0 +1,26 @@
+{
+  "version": "5.86.2",
+  "commit": "e830ed42e6b6973e659aa98c226b05f864e6ea97",
+  "cases": [
+    {
+      "approve": false,
+      "wire": "{\"domain\":{\"name\":\"Sogni AI\",\"version\":\"1\",\"chainId\":8453.0,\"verifyingContract\":\"0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC\"},\"types\":{\"WithdrawTokenV2\":[{\"name\":\"walletAddress\",\"type\":\"address\"},{\"name\":\"amount\",\"type\":\"string\"},{\"name\":\"provider\",\"type\":\"string\"},{\"name\":\"nonce\",\"type\":\"string\"}]},\"message\":{\"walletAddress\":\"0x930fBDdBFA47bF6263330D551414750C2688bE5a\",\"amount\":\"1000000000000000000\",\"provider\":\"base\",\"nonce\":\"synthetic-nonce\"}}",
+      "payload": {
+        "walletAddress": "0x930fBDdBFA47bF6263330D551414750C2688bE5a",
+        "amount": "1000000000000000000",
+        "provider": "base"
+      },
+      "signature": "0x45c1b06ae0b3e31ae0ccc878dd8ce4f93ace55b1f847d964049b96c0a87689120d66953f7a1f909747063fd1ceaa7d2da1d4a94428f65d265b6633301d59ea9a1c"
+    },
+    {
+      "approve": true,
+      "wire": "{\"domain\":{\"name\":\"Sogni AI\",\"version\":\"1\",\"chainId\":8453.0,\"verifyingContract\":\"0xE014d2A4da6E450f21b5050120D291e63c8940FD\"},\"types\":{\"Permit\":[{\"name\":\"owner\",\"type\":\"address\"},{\"name\":\"spender\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"nonce\",\"type\":\"uint256\"},{\"name\":\"deadline\",\"type\":\"uint256\"}]},\"message\":{\"owner\":\"0x930fBDdBFA47bF6263330D551414750C2688bE5a\",\"spender\":\"0x930fBDdBFA47bF6263330D551414750C2688bE5a\",\"value\":100.0,\"nonce\":0.0,\"deadline\":-0.0}}",
+      "payload": {
+        "walletAddress": "0x930fBDdBFA47bF6263330D551414750C2688bE5a",
+        "spender": "account",
+        "provider": "base"
+      },
+      "signature": "0x8fa234149508be9d77329b9c6bb392a9f688e2eb011387b22c4ae90245d8307704d0986dd75923361effb9a1369bf771a062a0fd647e0aaa99f0153fa34a95d31b"
+    }
+  ]
+}

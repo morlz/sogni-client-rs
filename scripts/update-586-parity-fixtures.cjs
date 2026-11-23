@@ -76,6 +76,44 @@ routes.schemas = manifest.tools.map(tool => ({ name: tool.function.name,
 write('src/chat/fixtures/upstream-routing.json', routes);
 write('data/hosted_tools.json', manifest);
 
+async function exportIntegerSigningCases() {
+  const { Wallet, verifyTypedData } = require(require.resolve('ethers', { paths: [built] }));
+  const { EventEmitter } = require('node:events');
+  const key = require('node:crypto').pbkdf2Sync('testusercorrect horse battery staple', 'sogni-salt-value', 10000, 32, 'sha256');
+  const wallet = new Wallet('0x' + key.toString('hex'));
+  const AccountApi = require(path.join(built, 'dist/Account/index.js')).default;
+  const vectors = [];
+  for (const approve of [false, true]) {
+    const domain = { name: 'Sogni AI', version: '1', chainId: 8453,
+      verifyingContract: approve ? '0xE014d2A4da6E450f21b5050120D291e63c8940FD' : '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC' };
+    const fields = approve ? [['owner','address'],['spender','address'],['value','uint256'],['nonce','uint256'],['deadline','uint256']] :
+      [['walletAddress','address'],['amount','string'],['provider','string'],['nonce','string']];
+    const types = { [approve ? 'Permit' : 'WithdrawTokenV2']: fields.map(([name,type]) => ({ name, type })) };
+    const message = approve ? { owner: wallet.address, spender: wallet.address, value: 100, nonce: 0, deadline: 0 } :
+      { walletAddress: wallet.address, amount: '1000000000000000000', provider: 'base', nonce: 'synthetic-nonce' };
+    const wire = JSON.stringify({ domain, types, message }).replace('"chainId":8453', '"chainId":8453.0')
+      .replace('"value":100', '"value":100.0').replace('"nonce":0', '"nonce":0.0').replace('"deadline":0', '"deadline":-0.0');
+    const permit = JSON.parse(wire);
+    const calls = [];
+    const rest = { async post(url, payload) { calls.push({url,payload}); return url.endsWith('/permit') ? { data: permit } : {}; } };
+    const client = Object.assign(new EventEmitter(), { auth: Object.assign(new EventEmitter(), { sessionVersion: 0 }),
+      socket: Object.assign(new EventEmitter(), { isConnected: false }), rest,
+      logger: { info() {}, warn() {}, error() {}, debug() {} } });
+    const account = new AccountApi({ client, eip712: {}, testnet: false });
+    account.currentAccount._update({ username: 'TestUser', walletAddress: wallet.address });
+    account.getWallet = () => wallet;
+    if (approve) await account.approveTokenUsage('unused', 'account', 'base');
+    else await account.withdraw('unused', '1', 'base');
+    if (calls.length !== 2) throw new Error('The compiled API must accept the decimal JSON representation');
+    const signature = calls[1].payload[approve ? 'approveSignature' : 'signature'];
+    if (verifyTypedData(domain, types, message, signature) !== wallet.address) throw new Error('Signature recovery failed');
+    vectors.push({ approve, wire, payload: calls[0].payload, signature });
+  }
+  write('src/account/fixtures/permit-integers-5-86.json', { version, commit, cases: vectors });
+  console.log('Exported compiled API integer-representation signing cases');
+}
+exportIntegerSigningCases().catch(error => { console.error(error); process.exitCode = 1; });
+
 // Reuse every upstream permit mutation and its actual compiled API verdict.
 // Only randomness and the clock are fixed to make the synthetic fixture repeatable.
 const file = path.join(built, 'scripts/check-account-permits.cjs');
